@@ -1,6 +1,9 @@
 from opentrons import labware, instruments, modules, robot
 
 
+sample_number=8
+
+
 def magbead(
         sample_number,
         ethanol_well,
@@ -29,7 +32,6 @@ def magbead(
     PIPETTE_DISPENSE_RATE = 150
     TIPS_PER_SAMPLE = 9
     CANDIDATE_TIPRACK_SLOTS = ['3', '6', '9', '2', '5']
-    TIPRACK_TYPE = 'opentrons-tiprack-300ul'
     MAGDECK_POSITION = '1'
     MIX_PLATE_TYPE = '4ti-0960_FrameStar'
     MIX_PLATE_POSITION = '4'
@@ -61,7 +63,7 @@ def magbead(
     total_tips = sample_number * TIPS_PER_SAMPLE
     tiprack_num = total_tips // 96 + (1 if total_tips % 96 > 0 else 0)
     slots = CANDIDATE_TIPRACK_SLOTS[:tiprack_num]
-    tipracks = [labware.load(TIPRACK_TYPE, slot)
+    tipracks = [labware.load('opentrons-tiprack-300ul', slot)
                 for slot in slots]
     pipette = instruments.P300_Multi(
         mount=pipette_mount,
@@ -174,7 +176,7 @@ def magbead(
 
 
 magbead(sample_number=sample_number,
-        ethanol_well=ethanol_well, elution_buffer_well='A1')
+        ethanol_well='A10', elution_buffer_well='A1')
 
 for c in robot.commands():
     print(c)

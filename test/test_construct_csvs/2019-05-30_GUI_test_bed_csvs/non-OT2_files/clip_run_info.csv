@@ -1,0 +1,23 @@
+MASTER_MIX
+Component,Volume (uL)
+"Promega T4 DNA Ligase buffer, 10X",30.0
+Water,155.0
+NEB BsaI-HFv2,10.0
+Promega T4 DNA Ligase,5.0
+
+SOURCE_PLATES
+Deck position,Source plate,Path
+2,BIOLEGEIO_BASIC_RBS_EXT_SET.csv,//La-mh2210/c$/Users/mh2210/Box Sync/Work_box/Python/OT2/repo/test/2019-05-30_GUI_test_bed_csvs/BIOLEGEIO_BASIC_RBS_EXT_SET.csv
+5,Source_plate_2_230419.csv,//La-mh2210/c$/Users/mh2210/Box Sync/Work_box/Python/OT2/repo/test/2019-05-30_GUI_test_bed_csvs/Source_plate_2_230419.csv
+
+CLIP_REACTIONS
+prefixes,parts,suffixes,number,mag_well
+LMS-P,Kan-p15A_SEVA,LMP-S,1,"('A7',)"
+LMP-P,Terminator-J23101-RiboJ,UTR1-S,1,"('B7',)"
+UTR1-RBS1-P,BFP,UTR2-S,1,"('C7',)"
+UTR2-RBS1-P,GFP,UTR3-S,1,"('D7',)"
+UTR3-RBS1-P,RFP,LMS-S,1,"('E7',)"
+UTR3-RBS2-P,RFP,LMS-S,1,"('F7',)"
+UTR3-RBS3-P,RFP,LMS-S,1,"('G7',)"
+UTR2-RBS2-P,GFP,UTR3-S,1,"('H7',)"
+

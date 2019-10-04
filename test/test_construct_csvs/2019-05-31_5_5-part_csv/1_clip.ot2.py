@@ -1,6 +1,9 @@
 from opentrons import labware, instruments, modules, robot
 
 
+clips_dict={"prefixes_wells": ["A8", "A7", "C4", "C7", "C10", "C11", "C12", "C8"], "prefixes_plates": ["2", "2", "2", "2", "2", "2", "2", "2"], "suffixes_wells": ["B7", "C1", "C2", "C3", "B8", "B8", "B8", "C3"], "suffixes_plates": ["2", "2", "2", "2", "2", "2", "2", "2"], "parts_wells": ["E1", "F1", "B2", "C2", "D2", "D2", "D2", "C2"], "parts_plates": ["5", "5", "5", "5", "5", "5", "5", "5"], "parts_vols": [1, 1, 1, 1, 1, 1, 1, 1], "water_vols": [7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0]}
+
+
 def clip(
         prefixes_wells,
         prefixes_plates,
