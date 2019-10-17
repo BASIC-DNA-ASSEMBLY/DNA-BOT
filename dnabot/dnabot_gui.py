@@ -8,7 +8,6 @@ Created on Thu May 30 14:35:26 2019
 import tkinter as tk
 from tkinter import filedialog
 import sys
-#import basic_ot2_generator_v11_beta
 
 class UserDefinedPaths:
 
@@ -24,9 +23,9 @@ class UserDefinedPaths:
                                              ("all files", "*.*")))
         self.output = master.output
         
-class Bot2App:
-    BOT2TITLE = 'BOT-2 GENERATOR'
-    INTRO_TEXT = 'Welcome to the BOT-2 GENERATOR App! Please follow these instructions:'
+class DnabotApp:
+    BOT2TITLE = 'dnabot app'
+    INTRO_TEXT = 'Welcome to the dnabot App! Please follow these instructions:'
     INSTRUCTION_TEXT1 = '1. Select Magbead ethanol and SOC media wells below, used during subsequent OT-2 runs.'
     INSTRUCTION_TEXT2 = "2. Click the 'GENERATE' button below and on the following windows select one csv file detailing constructs and up to 6 csv files detailing sources."
     TROUGH_WELLS = ['A{}'.format(x + 1) for x in range (12)]
@@ -36,12 +35,12 @@ class Bot2App:
         self.master.lift()
         
         # Titles and labels
-        self.master.title(Bot2App.BOT2TITLE)
-        intro = tk.Label(self.master, text=Bot2App.INTRO_TEXT)
+        self.master.title(DnabotApp.BOT2TITLE)
+        intro = tk.Label(self.master, text=DnabotApp.INTRO_TEXT)
         intro.grid(row=0, columnspan=2)
-        instruction1 = tk.Label(self.master, text=Bot2App.INSTRUCTION_TEXT1)
+        instruction1 = tk.Label(self.master, text=DnabotApp.INSTRUCTION_TEXT1)
         instruction1.grid(row=1, columnspan=2, sticky=tk.W)
-        instruction2 = tk.Label(self.master, text=Bot2App.INSTRUCTION_TEXT2)
+        instruction2 = tk.Label(self.master, text=DnabotApp.INSTRUCTION_TEXT2)
         instruction2.grid(row=2, columnspan=2, sticky=tk.W)        
         etoh_well_label = tk.Label(self.master, text='Magbead ethanol well:')
         etoh_well_label.grid(row=3, column=0, sticky=tk.E)
@@ -57,14 +56,14 @@ class Bot2App:
                                         command=self.generate)
         generate_button.grid(row=5, column=1)
         self.etoh_well = tk.StringVar(master)
-        self.etoh_well.set(Bot2App.TROUGH_WELLS[10])
+        self.etoh_well.set(DnabotApp.TROUGH_WELLS[10])
         etoh_w = tk.OptionMenu(master, self.etoh_well, *tuple(
-                Bot2App.TROUGH_WELLS[1:11]))
+                DnabotApp.TROUGH_WELLS[1:11]))
         etoh_w.grid(row=3, column=1, sticky=tk.W)
         self.soc_well = tk.StringVar(master)
-        self.soc_well.set(Bot2App.TROUGH_WELLS[0])
+        self.soc_well.set(DnabotApp.TROUGH_WELLS[0])
         soc_w = tk.OptionMenu(master, self.soc_well, *tuple(
-                Bot2App.TROUGH_WELLS))
+                DnabotApp.TROUGH_WELLS))
         soc_w.grid(row=4, column=1, sticky=tk.W)
         
     def quitter(self):
@@ -85,13 +84,13 @@ def main():
 #            construct_path.output)
 #    print(constructs_list)
     root = tk.Tk()
-    bot2inst = Bot2App(root)
+    dnabotinst = DnabotApp(root)
     root.mainloop()
     root.destroy()
-    if bot2inst.quit_status:
+    if dnabotinst.quit_status:
         sys.exit("User specified 'QUIT' during app")
-    print('Ethanol well is ', bot2inst.etoh_well)
-    print('SOC well is ', bot2inst.soc_well)
+    print('Ethanol well is ', dnabotinst.etoh_well)
+    print('SOC well is ', dnabotinst.soc_well)
     
 if __name__ == '__main__':
     main()

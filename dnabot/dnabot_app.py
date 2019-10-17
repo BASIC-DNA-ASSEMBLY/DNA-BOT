@@ -10,7 +10,7 @@ import pandas as pd
 import numpy as np
 import json
 import sys
-import bot2_gui as bot2gui
+import dnabot_gui as gui
 import tkinter as tk
 import mplates
 
@@ -59,16 +59,16 @@ def main():
     # Obtain user input
     print("Requesting user input, if not visible checked minimized windows.")
     root = tk.Tk()
-    bot2inst = bot2gui.Bot2App(root)
+    dnabotinst = gui.DnabotApp(root)
     root.mainloop()
     root.destroy()
-    if bot2inst.quit_status:
+    if dnabotinst.quit_status:
         sys.exit("User specified 'QUIT' during app.")
     root = tk.Tk()
-    construct_path = bot2gui.UserDefinedPaths(root, 'Construct csv file')
+    construct_path = gui.UserDefinedPaths(root, 'Construct csv file')
     root.destroy()
     root = tk.Tk()
-    sources_paths = bot2gui.UserDefinedPaths(root, 'Sources csv files', 
+    sources_paths = gui.UserDefinedPaths(root, 'Sources csv files', 
                                              multiple_files=True)
     if len(sources_paths.output) > len(SOURCE_DECK_POS):
         raise ValueError(
@@ -103,7 +103,7 @@ def main():
     generate_ot2_script(MAGBEAD_FNAME, os.path.join(
         template_dir_path, MAGBEAD_TEMP_FNAME),
         sample_number=magbead_sample_number, 
-        ethanol_well=bot2inst.etoh_well)
+        ethanol_well=dnabotinst.etoh_well)
     generate_ot2_script(F_ASSEMBLY_FNAME, os.path.join(
         template_dir_path, F_ASSEMBLY_TEMP_FNAME),
         final_assembly_dict=final_assembly_dict,
@@ -111,7 +111,7 @@ def main():
     generate_ot2_script(TRANS_SPOT_FNAME, os.path.join(
         template_dir_path, TRANS_SPOT_TEMP_FNAME), 
         spotting_tuples=spotting_tuples, 
-        soc_well=bot2inst.soc_well)
+        soc_well=dnabotinst.soc_well)
     
     # Write non-OT2 scripts
     if 'non-OT2_files' in os.listdir():
@@ -131,9 +131,9 @@ def main():
         for final_assembly_well, construct_clips in final_assembly_dict.items():
             csvwriter.writerow([final_assembly_well, construct_clips])
     with open(construct_base + '_' + WELL_OUTPUT_FNAME, 'w') as f: 
-        f.write('Magbead ethanol well: {}'.format(bot2inst.etoh_well))
+        f.write('Magbead ethanol well: {}'.format(dnabotinst.etoh_well))
         f.write('\n')
-        f.write('SOC well: {}'.format(bot2inst.soc_well))
+        f.write('SOC well: {}'.format(dnabotinst.soc_well))
     print('BOT-2 generator successfully completed!')
 
 
