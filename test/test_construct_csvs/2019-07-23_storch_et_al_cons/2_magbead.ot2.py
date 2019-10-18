@@ -1,6 +1,10 @@
 from opentrons import labware, instruments, modules, robot
 
 
+sample_number=38
+ethanol_well='A11'
+
+
 def magbead(
         sample_number,
         ethanol_well,

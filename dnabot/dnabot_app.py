@@ -114,11 +114,11 @@ def main():
         soc_well=dnabotinst.soc_well)
     
     # Write non-OT2 scripts
-    if 'non-OT2_files' in os.listdir():
+    if 'metainformation' in os.listdir():
         pass
     else:
-        os.makedirs('non-OT2_files')
-    os.chdir('non-OT2_files')
+        os.makedirs('metainformation')
+    os.chdir('metainformation')
     master_mix_df = generate_master_mix_df(clips_df['number'].sum())
     sources_paths_df = generate_sources_paths_df(
             sources_paths.output, SOURCE_DECK_POS)

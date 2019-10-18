@@ -1,0 +1,36 @@
+MASTER_MIX
+Component,Volume (uL)
+"Promega T4 DNA Ligase buffer, 10X",120.0
+Water,620.0
+NEB BsaI-HFv2,40.0
+Promega T4 DNA Ligase,20.0
+
+SOURCE_PLATES
+Deck position,Source plate,Path
+2,BIOLEGIO_BASIC_STD_SET.csv,C:/Users/mh2210/github_repos/dnabot/test/test_part_linker_csvs/BIOLEGIO_BASIC_STD_SET.csv
+5,Source_plate_2_230419.csv,C:/Users/mh2210/github_repos/dnabot/test/test_part_linker_csvs/Source_plate_2_230419.csv
+
+CLIP_REACTIONS
+prefixes,parts,suffixes,number,mag_well
+LMS-P,Cam-p15A_SEVA,LMP-S,6,"('A7', 'B7', 'C7', 'D7', 'E7', 'F7')"
+LMP-P,Terminator-J23105-RiboJ,UTR1-S,1,"('G7',)"
+UTR1-RBS2-P,GFP,UTR2-S,2,"('H7', 'A8')"
+UTR2-RBS1-P,BFP,UTR3-S,3,"('B8', 'C8', 'D8')"
+UTR3-RBS1-P,RFP,LMS-S,2,"('E8', 'F8')"
+UTR3-RBS3-P,RFP,LMS-S,2,"('G8', 'H8')"
+UTR2-RBS3-P,BFP,UTR3-S,3,"('A9', 'B9', 'C9')"
+LMP-P,Terminator-J23105-RiboJ,UTR2-S,1,"('D9',)"
+UTR3-RBS1-P,RFP,UTR1-S,2,"('E9', 'F9')"
+UTR1-RBS2-P,GFP,LMS-S,2,"('G9', 'H9')"
+UTR3-RBS3-P,RFP,UTR1-S,2,"('A10', 'B10')"
+UTR1-RBS3-P,GFP,UTR2-S,2,"('C10', 'D10')"
+UTR1-RBS3-P,GFP,LMS-S,2,"('E10', 'F10')"
+LMP-P,Terminator-J23106-RiboJ,UTR1-S,1,"('G10',)"
+UTR1-RBS1-P,GFP,UTR2-S,1,"('H10',)"
+LMP-P,Terminator-J23106-RiboJ,UTR2-S,1,"('A11',)"
+UTR1-RBS1-P,GFP,LMS-S,1,"('B11',)"
+LMP-P,Terminator-J23101-RiboJ,UTR1-S,1,"('C11',)"
+LMP-P,Terminator-J23101-RiboJ,UTR2-S,1,"('D11',)"
+LMP-P,Terminator-J23104-RiboJ,UTR1-S,1,"('E11',)"
+LMP-P,Terminator-J23104-RiboJ,UTR2-S,1,"('F11',)"
+

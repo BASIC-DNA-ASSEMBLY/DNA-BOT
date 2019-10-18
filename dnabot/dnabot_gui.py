@@ -27,7 +27,9 @@ class DnabotApp:
     BOT2TITLE = 'dnabot app'
     INTRO_TEXT = 'Welcome to the dnabot App! Please follow these instructions:'
     INSTRUCTION_TEXT1 = '1. Select Magbead ethanol and SOC media wells below, used during subsequent OT-2 runs.'
-    INSTRUCTION_TEXT2 = "2. Click the 'GENERATE' button below and on the following windows select one csv file detailing constructs and up to 6 csv files detailing sources."
+    INSTRUCTION_TEXT2 = """2. Click the 'GENERATE' button below and on the following window select one csv file detailing constructs. 
+    On the subsequent window select up to 6 csv files detailing plates containing parts and linkers.
+    If all files are not within a one folder, absolute paths should be given."""
     TROUGH_WELLS = ['A{}'.format(x + 1) for x in range (12)]
     
     def __init__(self, master):
