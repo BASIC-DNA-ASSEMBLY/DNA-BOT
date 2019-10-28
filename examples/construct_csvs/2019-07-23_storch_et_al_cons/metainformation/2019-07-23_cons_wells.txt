@@ -1,2 +1,2 @@
 Magbead ethanol well: A11
-SOC well: A1
+SOC column: 1

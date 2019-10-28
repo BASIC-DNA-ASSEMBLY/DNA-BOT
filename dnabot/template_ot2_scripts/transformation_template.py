@@ -227,7 +227,7 @@ def spot_transformations(
                 else:
                     vol = spot_vol if spot_vol <= max_spot_vol else max_spot_vol
                     spot(transformation_plate.wells(source_wells[index]),
-                         agar_tray.wells(target_wells[index]), vol)
+                         agar_plate.wells(target_wells[index]), vol)
                     spot_vols[index] = spot_vols[index] - vol
 
     # Constants
@@ -266,8 +266,8 @@ SOC_PLATE_SLOT = '7'
 TUBE_RACK_TYPE = 'tube-rack_E1415-1500'
 TUBE_RACK_SLOT = '11'
 SPOTTING_WASTE_WELL = 'A1'
-AGAR_TRAY_TYPE = 'Nunc_Omnitray'
-AGAR_TRAY_SLOT = '1'
+AGAR_PLATE_TYPE = 'Nunc_Omnitray'
+AGAR_PLATE_SLOT = '1'
 
 # Tiprack slots
 p10_p300_tiprack_slots = tiprack_slots(spotting_tuples)
@@ -293,11 +293,11 @@ transformation_plate = labware.load(TRANSFORMATION_PLATE_TYPE,
 soc_plate = labware.load(SOC_PLATE_TYPE, SOC_PLATE_SLOT)
 tube_rack = labware.load(TUBE_RACK_TYPE, TUBE_RACK_SLOT)
 spotting_waste = tube_rack.wells(SPOTTING_WASTE_WELL)
-agar_tray = labware.load(AGAR_TRAY_TYPE, AGAR_TRAY_SLOT)
+agar_plate = labware.load(AGAR_PLATE_TYPE, AGAR_PLATE_SLOT)
 
-# Register agar_tray for calibration
-p10_pipette.transfer(1, agar_tray.wells(
-    'A1'), agar_tray.wells('H12'), trash=False)
+# Register agar_plate for calibration
+p10_pipette.transfer(1, agar_plate.wells(
+    'A1'), agar_plate.wells('H12'), trash=False)
 p10_pipette.start_at_tip(p10_tipracks[0][0])
 
 # Run functions
