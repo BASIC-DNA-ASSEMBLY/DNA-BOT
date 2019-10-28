@@ -7,8 +7,8 @@ Promega T4 DNA Ligase,20.0
 
 SOURCE_PLATES
 Deck position,Source plate,Path
-2,BIOLEGIO_BASIC_STD_SET.csv,C:/Users/mh2210/github_repos/dnabot/test/test_part_linker_csvs/BIOLEGIO_BASIC_STD_SET.csv
-5,Source_plate_2_230419.csv,C:/Users/mh2210/github_repos/dnabot/test/test_part_linker_csvs/Source_plate_2_230419.csv
+2,BIOLEGIO_BASIC_STD_SET.csv,C:/Users/mh2210/github_repos/dnabot/examples/part_linker_csvs/BIOLEGIO_BASIC_STD_SET.csv
+5,Source_plate_2_230419.csv,C:/Users/mh2210/github_repos/dnabot/examples/part_linker_csvs/Source_plate_2_230419.csv
 
 CLIP_REACTIONS
 prefixes,parts,suffixes,number,mag_well

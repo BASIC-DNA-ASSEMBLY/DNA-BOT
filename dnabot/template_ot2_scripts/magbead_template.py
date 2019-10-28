@@ -12,7 +12,8 @@ def magbead(
         settling_time=2,
         drying_time=5,
         elution_time=2,
-        sample_offset=0):
+        sample_offset=0,
+        tiprack_type="opentrons_96_tiprack_300ul"):
     """Implements magbead purification reactions for BASIC assembly using an opentrons OT-2.
 
     Selected args:
@@ -27,7 +28,6 @@ def magbead(
     PIPETTE_DISPENSE_RATE = 150
     TIPS_PER_SAMPLE = 9
     CANDIDATE_TIPRACK_SLOTS = ['3', '6', '9', '2', '5']
-    TIPRACK_TYPE = 'opentrons_96_tiprack_300ul'
     MAGDECK_POSITION = '1'
     MIX_PLATE_TYPE = '4ti-0960_FrameStar'
     MIX_PLATE_POSITION = '4'
@@ -59,10 +59,10 @@ def magbead(
     total_tips = sample_number * TIPS_PER_SAMPLE
     tiprack_num = total_tips // 96 + (1 if total_tips % 96 > 0 else 0)
     slots = CANDIDATE_TIPRACK_SLOTS[:tiprack_num]
-    tipracks = [labware.load(TIPRACK_TYPE, slot)
+    tipracks = [labware.load(tiprack_type, slot)
                 for slot in slots]
     pipette = instruments.P300_Multi(
-        mount=pipette_mount,
+        mount="left",
         tip_racks=tipracks,
         aspirate_flow_rate=PIPETTE_ASPIRATE_RATE,
         dispense_flow_rate=PIPETTE_DISPENSE_RATE)

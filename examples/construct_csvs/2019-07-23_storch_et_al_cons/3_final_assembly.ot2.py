@@ -6,7 +6,7 @@ final_assembly_dict={"A1": ["A7", "G7", "H7", "B8", "E8"], "B1": ["A7", "G7", "H
 tiprack_num=5
 
 
-def final_assembly(final_assembly_dict, tiprack_num):
+def final_assembly(final_assembly_dict, tiprack_num, tiprack_type="tiprack-10ul"):
     """Implements final assembly reactions using an opentrons OT-2.
 
     Args:
@@ -17,7 +17,6 @@ def final_assembly(final_assembly_dict, tiprack_num):
 
     # Constants
     CANDIDATE_TIPRACK_SLOTS = ['3', '6', '9', '2', '5', '8', '11']
-    TIPRACK_TYPE = 'tiprack-10ul'
     PIPETTE_MOUNT = 'right'
     MAG_PLATE_TYPE = '4ti-0960_FrameStar'
     MAG_PLATE_POSITION = '1'
@@ -37,7 +36,7 @@ def final_assembly(final_assembly_dict, tiprack_num):
 
     # Tips and pipette
     slots = CANDIDATE_TIPRACK_SLOTS[:tiprack_num]
-    tipracks = [labware.load(TIPRACK_TYPE, slot)
+    tipracks = [labware.load(tiprack_type, slot)
                 for slot in slots]
     pipette = instruments.P10_Single(mount=PIPETTE_MOUNT, tip_racks=tipracks)
 

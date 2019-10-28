@@ -9,13 +9,13 @@ def clip(
         parts_wells,
         parts_plates,
         parts_vols,
-        water_vols):
+        water_vols,
+        tiprack_type="tiprack-10ul"):
     """Implements linker ligation reactions using an opentrons OT-2."""
 
     # Constants
     INITIAL_TIP = 'A1'
     CANDIDATE_TIPRACK_SLOTS = ['3', '6', '9']
-    TIPRACK_TYPE = 'tiprack-10ul'
     PIPETTE_TYPE = 'P10_Single'
     PIPETTE_MOUNT = 'right'
     SOURCE_PLATE_TYPE = '4ti-0960_FrameStar'
@@ -50,7 +50,7 @@ def clip(
         source_plates[key] = labware.load(SOURCE_PLATE_TYPE, key)
 
     # Define remaining labware
-    tipracks = [labware.load(TIPRACK_TYPE, slot) for slot in slots]
+    tipracks = [labware.load(tiprack_type, slot) for slot in slots]
     if PIPETTE_TYPE != 'P10_Single':
         print('Define labware must be changed to use', PIPETTE_TYPE)
         exit()
