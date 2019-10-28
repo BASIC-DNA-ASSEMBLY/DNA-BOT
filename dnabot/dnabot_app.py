@@ -212,7 +212,7 @@ def generate_clips_df(constructs_list):
     # Count number of each CLIP reaction
     clip_count = np.zeros(len(clips_df.index))
     for i, unique_clip in unique_clips_df.iterrows():
-        for j, clip in merged_construct_dfs.iterrows():
+        for _, clip in merged_construct_dfs.iterrows():
             if unique_clip.equals(clip):
                 clip_count[i] = clip_count[i] + 1
     clip_count = clip_count // FINAL_ASSEMBLIES_PER_CLIP + 1
@@ -273,7 +273,7 @@ def generate_clips_dict(clips_df, sources_dict):
 
     # Generate clips_dict from args
     try:
-        for index, clip_info in clips_df.iterrows():
+        for _, clip_info in clips_df.iterrows():
             prefix_linker = clip_info['prefixes']
             clips_dict['prefixes_wells'].append([sources_dict[prefix_linker][0]]
                     * clip_info['number'])
