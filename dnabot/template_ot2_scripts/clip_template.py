@@ -10,7 +10,7 @@ def clip(
         parts_plates,
         parts_vols,
         water_vols,
-        tiprack_type="opentrons_96_tiprack_10ul"):
+        tiprack_type="tiprack-10ul"):
     """Implements linker ligation reactions using an opentrons OT-2."""
 
     # Constants

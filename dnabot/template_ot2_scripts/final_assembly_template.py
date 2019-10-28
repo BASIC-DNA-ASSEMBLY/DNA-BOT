@@ -2,7 +2,7 @@ from opentrons import labware, instruments, modules, robot
 import numpy as np
 
 
-def final_assembly(final_assembly_dict, tiprack_num, tiprack_type="opentrons_96_tiprack_10ul"):
+def final_assembly(final_assembly_dict, tiprack_num, tiprack_type="tiprack-10ul"):
     """Implements final assembly reactions using an opentrons OT-2.
 
     Args:
