@@ -17,9 +17,9 @@ import mplates
 # Constant str
 TEMPLATE_DIR_NAME = 'template_ot2_scripts'
 CLIP_TEMP_FNAME = 'clip_template.py'
-MAGBEAD_TEMP_FNAME = 'magbead_template.py'
-F_ASSEMBLY_TEMP_FNAME = 'final_assembly_template.py'
-TRANS_SPOT_TEMP_FNAME = 'transformation_spotting_template.py'
+MAGBEAD_TEMP_FNAME = 'purification_template.py'
+F_ASSEMBLY_TEMP_FNAME = 'assembly_template.py'
+TRANS_SPOT_TEMP_FNAME = 'transformation_template.py'
 CLIP_FNAME = '1_clip.ot2.py'
 MAGBEAD_FNAME = '2_magbead.ot2.py'
 F_ASSEMBLY_FNAME = '3_final_assembly.ot2.py'
@@ -55,7 +55,7 @@ def main():
     # Parent directories
     generator_dir = os.getcwd()
     template_dir_path = os.path.join(generator_dir, TEMPLATE_DIR_NAME)
-    
+
     # Obtain user input
     print("Requesting user input, if not visible checked minimized windows.")
     root = tk.Tk()
@@ -68,11 +68,11 @@ def main():
     construct_path = gui.UserDefinedPaths(root, 'Construct csv file')
     root.destroy()
     root = tk.Tk()
-    sources_paths = gui.UserDefinedPaths(root, 'Sources csv files', 
-                                             multiple_files=True)
+    sources_paths = gui.UserDefinedPaths(root, 'Sources csv files',
+                                         multiple_files=True)
     if len(sources_paths.output) > len(SOURCE_DECK_POS):
         raise ValueError(
-                'Number of source plates exceeds deck positions.')
+            'Number of source plates exceeds deck positions.')
     root.destroy()
     os.chdir(os.path.dirname(construct_path.output))
     construct_base = os.path.basename(construct_path.output)
@@ -93,7 +93,7 @@ def main():
                                                        clips_df)
     final_assembly_tipracks = calculate_final_assembly_tipracks(
         final_assembly_dict)
-    spotting_tuples = generate_spotting_tuples(constructs_list, 
+    spotting_tuples = generate_spotting_tuples(constructs_list,
                                                SPOTTING_VOLS_DICT)
 
     print('Writing files...')
@@ -102,17 +102,17 @@ def main():
         template_dir_path, CLIP_TEMP_FNAME), clips_dict=clips_dict)
     generate_ot2_script(MAGBEAD_FNAME, os.path.join(
         template_dir_path, MAGBEAD_TEMP_FNAME),
-        sample_number=magbead_sample_number, 
+        sample_number=magbead_sample_number,
         ethanol_well=dnabotinst.etoh_well)
     generate_ot2_script(F_ASSEMBLY_FNAME, os.path.join(
         template_dir_path, F_ASSEMBLY_TEMP_FNAME),
         final_assembly_dict=final_assembly_dict,
         tiprack_num=final_assembly_tipracks)
     generate_ot2_script(TRANS_SPOT_FNAME, os.path.join(
-        template_dir_path, TRANS_SPOT_TEMP_FNAME), 
-        spotting_tuples=spotting_tuples, 
-        soc_well=dnabotinst.soc_well)
-    
+        template_dir_path, TRANS_SPOT_TEMP_FNAME),
+        spotting_tuples=spotting_tuples,
+        soc_well=f"A{dnabotinst.soc_column}")
+
     # Write non-OT2 scripts
     if 'metainformation' in os.listdir():
         pass
@@ -121,8 +121,8 @@ def main():
     os.chdir('metainformation')
     master_mix_df = generate_master_mix_df(clips_df['number'].sum())
     sources_paths_df = generate_sources_paths_df(
-            sources_paths.output, SOURCE_DECK_POS)
-    dfs_to_csv(construct_base + '_' + CLIPS_INFO_FNAME, index=False, 
+        sources_paths.output, SOURCE_DECK_POS)
+    dfs_to_csv(construct_base + '_' + CLIPS_INFO_FNAME, index=False,
                MASTER_MIX=master_mix_df, SOURCE_PLATES=sources_paths_df,
                CLIP_REACTIONS=clips_df)
     with open(construct_base + '_' + FINAL_ASSEMBLIES_INFO_FNAME,
@@ -130,29 +130,29 @@ def main():
         csvwriter = csv.writer(csvfile)
         for final_assembly_well, construct_clips in final_assembly_dict.items():
             csvwriter.writerow([final_assembly_well, construct_clips])
-    with open(construct_base + '_' + WELL_OUTPUT_FNAME, 'w') as f: 
+    with open(construct_base + '_' + WELL_OUTPUT_FNAME, 'w') as f:
         f.write('Magbead ethanol well: {}'.format(dnabotinst.etoh_well))
         f.write('\n')
-        f.write('SOC well: {}'.format(dnabotinst.soc_well))
+        f.write('SOC column: {}'.format(dnabotinst.soc_column))
     print('BOT-2 generator successfully completed!')
 
 
 def generate_constructs_list(path):
     """Generates a list of dataframes corresponding to each construct. Each 
     dataframe lists components of the CLIP reactions required.
-    
+
     """
 
     def process_construct(construct):
         """Processes an individual construct into a dataframe of CLIP reactions
         outlining prefix linkers, parts and suffix linkers.
-        
+
         """
 
         def interogate_linker(linker):
             """Interogates linker to determine if the suffix linker is a UTR
             linker.
-            
+
             """
             if len(linker) >= 4:
                 if linker[:3] == 'UTR':
@@ -179,7 +179,7 @@ def generate_constructs_list(path):
     with open(path, 'r') as csvfile:
         csv_reader = csv.reader(csvfile)
         for index, construct in enumerate(csv_reader):
-            if index != 0: # Checks if row is header.
+            if index != 0:  # Checks if row is header.
                 construct = list(filter(None, construct))
                 if not construct[1:]:
                     break
@@ -197,7 +197,7 @@ def generate_constructs_list(path):
 def generate_clips_df(constructs_list):
     """Generates a dataframe containing information about all the unique CLIP 
     reactions required to synthesise the constructs in constructs_list.
-    
+
     """
     merged_construct_dfs = pd.concat(constructs_list, ignore_index=True)
     unique_clips_df = merged_construct_dfs.drop_duplicates()
@@ -241,11 +241,11 @@ def generate_sources_dict(paths):
     """Imports csvs files containing a series of parts/linkers with 
     corresponding information into a dictionary where the key corresponds with
     part/linker and the value contains a tuple of corresponding information.
-    
+
     Args:
         paths (list): list of strings each corresponding to a path for a 
                       sources csv file. 
-    
+
     """
     sources_dict = {}
     for deck_index, path in enumerate(paths):
@@ -262,7 +262,7 @@ def generate_sources_dict(paths):
 def generate_clips_dict(clips_df, sources_dict):
     """Using clips_df and sources_dict, returns a clips_dict which acts as the 
     sole variable for the opentrons script "clip.ot2.py".
-    
+
     """
     max_part_vol = CLIP_VOL - (T4_BUFF_VOL + BSAI_VOL + T4_LIG_VOL
                                + CLIP_MAST_WATER + 2)
@@ -276,33 +276,36 @@ def generate_clips_dict(clips_df, sources_dict):
         for _, clip_info in clips_df.iterrows():
             prefix_linker = clip_info['prefixes']
             clips_dict['prefixes_wells'].append([sources_dict[prefix_linker][0]]
-                    * clip_info['number'])
+                                                * clip_info['number'])
             clips_dict['prefixes_plates'].append(
                 [sources_dict[prefix_linker][2]] * clip_info['number'])
             suffix_linker = clip_info['suffixes']
             clips_dict['suffixes_wells'].append([sources_dict[suffix_linker][0]]
-                    * clip_info['number'])
+                                                * clip_info['number'])
             clips_dict['suffixes_plates'].append(
                 [sources_dict[suffix_linker][2]] * clip_info['number'])
             part = clip_info['parts']
             clips_dict['parts_wells'].append([sources_dict[part][0]]
-                    * clip_info['number'])
+                                             * clip_info['number'])
             clips_dict['parts_plates'].append([sources_dict[part][2]]
-                    * clip_info['number'])
+                                              * clip_info['number'])
             if not sources_dict[part][1]:
-                clips_dict['parts_vols'].append([DEFAULT_PART_VOL] * 
-                          clip_info['number'])
+                clips_dict['parts_vols'].append([DEFAULT_PART_VOL] *
+                                                clip_info['number'])
                 clips_dict['water_vols'].append([max_part_vol - DEFAULT_PART_VOL]
-                * clip_info['number'])
+                                                * clip_info['number'])
             else:
-                part_vol = round(PART_PER_CLIP / float(sources_dict[part][1]), 1)
+                part_vol = round(
+                    PART_PER_CLIP / float(sources_dict[part][1]), 1)
                 if part_vol < MIN_VOL:
                     part_vol = MIN_VOL
                 elif part_vol > max_part_vol:
                     part_vol = max_part_vol
                 water_vol = max_part_vol - part_vol
-                clips_dict['parts_vols'].append([part_vol] * clip_info['number'])
-                clips_dict['water_vols'].append([water_vol] * clip_info['number'])
+                clips_dict['parts_vols'].append(
+                    [part_vol] * clip_info['number'])
+                clips_dict['water_vols'].append(
+                    [water_vol] * clip_info['number'])
     except KeyError:
         sys.exit('likely part/linker not listed in sources.csv')
     for key, value in clips_dict.items():
@@ -314,7 +317,7 @@ def generate_final_assembly_dict(constructs_list, clips_df):
     """Using constructs_list and clips_df, returns a dictionary of final
     assemblies with keys defining destination plate well positions and values
     indicating which clip reaction wells are used.
-    
+
     """
     final_assembly_dict = {}
     clips_count = np.zeros(len(clips_df.index))
@@ -338,7 +341,7 @@ def generate_final_assembly_dict(constructs_list, clips_df):
 def calculate_final_assembly_tipracks(final_assembly_dict):
     """Calculates the number of final assembly tipracks required ensuring
     no more than MAX_FINAL_ASSEMBLY_TIPRACKS are used.
-    
+
     """
     final_assembly_lens = []
     for values in final_assembly_dict.values():
@@ -346,10 +349,10 @@ def calculate_final_assembly_tipracks(final_assembly_dict):
     master_mix_tips = len(list(set(final_assembly_lens)))
     total_tips = master_mix_tips + sum(final_assembly_lens)
     final_assembly_tipracks = total_tips // 96 + (
-            1 if total_tips % 96 > 0 else 0)
+        1 if total_tips % 96 > 0 else 0)
     if final_assembly_tipracks > MAX_FINAL_ASSEMBLY_TIPRACKS:
-	    raise ValueError(
-                'Final assembly tiprack number exceeds number of slots. Reduce number of constructs in constructs.csv')
+        raise ValueError(
+            'Final assembly tiprack number exceeds number of slots. Reduce number of constructs in constructs.csv')
     else:
         return final_assembly_tipracks
 
@@ -360,20 +363,20 @@ def generate_spotting_tuples(constructs_list, spotting_vols_dict):
     constructs, assuming the 1st construct is located in well A1 and wells
     increase linearly. Target wells locations are equivalent to construct well
     locations and spotting volumes are defined by spotting_vols_dict.
-    
+
     Args:
         spotting_vols_dict (dict): Part number defined by keys, spottting
             volumes defined by corresponding value.
-    
+
     """
     # Calculate wells and volumes
     wells = [mplates.final_well(x + 1) for x in range(len(constructs_list))]
-    vols = [SPOTTING_VOLS_DICT[len(construct_df.index)] 
+    vols = [SPOTTING_VOLS_DICT[len(construct_df.index)]
             for construct_df in constructs_list]
-    
+
     # Package spotting tuples
-    spotting_tuple_num = len(constructs_list)//8 + (1 
-                          if len(constructs_list) % 8 > 0 else 0)
+    spotting_tuple_num = len(constructs_list)//8 + (1
+                                                    if len(constructs_list) % 8 > 0 else 0)
     spotting_tuples = []
     for x in range(spotting_tuple_num):
         if x == spotting_tuple_num - 1:
@@ -391,7 +394,7 @@ def generate_ot2_script(ot2_script_path, template_path, **kwargs):
     written as global variables at the top of the script. For each kwarg, the 
     keyword defines the variable name while the value defines the name of the 
     variable. The remainder of template file is subsequently written below.        
-    
+
     """
     with open(ot2_script_path, 'w') as wf:
         with open(template_path, 'r') as rf:
@@ -420,7 +423,7 @@ def generate_ot2_script(ot2_script_path, template_path, **kwargs):
 def generate_master_mix_df(clip_number):
     """Generates a dataframe detailing the components required in the clip 
     reaction master mix.
-    
+
     """
     COMPONENTS = {'Component': ['Promega T4 DNA Ligase buffer, 10X',
                                 'Water', 'NEB BsaI-HFv2',
@@ -428,20 +431,20 @@ def generate_master_mix_df(clip_number):
     VOL_COLUMN = 'Volume (uL)'
     master_mix_df = pd.DataFrame.from_dict(COMPONENTS)
     master_mix_df[VOL_COLUMN] = (clip_number + CLIP_DEAD_VOL/CLIP_VOL) * \
-                                                        np.array([T4_BUFF_VOL,
-                                                        CLIP_MAST_WATER,
-                                                        BSAI_VOL,
-                                                        T4_LIG_VOL])
+        np.array([T4_BUFF_VOL,
+                  CLIP_MAST_WATER,
+                  BSAI_VOL,
+                  T4_LIG_VOL])
     return master_mix_df
 
 
 def generate_sources_paths_df(paths, deck_positions):
     """Generates a dataframe detailing source plate information.
-    
+
     Args:
         paths (list): list of strings specifying paths to source plates.
         deck_positions (list): list of strings specifying candidate deck positions.
-            
+
     """
     source_plates_dict = {'Deck position': [], 'Source plate': [], 'Path': []}
     for index, path in enumerate(paths):
@@ -455,7 +458,7 @@ def dfs_to_csv(path, index=True, **kw_dfs):
     """Generates a csv file defined by path, where kw_dfs are 
     written one after another with each key acting as a title. If index=True,
     df indexes are written to the csv file.
-    
+
     """
     with open(path, 'w', newline='') as csvfile:
         csvwriter = csv.writer(csvfile)
