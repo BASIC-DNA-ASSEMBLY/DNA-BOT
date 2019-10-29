@@ -26,10 +26,10 @@ class UserDefinedPaths:
 
 
 class DnabotApp:
-    dnabot_title = 'dnabot app'
-    intro_text = 'Welcome to the dnabot App! Please follow these instructions:'
-    instruction_text1 = '1. Use the dropdown menus below to select wells/columns for ethanol and SOC media, used during purification and transformation, respectively.'
-    instruction_text2 = """2. Click the 'GENERATE' button below and on the following window select one csv file detailing constructs. On the subsequent window select up to 6 csv files detailing plates containing parts and linkers.
+    dnabot_title = "dnabot app"
+    intro_text = "Welcome to the dnabot App! Please follow these instructions to create the 4 DNA-BOT scripts:"
+    instruction_text1 = '1. From the dropdown menus select wells/columns for ethanol (2_purification script) and SOC media (4_transformation script).'
+    instruction_text2 = """2. Click the 'GENERATE' button and select a csv file describing constructs. In the 2nd window select up to 6 csv files describing plates containing BASIC parts and linkers.
     If all files are not within one folder, absolute paths should be given."""
     app_font = ("Helvetica", 12)
     trough_wells = ['A{}'.format(x + 1) for x in range(12)]
