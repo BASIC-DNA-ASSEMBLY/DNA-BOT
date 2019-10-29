@@ -1,10 +1,10 @@
 # dnabot
 
-dnabot contains files and the dnabot package enabling DNA assembly using BASIC on the OpenTrons (DNA-BOT).
+files and software enabling DNA assembly using BASIC on the OpenTrons (DNA-BOT).
 
 ## Getting Started
 
-
+Users looking to implement the DNA-BOT workflow are encouraged to consult the [instructions](docs/DNA-BOT_instructions_v1.0.0.pdf). If you are looking to contribute to this project, please raise an issue or pull request. Otherwise, feel free to reach out to [hainesm6](https://github.com/hainesm6).
 
 ### Prerequisites
 
@@ -20,5 +20,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Acknowledgments
 
-* Marko Storch
-* Hat tip to all contributers.
+* Marko Storch for all the help with [instructions](docs/DNA-BOT_instructions_v1.0.0.pdf) and DNA-BOT manuscript.
+* Geoff Baldwin.
