@@ -1,6 +1,6 @@
 # dnabot
 
-dnabot contains files and the dnabot package enabling DNA assembly using BASIC on the OpenTrons [(DNA BOT)](http://www.linktopaperonbiorxiv.com).
+dnabot contains files and the dnabot package enabling DNA assembly using BASIC on the OpenTrons (DNA-BOT).
 
 ## Getting Started
 
