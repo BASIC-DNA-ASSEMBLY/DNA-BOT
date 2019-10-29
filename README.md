@@ -1,6 +1,6 @@
 # dnabot
 
-files and software enabling DNA assembly using BASIC on the OpenTrons (DNA-BOT).
+Material for DNA assembly using BASIC on the OpenTrons (DNA-BOT).
 
 ## Getting Started
 
