@@ -8,7 +8,7 @@ dnabot contains files and the dnabot package enabling DNA assembly using BASIC o
 
 ### Prerequisites
 
-dnabot was developed using Python v3.7. Refer to requirements.txt.
+dnabot was developed using Python v3.7. Refer to [requirements.txt](requirements.txt).
 
 ## Authors
 
