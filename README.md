@@ -20,5 +20,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Acknowledgments
 
-* Marko Storch for all the help with [instructions](docs/DNA-BOT_instructions_v1.0.0.pdf) and DNA-BOT manuscript.
-* Geoff Baldwin.
+* Marko Storch for all his help with [instructions](docs/DNA-BOT_instructions_v1.0.0.pdf) and DNA-BOT manuscript.
+* Geoff Baldwin for all his help with the DNA-BOT manuscript.
