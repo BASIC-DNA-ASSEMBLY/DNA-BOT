@@ -1,6 +1,6 @@
 # dnabot
 
-Material for DNA assembly using BASIC on the OpenTrons (DNA-BOT).
+Material for [DNA assembly using BASIC on OpenTrons (DNA-BOT)](https://www.biorxiv.org/content/10.1101/832139v1).
 
 ## Getting Started
 
