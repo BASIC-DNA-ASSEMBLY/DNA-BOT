@@ -189,7 +189,7 @@ def generate_constructs_list(path):
     # Errors
     if len(constructs_list) > MAX_CONSTRUCTS:
         raise ValueError(
-            'Number of constructs exceeds maximum. Reduce construct number in construct.csv.')
+            f"Number of constructs exceeds maximum ({MAX_CONSTRUCTS}). Reduce construct number in construct.csv.")
     else:
         return constructs_list
 
