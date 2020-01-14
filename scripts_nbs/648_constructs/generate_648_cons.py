@@ -1,10 +1,15 @@
 import itertools
+from dnabot import dnabot_app
 
 
 def main():
     constructs = make_cons()
     splitted_cons = constructs.split_cons(88)
-    return print([len(build) for build in splitted_cons])
+    cons_lists = []
+    for build in splitted_cons:
+        cons_lists.append([dnabot_app.process_construct(
+            basic_con.parts_linkers) for basic_con in build])
+    return [dnabot_app.generate_clips_df(con_list) for con_list in cons_lists]
 
 
 def make_cons():
@@ -68,8 +73,8 @@ class ConsCollection:
         self.basic_cons = list(basic_cons)
 
     def split_cons(self, number):
-        """Returns a nested list where self.basic_cons has been split into multiples of number or fewer
-        e.g. number = 88, returns a nested list where each sub-list < 88 BasicCon objects.
+        """Returns a nested list where self.basic_cons is split into multiples of number or fewer
+        e.g. number = 88, returns a nested list where each sub-list contains <= 88 BasicCon objects.
 
         """
         cons_splitted = []
