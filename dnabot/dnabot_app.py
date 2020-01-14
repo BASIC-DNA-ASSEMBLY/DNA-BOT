@@ -207,7 +207,7 @@ def generate_clips_df(constructs_list):
     # Error
     if len(unique_clips_df.index) > MAX_CLIPS:
         raise ValueError(
-            'Number of CLIP reactions exceeds 48. Reduce number of constructs in construct.csv.')
+            f"Number of CLIP reactions exceeds {MAX_CLIPS}. Reduce number of constructs in construct.csv.")
 
     # Count number of each CLIP reaction
     clip_count = np.zeros(len(clips_df.index))
