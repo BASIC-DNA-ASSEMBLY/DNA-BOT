@@ -10,9 +10,9 @@ import pandas as pd
 import numpy as np
 import json
 import sys
-import dnabot_gui as gui
+import dnabot.dnabot_gui as gui
 import tkinter as tk
-import mplates
+from dnabot import mplates
 
 # Constant str
 TEMPLATE_DIR_NAME = 'template_ot2_scripts'
@@ -137,43 +137,44 @@ def main():
     print('BOT-2 generator successfully completed!')
 
 
+def process_construct(construct):
+    """Processes an individual construct into a dataframe of CLIP reactions
+    outlining prefix linkers, parts and suffix linkers.
+
+    """
+
+    def interogate_linker(linker):
+        """Interogates linker to determine if the suffix linker is a UTR
+        linker.
+
+        """
+        if len(linker) >= 4:
+            if linker[:3] == 'UTR':
+                return linker[:4] + '-S'
+        else:
+            return linker + "-S"
+
+    clips_info = {'prefixes': [], 'parts': [],
+                    'suffixes': []}
+    for i, sequence in enumerate(construct):
+        if i % 2 != 0:
+            clips_info['parts'].append(sequence)
+            clips_info['prefixes'].append(
+                construct[i - 1] + '-P')
+            if i == len(construct) - 1:
+                suffix_linker = interogate_linker(construct[0])
+                clips_info['suffixes'].append(suffix_linker)
+            else:
+                suffix_linker = interogate_linker(construct[i + 1])
+                clips_info['suffixes'].append(suffix_linker)
+    return pd.DataFrame.from_dict(clips_info)
+
+
 def generate_constructs_list(path):
     """Generates a list of dataframes corresponding to each construct. Each 
     dataframe lists components of the CLIP reactions required.
 
     """
-
-    def process_construct(construct):
-        """Processes an individual construct into a dataframe of CLIP reactions
-        outlining prefix linkers, parts and suffix linkers.
-
-        """
-
-        def interogate_linker(linker):
-            """Interogates linker to determine if the suffix linker is a UTR
-            linker.
-
-            """
-            if len(linker) >= 4:
-                if linker[:3] == 'UTR':
-                    return linker[:4] + '-S'
-            else:
-                return linker + "-S"
-
-        clips_info = {'prefixes': [], 'parts': [],
-                      'suffixes': []}
-        for i, sequence in enumerate(construct):
-            if i % 2 != 0:
-                clips_info['parts'].append(sequence)
-                clips_info['prefixes'].append(
-                    construct[i - 1] + '-P')
-                if i == len(construct) - 1:
-                    suffix_linker = interogate_linker(construct[0])
-                    clips_info['suffixes'].append(suffix_linker)
-                else:
-                    suffix_linker = interogate_linker(construct[i + 1])
-                    clips_info['suffixes'].append(suffix_linker)
-        return pd.DataFrame.from_dict(clips_info)
 
     constructs_list = []
     with open(path, 'r') as csvfile:
