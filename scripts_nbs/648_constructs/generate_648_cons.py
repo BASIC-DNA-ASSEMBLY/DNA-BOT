@@ -1,16 +1,14 @@
 import itertools
 from dnabot import dnabot_app
+from dnabot import mplates
+import csv
 
 
 def main():
     constructs = make_cons()
-    splitted_cons = constructs.split_cons(88)
-    cons_lists = []
-    for build in splitted_cons:
-        cons_lists.append([dnabot_app.process_construct(
-            basic_con.parts_linkers) for basic_con in build])
-    return [dnabot_app.generate_clips_df(con_list) for con_list in cons_lists]
-
+    builds = (ConsCollection(*basic_cons) for basic_cons in constructs.split_cons(88))
+    for ind, build in enumerate(builds):
+        build.to_dnabot_csv(f"fp_library_build_{ind + 1}.csv")
 
 def make_cons():
     """Function for making the required 648 constructs
@@ -44,7 +42,9 @@ def write_orf(orf_abrev):
     return "BASIC_" + orf_abrev + "_ORF_v1.0"
 
 
-def assign_rbs_linker_utr(orf, utr_dict={write_orf("sfGFP"): "1", write_orf("BFP"): "2", write_orf("RFP"): "3"}):
+def assign_rbs_linker_utr(
+    orf, 
+    utr_dict={write_orf("sfGFP"): "1", write_orf("BFP"): "2", write_orf("RFP"): "3"}):
     return "UTR" + utr_dict[orf] + "-RBS"
 
 
@@ -66,6 +66,10 @@ class ConsCollection:
     """ A class for organising and manipulating BasicCon classes
 
     """
+    DNABOT_CSV_HEADER = ["Well"]
+    for ind in range(1, 11):
+        DNABOT_CSV_HEADER.append(f"Linker {ind}")
+        DNABOT_CSV_HEADER.append(f"Part {ind}")
 
     def __init__(self, *basic_cons):
         if not all((isinstance(basic_con, BasicCon) for basic_con in basic_cons)):
@@ -87,6 +91,17 @@ class ConsCollection:
                 cons_splitted.append(self.basic_cons[i:])
                 i = len(self.basic_cons)
         return cons_splitted
+
+    def to_dnabot_csv(self, path):
+        """Writes self.basic_cons objects to a dnabot construct csv file (path).
+
+        """
+        with open(path, "w", newline="") as csv_path:
+            csv_writer = csv.writer(csv_path)
+            csv_writer.writerow(self.DNABOT_CSV_HEADER)
+            for ind, basic_con in enumerate(self.basic_cons):
+                row_ind = mplates.final_well(ind + 1)
+                csv_writer.writerow((row_ind, *basic_con.parts_linkers))
 
 
 if __name__ == "__main__":
