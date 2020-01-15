@@ -2,13 +2,17 @@ import itertools
 from dnabot import dnabot_app
 from dnabot import mplates
 import csv
+import pathlib
 
 
 def main():
     constructs = make_cons()
     builds = (ConsCollection(*basic_cons) for basic_cons in constructs.split_cons(88))
     for ind, build in enumerate(builds):
-        build.to_dnabot_csv(f"fp_library_build_{ind + 1}.csv")
+        pathlib.Path.cwd().joinpath(
+            "fp_library_builds",f"fp_library_build_{ind + 1}").mkdir(parents=True)
+        build.to_dnabot_csv(
+            pathlib.Path.cwd() / "fp_library_builds" / f"fp_library_build_{ind + 1}" / f"fp_library_build_{ind + 1}.csv")
 
 def make_cons():
     """Function for making the required 648 constructs
