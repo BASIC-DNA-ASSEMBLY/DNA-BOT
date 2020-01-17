@@ -1,8 +1,9 @@
 from Bio.SeqRecord import SeqRecord
-from Bio import SeqIO
+from Bio import SeqIO, SeqUtils
 from Bio.Seq import Seq
 from Bio.Alphabet import IUPAC
 from Bio.SeqFeature import SeqFeature, FeatureLocation
+import pathlib
 
 
 def main():
@@ -25,6 +26,50 @@ def main():
     constants for linkers
     
     """
+    parts = generate_seqrecords()
+    for part in parts:
+        SeqIO.write(part, f"{part.id}.gb", "genbank")
+    
+    # seqrec_assemblies = (seqrec_assembly.assemble_seq_record() for seqrec_assembly in seqrec_assemblies)
+    # SeqIO.write(seqrec_assemblies, "dnabot_constructs.gb", "genbank")
+
+
+class SeqRecAssembly:
+    def __init__(self, *parts_linkers):
+        self.parts_linkers = parts_linkers
+
+    def assemble_seq_record(self):
+        """assemble function returns the 
+
+        """
+        pass
+
+
+class _DnaPart(SeqRecord):
+    def __init__(self, seq, abrev, prefix, suffix):
+        basic_id = prefix + abrev + suffix
+        super().__init__(seq=seq, id=basic_id)
+
+
+class PromoterPart(_DnaPart):
+    def __init__(self, seq, abrev, prefix=None, suffix=None):
+        if not prefix:
+            prefix = "BASIC_L3S2P21_J23"
+        if not suffix:
+            suffix = "_RiboJ.1"
+        super().__init__(seq, abrev, prefix, suffix)
+
+
+class OrfPart(_DnaPart):
+    def __init__(self, seq, abrev, prefix=None, suffix=None):
+        if not prefix:
+            prefix = "BASIC_"
+        if not suffix:
+            suffix = "_ORF.1"
+        super().__init__(seq, abrev, prefix, suffix)
+
+
+def generate_seqrecords():
     parts = []
     parts.append(PromoterPart(
         Seq("CTCGGTACCAAATTCCAGAAAAGAGGCCTCCCGAAAGGGGGGCCTTTTTTCGTTTTGGTCCGTGCCTACTCTGGAAAATCTTTTACGGCTAGCTCAGTCCTAGGTACTATGCTAGCAGCTGTCACCGGATGTGCTTTCCGGTCTGATGAGTCCGTGAGGACGAAACAGCCTCTACAAATAATTTTGTTTAA"
@@ -59,53 +104,40 @@ def main():
             part.features.append(SeqFeature(
                 type="regulatory",
                 location=FeatureLocation(0, len(part.seq), strand=+1),
-                qualifiers={"function": ["promoter"], "standard_name": [part.id]}
+                qualifiers={"note": ["promoter"], "standard_name": [part.id]}
                 ))
         if isinstance(part, OrfPart):
             part.features.append(SeqFeature(
                 type="CDS",
                 location=FeatureLocation(0, len(part.seq), strand=+1),
-                qualifiers={"function": ["fluorescent reporter protein"], "gene": [part.id]}
+                qualifiers={
+                    "note": ["fluorescent reporter protein"],
+                    "gene": [part.id],
+                    "translation": str(part.translate().seq[:-1])
+                    }
                 ))
-            
-    # seqrec_assemblies = (seqrec_assembly.assemble_seq_record() for seqrec_assembly in seqrec_assemblies)
-    # SeqIO.write(seqrec_assemblies, "dnabot_constructs.gb", "genbank")
+    rfp_seqrecord = SeqIO.read(pathlib.Path().cwd() / "p004_rfp.gb", "genbank")
+    rfp_seqrecord.upper()
+    mcherry_search = SeqUtils.nt_search(
+        str(rfp_seqrecord.seq),
+        "ATGGTGAGCAAGGGCGAGGAGGATAACATGGCCATCATCAAGGAGTTCATGCGCTTCAAGGTGCACATGGAGGGCTCCGTGAACGGCCACGAGTTCGAGATCGAGGGCGAGGGCGAGGGCCGCCCCTACGAGGGCACCCAGACCGCCAAGCTGAAGGTGACCAAGGGTGGCCCCCTGCCCTTCGCCTGGGACATCCTGTCCCCTCAGTTCATGTACGGCTCCAAGGCCTACGTGAAGCACCCCGCCGACATCCCCGACTACTTGAAGCTGTCCTTCCCCGAGGGCTTCAAGTGGGAGCGCGTGATGAACTTCGAGGACGGCGGCGTGGTGACCGTGACCCAGGACTCCTCCTTGCAGGACGGCGAGTTCATCTACAAGGTGAAGCTGCGCGGCACCAACTTCCCCTCCGACGGCCCCGTAATGCAGAAGAAGACCATGGGCTGGGAGGCCTCCTCCGAGCGGATGTACCCCGAGGACGGCGCCCTGAAGGGCGAGATCAAGCAGAGGCTGAAGCTGAAGGACGGCGGCCACTACGACGCTGAGGTCAAGACCACCTACAAGGCCAAGAAGCCCGTGCAGCTGCCCGGCGCCTACAACGTCAACATCAAGTTGGACATCACCTCCCACAACGAGGACTACACCATCGTGGAACAGTACGAACGCGCCGAGGGCCGCCACTCCACCGGCGGCATGGACGAGCTGTACAAGTAA"
+        )
+    parts_in_vectors = []
+    for ind, part in enumerate(parts):
+        parts_in_vectors.append(rfp_seqrecord[:mcherry_search[1]] + part + rfp_seqrecord[
+        mcherry_search[1] + len(mcherry_search[0]):])
+        parts_in_vectors[ind].id = part.id
+        parts_in_vectors[ind].name = part.id[:len(part.id)-2]      
+        parts_in_vectors[ind].description = f"{part.id} BASIC part stored in AmpR pUC vector"
+        parts_in_vectors[ind].annotations = {
+            "organism": "Escherichia coli",
+            "date": "17-JAN-2020",
+            "accessions": [],
+            "sequence_version": 1,
+            "topology": "circular"
+        }
+    return parts_in_vectors
 
-
-class SeqRecAssembly:
-    def __init__(self, *parts_linkers):
-        self.parts_linkers = parts_linkers
-
-    def assemble_seq_record(self):
-        """assemble function returns the 
-
-        """
-        pass
-
-
-class _DnaPart(SeqRecord):
-    def __init__(self, seq, abrev, prefix, suffix):
-        basic_id = prefix + abrev + suffix
-        super().__init__(seq=seq, id=basic_id)
-
-
-class PromoterPart(_DnaPart):
-    def __init__(self, seq, abrev, prefix=None, suffix=None):
-        if not prefix:
-            prefix = "BASIC_L3S2P21_J23"
-        if not suffix:
-            suffix = "_RiboJ"
-        super().__init__(seq, abrev, prefix, suffix)
-
-
-class OrfPart(_DnaPart):
-    def __init__(self, seq, abrev, prefix=None, suffix=None):
-        if not prefix:
-            prefix = "BASIC_"
-        if not suffix:
-            suffix = "_ORF_v1.0"
-        super().__init__(seq, abrev, prefix, suffix)
-    
 
 if __name__ == "__main__":
     main()
