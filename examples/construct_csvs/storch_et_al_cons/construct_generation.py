@@ -49,11 +49,11 @@ def main():
 
 
 def promoter_arch(promter):
-    return "BASIC_L3S2P21_" + promter + "_RiboJ"
+    return "BASIC_L3S2P21_" + promter + "_RiboJ.1"
 
 
 def orf_arch(orf):
-    return "BASIC_" + orf + "_ORF_v1.0"
+    return "BASIC_" + orf + "_ORF.1"
 
 
 if __name__ == "__main__":
