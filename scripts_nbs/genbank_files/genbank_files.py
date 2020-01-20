@@ -7,29 +7,12 @@ import pathlib
 
 
 def main():
-    # Define all the starting part and linker sequences as SeqRecords
-
-    """For each construct in storch_et_al_cons.csv generate a SeqRecAssembly object using part and linker SeqRecords. 
-    Generate a dict which maps csv strings to SeqRecord objects. """
-
-    """How are BASIC parts and linkers assembled?
-    
-    - BASIC iP and iS sequences are identifed within BasicParts. 
-    - The indexes of the intervening sequence are used to slice the SeqRecord.
-         - If iS locus < iP locus, slice and add sequences from outside the intervening region
-         between iS and iP. This ensures that the API considers all circular sequences. Print
-         a warning that SeqFeatures may have been lost.
-    - Concatenate sliced BasicParts with linkers constant SeqRecords using the "+" operator.
-    - Return the resulting SeqRecord.
-
-    Inherit from SeqRecord and add method/s.
-    constants for linkers
-    
-    """
+    # Define all the starting part and linker sequences as SeqRecord objects
     parts = generate_seqrecords()
     for part in parts:
         SeqIO.write(part, f"{part.id}.gb", "genbank")
-    
+    for part in parts:
+        print(type(part))
     # seqrec_assemblies = (seqrec_assembly.assemble_seq_record() for seqrec_assembly in seqrec_assemblies)
     # SeqIO.write(seqrec_assemblies, "dnabot_constructs.gb", "genbank")
 
@@ -39,74 +22,126 @@ class SeqRecAssembly:
         self.parts_linkers = parts_linkers
 
     def assemble_seq_record(self):
-        """assemble function returns the 
+        """Method returns the assembled SeqRecord
 
         """
-        pass
+        assembled_seq_record = SeqRecord(Seq(str()))
+        for part_linker in self.parts_linkers:
+            assembled_seq_record += part_linker.basic_slice()
+        return assembled_seq_record
+
+    @property
+    def parts_linkers(self):
+        return self._parts_linkers
+
+    @parts_linkers.setter
+    def parts_linkers(self, values):
+        if not all(
+            issubclass(value, SeqRecord) for value in values):
+            raise TypeError(
+        "Not all *parts_linkers are a subclass of SeqRecord."
+        )
+        if not all(
+            callable(getattr(value, "basic_slice", None)) for value in values):
+            raise TypeError(
+        "Not all *parts_linkers have method: basic_slice."
+        )
+        self._parts_linkers = values    
 
 
-class _DnaPart(SeqRecord):
-    def __init__(self, seq, abrev, prefix, suffix):
-        basic_id = prefix + abrev + suffix
-        super().__init__(seq=seq, id=basic_id)
+class BasicPart(SeqRecord):
+    IP_STR = "TCTGGTGGGTCTCTGTCC"
+    IS_STR = "GGCTCGGGAGACCTATCG"
+
+    def __init__(self, seq, id):
+        super().__init__(seq=seq, id=id)
+        self._ip_loc = self._find_iseq(
+            self.IP_STR, "iP sequence" 
+            )
+        self._is_loc = self._find_iseq(
+            self.IS_STR, "iS sequence"
+        )
+    
+    def basic_slice(self):
+        if self._ip_loc < self._is_loc:
+            return self[
+                self._ip_loc + len(self.IP_STR):self._is_loc]
+        elif self._ip_loc > self._is_loc:
+            return self[self._ip_loc + len(self.IP_STR):] + self[:self._is_loc]
+        else:
+            raise ValueError("incorrect sequence used.")
+
+    def _find_iseq(self, iseq_str, iseq_id="integrated sequence"):
+        search_out = SeqUtils.nt_search(
+            str(self.seq), iseq_str
+            )
+        if not search_out:
+            raise ValueError(f"sequence lacks {iseq_id}")
+        return search_out[0]
 
 
-class PromoterPart(_DnaPart):
-    def __init__(self, seq, abrev, prefix=None, suffix=None):
+class _AbrevPart(BasicPart):
+    def __init__(self, seq, abrev, prefix, suffix, version):
+        id_from_abrev = prefix + abrev + suffix + "." + str(version)
+        super().__init__(seq=seq, id=id_from_abrev)
+
+
+class AbrevPromoter(_AbrevPart):
+    def __init__(self, seq, abrev, prefix=None, suffix=None, version=1):
         if not prefix:
             prefix = "BASIC_L3S2P21_J23"
         if not suffix:
-            suffix = "_RiboJ.1"
-        super().__init__(seq, abrev, prefix, suffix)
+            suffix = "_RiboJ"
+        super().__init__(seq, abrev, prefix, suffix, version)
 
 
-class OrfPart(_DnaPart):
-    def __init__(self, seq, abrev, prefix=None, suffix=None):
+class AbrevOrf(_AbrevPart):
+    def __init__(self, seq, abrev, prefix=None, suffix=None, version=1):
         if not prefix:
             prefix = "BASIC_"
         if not suffix:
-            suffix = "_ORF.1"
-        super().__init__(seq, abrev, prefix, suffix)
+            suffix = "_ORF"
+        super().__init__(seq, abrev, prefix, suffix, version)
 
 
 def generate_seqrecords():
     parts = []
-    parts.append(PromoterPart(
+    parts.append(AbrevPromoter(
         Seq("CTCGGTACCAAATTCCAGAAAAGAGGCCTCCCGAAAGGGGGGCCTTTTTTCGTTTTGGTCCGTGCCTACTCTGGAAAATCTTTTACGGCTAGCTCAGTCCTAGGTACTATGCTAGCAGCTGTCACCGGATGTGCTTTCCGGTCTGATGAGTCCGTGAGGACGAAACAGCCTCTACAAATAATTTTGTTTAA"
         , IUPAC.unambiguous_dna), "105"
     ))
-    parts.append(PromoterPart(
+    parts.append(AbrevPromoter(
         Seq("CTCGGTACCAAATTCCAGAAAAGAGGCCTCCCGAAAGGGGGGCCTTTTTTCGTTTTGGTCCGTGCCTACTCTGGAAAATCTTTTACGGCTAGCTCAGTCCTAGGTATAGTGCTAGCAGCTGTCACCGGATGTGCTTTCCGGTCTGATGAGTCCGTGAGGACGAAACAGCCTCTACAAATAATTTTGTTTAA"
         , IUPAC.unambiguous_dna), "106"
     ))
-    parts.append(PromoterPart(
+    parts.append(AbrevPromoter(
         Seq("CTCGGTACCAAATTCCAGAAAAGAGGCCTCCCGAAAGGGGGGCCTTTTTTCGTTTTGGTCCGTGCCTACTCTGGAAAATCTTTTACAGCTAGCTCAGTCCTAGGTATTATGCTAGCAGCTGTCACCGGATGTGCTTTCCGGTCTGATGAGTCCGTGAGGACGAAACAGCCTCTACAAATAATTTTGTTTAA"
         , IUPAC.unambiguous_dna), "101"
     ))
-    parts.append(PromoterPart(
+    parts.append(AbrevPromoter(
         Seq("CTCGGTACCAAATTCCAGAAAAGAGGCCTCCCGAAAGGGGGGCCTTTTTTCGTTTTGGTCCGTGCCTACTCTGGAAAATCTTTGACAGCTAGCTCAGTCCTAGGTATTGTGCTAGCAGCTGTCACCGGATGTGCTTTCCGGTCTGATGAGTCCGTGAGGACGAAACAGCCTCTACAAATAATTTTGTTTAA"
         , IUPAC.unambiguous_dna), "104"
     ))
-    parts.append(OrfPart(
+    parts.append(AbrevOrf(
         Seq("ATGCGTAAAGGCGAAGAACTGTTCACGGGCGTAGTTCCGATTCTGGTCGAGCTGGACGGCGATGTGAACGGTCATAAGTTTAGCGTTCGCGGTGAAGGTGAGGGCGACGCGACCAACGGCAAACTGACCCTGAAGTTCATCTGCACCACCGGTAAACTGCCGGTGCCTTGGCCGACCTTGGTGACGACGTTGACGTATGGCGTGCAGTGTTTTGCGCGTTATCCGGACCACATGAAACAACACGATTTCTTCAAATCTGCGATGCCGGAGGGTTACGTCCAGGAGCGTACCATTTCCTTCAAGGATGATGGCACTTACAAAACTCGCGCAGAGGTTAAGTTTGAAGGTGACACGCTGGTCAATCGTATCGAATTGAAGGGTATCGACTTTAAAGAGGATGGTAACATTCTGGGCCATAAACTGGAGTATAACTTCAACAGCCATAATGTTTACATTACGGCAGACAAGCAAAAGAACGGCATCAAGGCCAATTTCAAGATTCGCCACAATGTTGAGGACGGTAGCGTCCAACTGGCCGACCATTACCAGCAGAACACCCCAATTGGTGACGGTCCGGTTTTGCTGCCGGATAATCACTATCTGAGCACCCAAAGCGTGCTGAGCAAAGATCCGAACGAAAAACGTGATCACATGGTCCTGCTGGAATTTGTGACCGCTGCGGGCATCACCCACGGTATGGACGAGCTGTATAAGCGTCCGTAA"
         , IUPAC.unambiguous_dna), "sfGFP"
     ))
-    parts.append(OrfPart(
+    parts.append(AbrevOrf(
         Seq("ATGGTGAGCAAGGGCGAGGAGGATAACATGGCCATCATCAAGGAGTTCATGCGCTTCAAGGTGCACATGGAGGGCTCCGTGAACGGCCACGAGTTCGAGATCGAGGGCGAGGGCGAGGGCCGCCCCTACGAGGGCACCCAGACCGCCAAGCTGAAGGTGACCAAGGGTGGCCCCCTGCCCTTCGCCTGGGACATCCTGTCCCCTCAGTTCATGTACGGCTCCAAGGCCTACGTGAAGCACCCCGCCGACATCCCCGACTACTTGAAGCTGTCCTTCCCCGAGGGCTTCAAGTGGGAGCGCGTGATGAACTTCGAGGACGGCGGCGTGGTGACCGTGACCCAGGACTCCTCCTTGCAGGACGGCGAGTTCATCTACAAGGTGAAGCTGCGCGGCACCAACTTCCCCTCCGACGGCCCCGTAATGCAGAAGAAGACCATGGGCTGGGAGGCCTCCTCCGAGCGGATGTACCCCGAGGACGGCGCCCTGAAGGGCGAGATCAAGCAGAGGCTGAAGCTGAAGGACGGCGGCCACTACGACGCTGAGGTCAAGACCACCTACAAGGCCAAGAAGCCCGTGCAGCTGCCCGGCGCCTACAACGTCAACATCAAGTTGGACATCACCTCCCACAACGAGGACTACACCATCGTGGAACAGTACGAACGCGCCGAGGGCCGCCACTCCACCGGCGGCATGGACGAGCTGTACAAGTAA"
         , IUPAC.unambiguous_dna), "RFP"
     ))
-    parts.append(OrfPart(
+    parts.append(AbrevOrf(
         Seq("ATGTCCGAGTTGATCAAAGAGAACATGCATATGAAATTATATATGGAAGGCACTGTAGATAATCATCATTTTAAATGTACGTCGGAAGGCGAAGGTAAACCATATGAAGGTACGCAGACGATGCGCATCAAGGTGGTGGAGGGCGGTCCGCTGCCATTCGCTTTCGATATTTTAGCCACGAGCTTCCTCTACGGTTCTAAAACTTTCATCAATCACACGCAGGGTATTCCGGACTTCTTTAAACAGTCGTTCCCGGAGGGTTTCACCTGGGAACGCGTTACCACGTATGAAGATGGTGGTGTGCTTACGGCAACGCAGGACACGAGCCTTCAGGATGGGTGTTTGATTTACAACGTGAAAATTCGTGGTGTGAACTTCACGTCTAACGGCCCGGTGATGCAGAAAAAAACACTGGGTTGGGAAGCCTTTACCGAAACCCTGTATCCGGCGGACGGTGGCCTGGAAGGCCGTAATGATATGGCCTTGAAATTAGTCGGCGGTTCACACCTGATCGCGAACGCGAAAACAACCTATCGTAGTAAAAAACCAGCCAAAAACCTGAAAATGCCGGGCGTCTACTACGTAGACTACCGTCTGGAGCGCATTAAAGAGGCGAATAATGAAACCTATGTCGAGCAGCACGAAGTTGCGGTTGCACGCTATTGCGATCTGCCCAGCAAACTGGGCCACAAGCTTAATGGTAGCTAA"
         , IUPAC.unambiguous_dna), "BFP"
     ))
     for part in parts:
-        if isinstance(part, PromoterPart):
+        if isinstance(part, AbrevPromoter):
             part.features.append(SeqFeature(
                 type="regulatory",
                 location=FeatureLocation(0, len(part.seq), strand=+1),
                 qualifiers={"note": ["promoter"], "standard_name": [part.id]}
                 ))
-        if isinstance(part, OrfPart):
+        if isinstance(part, AbrevOrf):
             part.features.append(SeqFeature(
                 type="CDS",
                 location=FeatureLocation(0, len(part.seq), strand=+1),
@@ -127,8 +162,18 @@ def generate_seqrecords():
         parts_in_vectors.append(rfp_seqrecord[:mcherry_search[1]] + part + rfp_seqrecord[
         mcherry_search[1] + len(mcherry_search[0]):])
         parts_in_vectors[ind].id = part.id
-        parts_in_vectors[ind].name = part.id[:len(part.id)-2]      
         parts_in_vectors[ind].description = f"{part.id} BASIC part stored in AmpR pUC vector"
+    backbone = SeqIO.read("benchling_BASIC_SEVA_37_CmR-p15A.1.gb", "genbank")
+    backbone.upper()
+    backbone.seq.alphabet = IUPAC.unambiguous_dna
+    backbone.id = "BASIC_SEVA_37_CmR-p15A.1"
+    backbone = BasicPart(backbone.seq, backbone.id)
+    backbone.description = "backbone vector for BASIC DNA assembly containing \
+        chloramphenicol resistance marker, p15A origin and \
+            mScarlet counter selection marker"
+    parts_in_vectors.append(backbone)
+    for ind, part in enumerate(parts_in_vectors):
+        parts_in_vectors[ind].name = part.id[:len(part.id)-2]
         parts_in_vectors[ind].annotations = {
             "organism": "Escherichia coli",
             "date": "17-JAN-2020",
