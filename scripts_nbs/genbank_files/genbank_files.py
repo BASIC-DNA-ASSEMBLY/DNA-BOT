@@ -3,7 +3,8 @@ from Bio import SeqIO, SeqUtils
 from Bio.Seq import Seq
 from Bio.Alphabet import IUPAC
 from Bio.SeqFeature import SeqFeature, FeatureLocation
-import pathlib
+from pathlib import Path
+import csv
 
 
 def main():
@@ -11,9 +12,27 @@ def main():
     basic_parts = generate_seqrecords()
     for part in basic_parts:
         SeqIO.write(part, f"{part.id}.gb", "genbank")
-        print(f"iP location: {part._ip_loc}\n iS location: {part._is_loc}") 
-    # seqrec_assemblies = (seqrec_assembly.assemble_seq_record() for seqrec_assembly in seqrec_assemblies)
-    # SeqIO.write(seqrec_assemblies, "dnabot_constructs.gb", "genbank")
+    parts_linkers = basic_parts + generate_linkers()
+
+    path_to_csv = Path.cwd().parents[1] / "examples" / "construct_csvs" / \
+        "storch_et_al_cons" / "storch_et_al_cons.csv"
+    seqrec_assemblies = []
+    with open(path_to_csv, "r", newline="") as cons_csv:
+        csv_reader = csv.reader(cons_csv)
+        for ind, row in enumerate(csv_reader):
+            if ind > 0:
+                seqrec_assemblies.append(
+                    SeqRecAssembly(
+                        *(identify_basic_part(part, parts_linkers) for part in row[1:])
+                    )
+                )
+    seqrec_assemblies = (seqrec_assembly.assemble_seq_record() for seqrec_assembly in seqrec_assemblies)
+    SeqIO.write(seqrec_assemblies, "dnabot_constructs.gb", "genbank")
+
+
+def identify_basic_part(target, candidate_list):
+    candidates = (candidate.id for candidate in candidate_list)
+    return candidate_list[candidates.index(target)]
 
 
 class SeqRecAssembly:
@@ -36,16 +55,37 @@ class SeqRecAssembly:
     @parts_linkers.setter
     def parts_linkers(self, values):
         if not all(
-            issubclass(value, SeqRecord) for value in values):
+                issubclass(value, SeqRecord) for value in values):
             raise TypeError(
-        "Not all *parts_linkers are a subclass of SeqRecord."
-        )
+                "Not all *parts_linkers are a subclass of SeqRecord."
+            )
         if not all(
-            callable(getattr(value, "basic_slice", None)) for value in values):
+                callable(getattr(value, "basic_slice", None)) for value in values):
             raise TypeError(
-        "Not all *parts_linkers have method: basic_slice."
+                "Not all *parts_linkers have method: basic_slice."
+            )
+        self._parts_linkers = values
+
+
+class BasicLinker(SeqRecord):
+    def __init__(self, seq, id, **kwargs):
+        super().__init__(seq=seq, id=id, **kwargs)
+        self._linker_feature()
+
+    def basic_slice(self):
+        return self
+
+    def _linker_feature(self):
+        self.features.append(
+            SeqFeature(
+                type="misc_feature",
+                location=FeatureLocation(2, len(self.seq), strand=+1),
+                qualifiers={
+                    "function": ["BASIC DNA assembly linker"],
+                    "standard_name": [f"{self.id}"]
+                }
+            )
         )
-        self._parts_linkers = values    
 
 
 class BasicPart(SeqRecord):
@@ -55,12 +95,12 @@ class BasicPart(SeqRecord):
     def __init__(self, seq, id, **kwargs):
         super().__init__(seq=seq, id=id, **kwargs)
         self._ip_loc = self._find_iseq(
-            self.IP_STR, "iP sequence" 
-            )
+            self.IP_STR, "iP sequence"
+        )
         self._is_loc = self._find_iseq(
             self.IS_STR, "iS sequence"
         )
-    
+
     def basic_slice(self):
         if self._ip_loc < self._is_loc:
             return self[
@@ -73,7 +113,7 @@ class BasicPart(SeqRecord):
     def _find_iseq(self, iseq_str, iseq_id="integrated sequence"):
         search_out = SeqUtils.nt_search(
             str(self.seq), iseq_str
-            )
+        )
         if len(search_out) < 2:
             raise ValueError(f"{self.id} lacks {iseq_id}")
         return search_out[1]
@@ -106,32 +146,24 @@ class AbrevOrf(_AbrevPart):
 def generate_seqrecords():
     parts = []
     parts.append(AbrevPromoter(
-        Seq("CTCGGTACCAAATTCCAGAAAAGAGGCCTCCCGAAAGGGGGGCCTTTTTTCGTTTTGGTCCGTGCCTACTCTGGAAAATCTTTTACGGCTAGCTCAGTCCTAGGTACTATGCTAGCAGCTGTCACCGGATGTGCTTTCCGGTCTGATGAGTCCGTGAGGACGAAACAGCCTCTACAAATAATTTTGTTTAA"
-        , IUPAC.unambiguous_dna), "105"
+        Seq("CTCGGTACCAAATTCCAGAAAAGAGGCCTCCCGAAAGGGGGGCCTTTTTTCGTTTTGGTCCGTGCCTACTCTGGAAAATCTTTTACGGCTAGCTCAGTCCTAGGTACTATGCTAGCAGCTGTCACCGGATGTGCTTTCCGGTCTGATGAGTCCGTGAGGACGAAACAGCCTCTACAAATAATTTTGTTTAA", IUPAC.unambiguous_dna), "105"    ))
+    parts.append(AbrevPromoter(
+        Seq("CTCGGTACCAAATTCCAGAAAAGAGGCCTCCCGAAAGGGGGGCCTTTTTTCGTTTTGGTCCGTGCCTACTCTGGAAAATCTTTTACGGCTAGCTCAGTCCTAGGTATAGTGCTAGCAGCTGTCACCGGATGTGCTTTCCGGTCTGATGAGTCCGTGAGGACGAAACAGCCTCTACAAATAATTTTGTTTAA", IUPAC.unambiguous_dna), "106"
     ))
     parts.append(AbrevPromoter(
-        Seq("CTCGGTACCAAATTCCAGAAAAGAGGCCTCCCGAAAGGGGGGCCTTTTTTCGTTTTGGTCCGTGCCTACTCTGGAAAATCTTTTACGGCTAGCTCAGTCCTAGGTATAGTGCTAGCAGCTGTCACCGGATGTGCTTTCCGGTCTGATGAGTCCGTGAGGACGAAACAGCCTCTACAAATAATTTTGTTTAA"
-        , IUPAC.unambiguous_dna), "106"
+        Seq("CTCGGTACCAAATTCCAGAAAAGAGGCCTCCCGAAAGGGGGGCCTTTTTTCGTTTTGGTCCGTGCCTACTCTGGAAAATCTTTTACAGCTAGCTCAGTCCTAGGTATTATGCTAGCAGCTGTCACCGGATGTGCTTTCCGGTCTGATGAGTCCGTGAGGACGAAACAGCCTCTACAAATAATTTTGTTTAA", IUPAC.unambiguous_dna), "101"
     ))
     parts.append(AbrevPromoter(
-        Seq("CTCGGTACCAAATTCCAGAAAAGAGGCCTCCCGAAAGGGGGGCCTTTTTTCGTTTTGGTCCGTGCCTACTCTGGAAAATCTTTTACAGCTAGCTCAGTCCTAGGTATTATGCTAGCAGCTGTCACCGGATGTGCTTTCCGGTCTGATGAGTCCGTGAGGACGAAACAGCCTCTACAAATAATTTTGTTTAA"
-        , IUPAC.unambiguous_dna), "101"
-    ))
-    parts.append(AbrevPromoter(
-        Seq("CTCGGTACCAAATTCCAGAAAAGAGGCCTCCCGAAAGGGGGGCCTTTTTTCGTTTTGGTCCGTGCCTACTCTGGAAAATCTTTGACAGCTAGCTCAGTCCTAGGTATTGTGCTAGCAGCTGTCACCGGATGTGCTTTCCGGTCTGATGAGTCCGTGAGGACGAAACAGCCTCTACAAATAATTTTGTTTAA"
-        , IUPAC.unambiguous_dna), "104"
+        Seq("CTCGGTACCAAATTCCAGAAAAGAGGCCTCCCGAAAGGGGGGCCTTTTTTCGTTTTGGTCCGTGCCTACTCTGGAAAATCTTTGACAGCTAGCTCAGTCCTAGGTATTGTGCTAGCAGCTGTCACCGGATGTGCTTTCCGGTCTGATGAGTCCGTGAGGACGAAACAGCCTCTACAAATAATTTTGTTTAA", IUPAC.unambiguous_dna), "104"
     ))
     parts.append(AbrevOrf(
-        Seq("ATGCGTAAAGGCGAAGAACTGTTCACGGGCGTAGTTCCGATTCTGGTCGAGCTGGACGGCGATGTGAACGGTCATAAGTTTAGCGTTCGCGGTGAAGGTGAGGGCGACGCGACCAACGGCAAACTGACCCTGAAGTTCATCTGCACCACCGGTAAACTGCCGGTGCCTTGGCCGACCTTGGTGACGACGTTGACGTATGGCGTGCAGTGTTTTGCGCGTTATCCGGACCACATGAAACAACACGATTTCTTCAAATCTGCGATGCCGGAGGGTTACGTCCAGGAGCGTACCATTTCCTTCAAGGATGATGGCACTTACAAAACTCGCGCAGAGGTTAAGTTTGAAGGTGACACGCTGGTCAATCGTATCGAATTGAAGGGTATCGACTTTAAAGAGGATGGTAACATTCTGGGCCATAAACTGGAGTATAACTTCAACAGCCATAATGTTTACATTACGGCAGACAAGCAAAAGAACGGCATCAAGGCCAATTTCAAGATTCGCCACAATGTTGAGGACGGTAGCGTCCAACTGGCCGACCATTACCAGCAGAACACCCCAATTGGTGACGGTCCGGTTTTGCTGCCGGATAATCACTATCTGAGCACCCAAAGCGTGCTGAGCAAAGATCCGAACGAAAAACGTGATCACATGGTCCTGCTGGAATTTGTGACCGCTGCGGGCATCACCCACGGTATGGACGAGCTGTATAAGCGTCCGTAA"
-        , IUPAC.unambiguous_dna), "sfGFP"
+        Seq("ATGCGTAAAGGCGAAGAACTGTTCACGGGCGTAGTTCCGATTCTGGTCGAGCTGGACGGCGATGTGAACGGTCATAAGTTTAGCGTTCGCGGTGAAGGTGAGGGCGACGCGACCAACGGCAAACTGACCCTGAAGTTCATCTGCACCACCGGTAAACTGCCGGTGCCTTGGCCGACCTTGGTGACGACGTTGACGTATGGCGTGCAGTGTTTTGCGCGTTATCCGGACCACATGAAACAACACGATTTCTTCAAATCTGCGATGCCGGAGGGTTACGTCCAGGAGCGTACCATTTCCTTCAAGGATGATGGCACTTACAAAACTCGCGCAGAGGTTAAGTTTGAAGGTGACACGCTGGTCAATCGTATCGAATTGAAGGGTATCGACTTTAAAGAGGATGGTAACATTCTGGGCCATAAACTGGAGTATAACTTCAACAGCCATAATGTTTACATTACGGCAGACAAGCAAAAGAACGGCATCAAGGCCAATTTCAAGATTCGCCACAATGTTGAGGACGGTAGCGTCCAACTGGCCGACCATTACCAGCAGAACACCCCAATTGGTGACGGTCCGGTTTTGCTGCCGGATAATCACTATCTGAGCACCCAAAGCGTGCTGAGCAAAGATCCGAACGAAAAACGTGATCACATGGTCCTGCTGGAATTTGTGACCGCTGCGGGCATCACCCACGGTATGGACGAGCTGTATAAGCGTCCGTAA", IUPAC.unambiguous_dna), "sfGFP"
     ))
     parts.append(AbrevOrf(
-        Seq("ATGGTGAGCAAGGGCGAGGAGGATAACATGGCCATCATCAAGGAGTTCATGCGCTTCAAGGTGCACATGGAGGGCTCCGTGAACGGCCACGAGTTCGAGATCGAGGGCGAGGGCGAGGGCCGCCCCTACGAGGGCACCCAGACCGCCAAGCTGAAGGTGACCAAGGGTGGCCCCCTGCCCTTCGCCTGGGACATCCTGTCCCCTCAGTTCATGTACGGCTCCAAGGCCTACGTGAAGCACCCCGCCGACATCCCCGACTACTTGAAGCTGTCCTTCCCCGAGGGCTTCAAGTGGGAGCGCGTGATGAACTTCGAGGACGGCGGCGTGGTGACCGTGACCCAGGACTCCTCCTTGCAGGACGGCGAGTTCATCTACAAGGTGAAGCTGCGCGGCACCAACTTCCCCTCCGACGGCCCCGTAATGCAGAAGAAGACCATGGGCTGGGAGGCCTCCTCCGAGCGGATGTACCCCGAGGACGGCGCCCTGAAGGGCGAGATCAAGCAGAGGCTGAAGCTGAAGGACGGCGGCCACTACGACGCTGAGGTCAAGACCACCTACAAGGCCAAGAAGCCCGTGCAGCTGCCCGGCGCCTACAACGTCAACATCAAGTTGGACATCACCTCCCACAACGAGGACTACACCATCGTGGAACAGTACGAACGCGCCGAGGGCCGCCACTCCACCGGCGGCATGGACGAGCTGTACAAGTAA"
-        , IUPAC.unambiguous_dna), "RFP"
+        Seq("ATGGTGAGCAAGGGCGAGGAGGATAACATGGCCATCATCAAGGAGTTCATGCGCTTCAAGGTGCACATGGAGGGCTCCGTGAACGGCCACGAGTTCGAGATCGAGGGCGAGGGCGAGGGCCGCCCCTACGAGGGCACCCAGACCGCCAAGCTGAAGGTGACCAAGGGTGGCCCCCTGCCCTTCGCCTGGGACATCCTGTCCCCTCAGTTCATGTACGGCTCCAAGGCCTACGTGAAGCACCCCGCCGACATCCCCGACTACTTGAAGCTGTCCTTCCCCGAGGGCTTCAAGTGGGAGCGCGTGATGAACTTCGAGGACGGCGGCGTGGTGACCGTGACCCAGGACTCCTCCTTGCAGGACGGCGAGTTCATCTACAAGGTGAAGCTGCGCGGCACCAACTTCCCCTCCGACGGCCCCGTAATGCAGAAGAAGACCATGGGCTGGGAGGCCTCCTCCGAGCGGATGTACCCCGAGGACGGCGCCCTGAAGGGCGAGATCAAGCAGAGGCTGAAGCTGAAGGACGGCGGCCACTACGACGCTGAGGTCAAGACCACCTACAAGGCCAAGAAGCCCGTGCAGCTGCCCGGCGCCTACAACGTCAACATCAAGTTGGACATCACCTCCCACAACGAGGACTACACCATCGTGGAACAGTACGAACGCGCCGAGGGCCGCCACTCCACCGGCGGCATGGACGAGCTGTACAAGTAA", IUPAC.unambiguous_dna), "RFP"
     ))
     parts.append(AbrevOrf(
-        Seq("ATGTCCGAGTTGATCAAAGAGAACATGCATATGAAATTATATATGGAAGGCACTGTAGATAATCATCATTTTAAATGTACGTCGGAAGGCGAAGGTAAACCATATGAAGGTACGCAGACGATGCGCATCAAGGTGGTGGAGGGCGGTCCGCTGCCATTCGCTTTCGATATTTTAGCCACGAGCTTCCTCTACGGTTCTAAAACTTTCATCAATCACACGCAGGGTATTCCGGACTTCTTTAAACAGTCGTTCCCGGAGGGTTTCACCTGGGAACGCGTTACCACGTATGAAGATGGTGGTGTGCTTACGGCAACGCAGGACACGAGCCTTCAGGATGGGTGTTTGATTTACAACGTGAAAATTCGTGGTGTGAACTTCACGTCTAACGGCCCGGTGATGCAGAAAAAAACACTGGGTTGGGAAGCCTTTACCGAAACCCTGTATCCGGCGGACGGTGGCCTGGAAGGCCGTAATGATATGGCCTTGAAATTAGTCGGCGGTTCACACCTGATCGCGAACGCGAAAACAACCTATCGTAGTAAAAAACCAGCCAAAAACCTGAAAATGCCGGGCGTCTACTACGTAGACTACCGTCTGGAGCGCATTAAAGAGGCGAATAATGAAACCTATGTCGAGCAGCACGAAGTTGCGGTTGCACGCTATTGCGATCTGCCCAGCAAACTGGGCCACAAGCTTAATGGTAGCTAA"
-        , IUPAC.unambiguous_dna), "BFP"
+        Seq("ATGTCCGAGTTGATCAAAGAGAACATGCATATGAAATTATATATGGAAGGCACTGTAGATAATCATCATTTTAAATGTACGTCGGAAGGCGAAGGTAAACCATATGAAGGTACGCAGACGATGCGCATCAAGGTGGTGGAGGGCGGTCCGCTGCCATTCGCTTTCGATATTTTAGCCACGAGCTTCCTCTACGGTTCTAAAACTTTCATCAATCACACGCAGGGTATTCCGGACTTCTTTAAACAGTCGTTCCCGGAGGGTTTCACCTGGGAACGCGTTACCACGTATGAAGATGGTGGTGTGCTTACGGCAACGCAGGACACGAGCCTTCAGGATGGGTGTTTGATTTACAACGTGAAAATTCGTGGTGTGAACTTCACGTCTAACGGCCCGGTGATGCAGAAAAAAACACTGGGTTGGGAAGCCTTTACCGAAACCCTGTATCCGGCGGACGGTGGCCTGGAAGGCCGTAATGATATGGCCTTGAAATTAGTCGGCGGTTCACACCTGATCGCGAACGCGAAAACAACCTATCGTAGTAAAAAACCAGCCAAAAACCTGAAAATGCCGGGCGTCTACTACGTAGACTACCGTCTGGAGCGCATTAAAGAGGCGAATAATGAAACCTATGTCGAGCAGCACGAAGTTGCGGTTGCACGCTATTGCGATCTGCCCAGCAAACTGGGCCACAAGCTTAATGGTAGCTAA", IUPAC.unambiguous_dna), "BFP"
     ))
     for part in parts:
         if isinstance(part, AbrevPromoter):
@@ -139,7 +171,7 @@ def generate_seqrecords():
                 type="regulatory",
                 location=FeatureLocation(0, len(part.seq), strand=+1),
                 qualifiers={"note": ["promoter"], "standard_name": [part.id]}
-                ))
+            ))
         if isinstance(part, AbrevOrf):
             part.features.append(SeqFeature(
                 type="CDS",
@@ -148,40 +180,40 @@ def generate_seqrecords():
                     "note": ["fluorescent reporter protein"],
                     "gene": [part.id],
                     "translation": str(part.translate().seq[:-1])
-                    }
-                ))
-    
-    rfp_seqrecord = SeqIO.read(pathlib.Path().cwd() / "p004_rfp.gb", "genbank")
+                }
+            ))
+
+    rfp_seqrecord = SeqIO.read(Path().cwd() / "p004_rfp.gb", "genbank")
     rfp_seqrecord.upper()
     mcherry_search = SeqUtils.nt_search(
         str(rfp_seqrecord.seq),
         "ATGGTGAGCAAGGGCGAGGAGGATAACATGGCCATCATCAAGGAGTTCATGCGCTTCAAGGTGCACATGGAGGGCTCCGTGAACGGCCACGAGTTCGAGATCGAGGGCGAGGGCGAGGGCCGCCCCTACGAGGGCACCCAGACCGCCAAGCTGAAGGTGACCAAGGGTGGCCCCCTGCCCTTCGCCTGGGACATCCTGTCCCCTCAGTTCATGTACGGCTCCAAGGCCTACGTGAAGCACCCCGCCGACATCCCCGACTACTTGAAGCTGTCCTTCCCCGAGGGCTTCAAGTGGGAGCGCGTGATGAACTTCGAGGACGGCGGCGTGGTGACCGTGACCCAGGACTCCTCCTTGCAGGACGGCGAGTTCATCTACAAGGTGAAGCTGCGCGGCACCAACTTCCCCTCCGACGGCCCCGTAATGCAGAAGAAGACCATGGGCTGGGAGGCCTCCTCCGAGCGGATGTACCCCGAGGACGGCGCCCTGAAGGGCGAGATCAAGCAGAGGCTGAAGCTGAAGGACGGCGGCCACTACGACGCTGAGGTCAAGACCACCTACAAGGCCAAGAAGCCCGTGCAGCTGCCCGGCGCCTACAACGTCAACATCAAGTTGGACATCACCTCCCACAACGAGGACTACACCATCGTGGAACAGTACGAACGCGCCGAGGGCCGCCACTCCACCGGCGGCATGGACGAGCTGTACAAGTAA"
-        )
+    )
     parts_in_vectors = []
     for ind, part in enumerate(parts):
         seqrec = rfp_seqrecord[:mcherry_search[1]] + part + rfp_seqrecord[
-        mcherry_search[1] + len(mcherry_search[0]):]
+            mcherry_search[1] + len(mcherry_search[0]):]
         seqrec.upper()
         seqrec.seq.alphabet = IUPAC.unambiguous_dna
         parts_in_vectors.append(
             BasicPart(
-                seq = seqrec.seq,
-                id = part.id,
-                description = f"{part.id} BASIC part stored in AmpR pUC vector",
-                features = seqrec.features
-                )
+                seq=seqrec.seq,
+                id=part.id,
+                description=f"{part.id} BASIC part stored in AmpR pUC vector",
+                features=seqrec.features
+            )
         )
     backbone = SeqIO.read("benchling_BASIC_SEVA_37_CmR-p15A.1.gb", "genbank")
     backbone.upper()
     backbone.seq.alphabet = IUPAC.unambiguous_dna
     parts_in_vectors.append(BasicPart(
-        seq = backbone.seq, 
-        id ="BASIC_SEVA_37_CmR-p15A.1",
-        description = "backbone vector for BASIC DNA assembly containing \
+        seq=backbone.seq,
+        id="BASIC_SEVA_37_CmR-p15A.1",
+        description="backbone vector for BASIC DNA assembly containing \
         chloramphenicol resistance marker, p15A origin and \
-            mScarlet counter selection marker", 
-        features = backbone.features
-            )
+            mScarlet counter selection marker",
+        features=backbone.features
+    )
     )
     for ind, part in enumerate(parts_in_vectors):
         parts_in_vectors[ind].name = part.id[:len(part.id)-2]
@@ -193,6 +225,28 @@ def generate_seqrecords():
             "topology": "circular"
         }
     return parts_in_vectors
+
+
+def generate_linkers():
+    def generate_basic_linker(id, word_str, alphabet=IUPAC.unambiguous_dna):
+        seq_str = "GG" + word_str.upper()
+        basic_linker = BasicLinker(
+            seq=Seq(seq_str, alphabet=alphabet),
+            id=id 
+        )
+        return basic_linker
+    
+    linkers = []
+    linkers.append(generate_basic_linker("UTR1-RBS1", "ctcgttgaacaccgtcTCAGGTAAGTATCAGTTGTAAatcacacaggactagtcc"))
+    linkers.append(generate_basic_linker("UTR1-RBS2", "ctcgttgaacaccgtcTCAGGTAAGTATCAGTTGTAAaaagaggggaaatagtcc"))
+    linkers.append(generate_basic_linker("UTR1-RBS3", "ctcgttgaacaccgtcTCAGGTAAGTATCAGTTGTAAaaagaggagaaatagtcc"))
+    linkers.append(generate_basic_linker("UTR2-RBS1", "ctcgtgttactattggCTGAGATAAGGGTAGCAGAAAatcacacaggactagtcc"))
+    linkers.append(generate_basic_linker("UTR2-RBS3", "ctcgtgttactattggCTGAGATAAGGGTAGCAGAAAaaagaggagaaatagtcc"))
+    linkers.append(generate_basic_linker("UTR3-RBS1", "ctcggtatctcgtggtCTGACGGTAAAATCTATTGTAatcacacaggactagtcc"))
+    linkers.append(generate_basic_linker("UTR3-RBS3", "ctcggtatctcgtggtCTGACGGTAAAATCTATTGTAaaagaggagaaatagtcc"))
+    linkers.append(generate_basic_linker("LMP", "ctcgggtaagaactcgCACTTCGTGGAAACACTATTAtctggtgggtctctgtcc"))
+    linkers.append(generate_basic_linker("LMS", "ctcgggagacctatcgGTAATAACAGTCCAATCTGGTGTaacttcggaatcgtcc"))
+    return linkers
 
 
 if __name__ == "__main__":
