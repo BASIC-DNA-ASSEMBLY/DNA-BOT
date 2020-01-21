@@ -1,12 +1,14 @@
 from Bio.Seq import UnknownSeq
 from Bio.Alphabet import IUPAC
 from Bio.SeqRecord import SeqRecord
-from Bio import SeqIO
+from Bio import SeqIO, SeqUtils
 import genbank_files
 
-PARTS = genbank_files.generate_parts()
+# PARTS = genbank_files.generate_seqrecords()
 RFP_SEQRECORD = SeqIO.read("p004_rfp.gb", "genbank")
 RFP_SEQRECORD.upper()
+IP_STR = "TCTGGTGGGTCTCTGTCC"
+IS_STR = "GGCTCGGGAGACCTATCG"
 
 
 def test_classes():
@@ -42,3 +44,8 @@ def debug_generate_parts():
     print(str(RFP_SEQRECORD.seq))
     print(str(basic_rfp_seqrecord.seq[pos:]))
     return RFP_SEQRECORD.seq == basic_rfp_seqrecord.seq, str(basic_rfp_seqrecord.seq)
+
+
+def debug_iseq_loc():
+    search = SeqUtils.nt_search(str(RFP_SEQRECORD.seq), IP_STR)
+    return search

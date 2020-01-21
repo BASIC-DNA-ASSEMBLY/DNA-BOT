@@ -9,6 +9,30 @@ SOURCE      .
   ORGANISM  Escherichia coli
             .
 FEATURES             Location/Qualifiers
+     regulatory      909..943
+                     /label="PJ23119"
+     CDS             3495..4151
+                     /label="CmR"
+     misc_feature    4174..4218
+                     /label="Linker04"
+     regulatory      952..963
+                     /label="RBS34"
+     regulatory      1908..2010
+                     /label="T0_SEVA"
+     rep_origin      10..723
+                     /label="p15A"
+     CDS             971..1675
+                     /label="mscarlett"
+     misc_feature    858..904
+                     /label="LinkerB"
+     misc_feature    1851..1897
+                     /label="LinkerA"
+     misc_feature    852..869
+                     /label="Suffix"
+     misc_feature    1884..1901
+                     /label="Prefix"
+     regulatory      1712..1840
+                     /label="terminator_B0015"
 ORIGIN
         1 tttatctgat taataagatg atcttcttga gatcgttttg gtctgcgcgt aatctcttgc
        61 tctgaaaacg aaaaaaccgc cttgcagggc ggtttttcga aggttctctg agctaccaac

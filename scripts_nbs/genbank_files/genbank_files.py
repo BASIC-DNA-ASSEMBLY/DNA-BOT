@@ -8,11 +8,10 @@ import pathlib
 
 def main():
     # Define all the starting part and linker sequences as SeqRecord objects
-    parts = generate_seqrecords()
-    for part in parts:
+    basic_parts = generate_seqrecords()
+    for part in basic_parts:
         SeqIO.write(part, f"{part.id}.gb", "genbank")
-    for part in parts:
-        print(type(part))
+        print(f"iP location: {part._ip_loc}\n iS location: {part._is_loc}") 
     # seqrec_assemblies = (seqrec_assembly.assemble_seq_record() for seqrec_assembly in seqrec_assemblies)
     # SeqIO.write(seqrec_assemblies, "dnabot_constructs.gb", "genbank")
 
@@ -53,8 +52,8 @@ class BasicPart(SeqRecord):
     IP_STR = "TCTGGTGGGTCTCTGTCC"
     IS_STR = "GGCTCGGGAGACCTATCG"
 
-    def __init__(self, seq, id):
-        super().__init__(seq=seq, id=id)
+    def __init__(self, seq, id, **kwargs):
+        super().__init__(seq=seq, id=id, **kwargs)
         self._ip_loc = self._find_iseq(
             self.IP_STR, "iP sequence" 
             )
@@ -75,33 +74,33 @@ class BasicPart(SeqRecord):
         search_out = SeqUtils.nt_search(
             str(self.seq), iseq_str
             )
-        if not search_out:
-            raise ValueError(f"sequence lacks {iseq_id}")
-        return search_out[0]
+        if len(search_out) < 2:
+            raise ValueError(f"{self.id} lacks {iseq_id}")
+        return search_out[1]
 
 
-class _AbrevPart(BasicPart):
-    def __init__(self, seq, abrev, prefix, suffix, version):
+class _AbrevPart(SeqRecord):
+    def __init__(self, seq, abrev, prefix, suffix, version, **kwargs):
         id_from_abrev = prefix + abrev + suffix + "." + str(version)
-        super().__init__(seq=seq, id=id_from_abrev)
+        super().__init__(seq=seq, id=id_from_abrev, **kwargs)
 
 
 class AbrevPromoter(_AbrevPart):
-    def __init__(self, seq, abrev, prefix=None, suffix=None, version=1):
+    def __init__(self, seq, abrev, prefix=None, suffix=None, version=1, **kwargs):
         if not prefix:
             prefix = "BASIC_L3S2P21_J23"
         if not suffix:
             suffix = "_RiboJ"
-        super().__init__(seq, abrev, prefix, suffix, version)
+        super().__init__(seq, abrev, prefix, suffix, version, **kwargs)
 
 
 class AbrevOrf(_AbrevPart):
-    def __init__(self, seq, abrev, prefix=None, suffix=None, version=1):
+    def __init__(self, seq, abrev, prefix=None, suffix=None, version=1, **kwargs):
         if not prefix:
             prefix = "BASIC_"
         if not suffix:
             suffix = "_ORF"
-        super().__init__(seq, abrev, prefix, suffix, version)
+        super().__init__(seq, abrev, prefix, suffix, version, **kwargs)
 
 
 def generate_seqrecords():
@@ -151,6 +150,7 @@ def generate_seqrecords():
                     "translation": str(part.translate().seq[:-1])
                     }
                 ))
+    
     rfp_seqrecord = SeqIO.read(pathlib.Path().cwd() / "p004_rfp.gb", "genbank")
     rfp_seqrecord.upper()
     mcherry_search = SeqUtils.nt_search(
@@ -159,19 +159,30 @@ def generate_seqrecords():
         )
     parts_in_vectors = []
     for ind, part in enumerate(parts):
-        parts_in_vectors.append(rfp_seqrecord[:mcherry_search[1]] + part + rfp_seqrecord[
-        mcherry_search[1] + len(mcherry_search[0]):])
-        parts_in_vectors[ind].id = part.id
-        parts_in_vectors[ind].description = f"{part.id} BASIC part stored in AmpR pUC vector"
+        seqrec = rfp_seqrecord[:mcherry_search[1]] + part + rfp_seqrecord[
+        mcherry_search[1] + len(mcherry_search[0]):]
+        seqrec.upper()
+        seqrec.seq.alphabet = IUPAC.unambiguous_dna
+        parts_in_vectors.append(
+            BasicPart(
+                seq = seqrec.seq,
+                id = part.id,
+                description = f"{part.id} BASIC part stored in AmpR pUC vector",
+                features = seqrec.features
+                )
+        )
     backbone = SeqIO.read("benchling_BASIC_SEVA_37_CmR-p15A.1.gb", "genbank")
     backbone.upper()
     backbone.seq.alphabet = IUPAC.unambiguous_dna
-    backbone.id = "BASIC_SEVA_37_CmR-p15A.1"
-    backbone = BasicPart(backbone.seq, backbone.id)
-    backbone.description = "backbone vector for BASIC DNA assembly containing \
+    parts_in_vectors.append(BasicPart(
+        seq = backbone.seq, 
+        id ="BASIC_SEVA_37_CmR-p15A.1",
+        description = "backbone vector for BASIC DNA assembly containing \
         chloramphenicol resistance marker, p15A origin and \
-            mScarlet counter selection marker"
-    parts_in_vectors.append(backbone)
+            mScarlet counter selection marker", 
+        features = backbone.features
+            )
+    )
     for ind, part in enumerate(parts_in_vectors):
         parts_in_vectors[ind].name = part.id[:len(part.id)-2]
         parts_in_vectors[ind].annotations = {
