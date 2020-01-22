@@ -1,5 +1,6 @@
 from Bio.SeqRecord import SeqRecord
 from Bio import SeqIO, SeqUtils
+from Bio.SeqUtils.CheckSum import seguid
 from Bio.Seq import Seq
 from Bio.Alphabet import IUPAC
 from Bio.SeqFeature import SeqFeature, FeatureLocation
@@ -20,18 +21,30 @@ def main():
     with open(path_to_csv, "r", newline="") as cons_csv:
         csv_reader = csv.reader(cons_csv)
         for ind, row in enumerate(csv_reader):
-            if ind > 0:
-                seqrec_assemblies.append(
-                    SeqRecAssembly(
-                        *(identify_basic_part(part, parts_linkers) for part in row[1:])
-                    )
+            if ind > 0 and row[1]:
+                row = [
+                    part_linker_string for part_linker_string in row if part_linker_string]
+                seqrec_assembly = SeqRecAssembly(
+                    *(identify_basic_part(part, parts_linkers) for part in row[1:])
                 )
-    seqrec_assemblies = (seqrec_assembly.assemble_seq_record() for seqrec_assembly in seqrec_assemblies)
+                assembled_seqrec = seqrec_assembly.assemble_seq_record(
+                    id=f"dnabot_{row[0]}",
+                    name=f"dnabot_{row[0]}",
+                    annotations={
+                        "organism": "Escherichia coli",
+                        "date": "17-JAN-2020",
+                        "accessions": [],
+                        "sequence_version": 1,
+                        "topology": "circular"
+                    }
+                )
+                assembled_seqrec.seq.alphabet = IUPAC.unambiguous_dna
+                seqrec_assemblies.append(assembled_seqrec)
     SeqIO.write(seqrec_assemblies, "dnabot_constructs.gb", "genbank")
 
 
 def identify_basic_part(target, candidate_list):
-    candidates = (candidate.id for candidate in candidate_list)
+    candidates = [candidate.id for candidate in candidate_list]
     return candidate_list[candidates.index(target)]
 
 
@@ -39,13 +52,18 @@ class SeqRecAssembly:
     def __init__(self, *parts_linkers):
         self.parts_linkers = parts_linkers
 
-    def assemble_seq_record(self):
-        """Method returns the assembled SeqRecord
+    def assemble_seq_record(self, **kwargs):
+        """Method returns the assembled SeqRecord. kwargs can be used for SeqRecord object data.
 
         """
         assembled_seq_record = SeqRecord(Seq(str()))
         for part_linker in self.parts_linkers:
             assembled_seq_record += part_linker.basic_slice()
+        assembled_seq_record.id = seguid(assembled_seq_record.seq)
+        assembled_seq_record.description = f"BASIC DNA Assembly of {[part_linker.id for part_linker in self.parts_linkers]}"
+        if kwargs:
+            for key, value in kwargs.items():
+                setattr(assembled_seq_record, key, value)
         return assembled_seq_record
 
     @property
@@ -55,7 +73,7 @@ class SeqRecAssembly:
     @parts_linkers.setter
     def parts_linkers(self, values):
         if not all(
-                issubclass(value, SeqRecord) for value in values):
+                issubclass(type(value), SeqRecord) for value in values):
             raise TypeError(
                 "Not all *parts_linkers are a subclass of SeqRecord."
             )
@@ -100,13 +118,15 @@ class BasicPart(SeqRecord):
         self._is_loc = self._find_iseq(
             self.IS_STR, "iS sequence"
         )
+        self.kwargs = kwargs
 
     def basic_slice(self):
+        returned_seqrec = SeqRecord(seq=self.seq, id=self.id, **self.kwargs)
         if self._ip_loc < self._is_loc:
-            return self[
+            return returned_seqrec[
                 self._ip_loc + len(self.IP_STR):self._is_loc]
         elif self._ip_loc > self._is_loc:
-            return self[self._ip_loc + len(self.IP_STR):] + self[:self._is_loc]
+            return returned_seqrec[self._ip_loc + len(self.IP_STR):] + returned_seqrec[:self._is_loc]
         else:
             raise ValueError("incorrect sequence used.")
 
@@ -146,7 +166,7 @@ class AbrevOrf(_AbrevPart):
 def generate_seqrecords():
     parts = []
     parts.append(AbrevPromoter(
-        Seq("CTCGGTACCAAATTCCAGAAAAGAGGCCTCCCGAAAGGGGGGCCTTTTTTCGTTTTGGTCCGTGCCTACTCTGGAAAATCTTTTACGGCTAGCTCAGTCCTAGGTACTATGCTAGCAGCTGTCACCGGATGTGCTTTCCGGTCTGATGAGTCCGTGAGGACGAAACAGCCTCTACAAATAATTTTGTTTAA", IUPAC.unambiguous_dna), "105"    ))
+        Seq("CTCGGTACCAAATTCCAGAAAAGAGGCCTCCCGAAAGGGGGGCCTTTTTTCGTTTTGGTCCGTGCCTACTCTGGAAAATCTTTTACGGCTAGCTCAGTCCTAGGTACTATGCTAGCAGCTGTCACCGGATGTGCTTTCCGGTCTGATGAGTCCGTGAGGACGAAACAGCCTCTACAAATAATTTTGTTTAA", IUPAC.unambiguous_dna), "105"))
     parts.append(AbrevPromoter(
         Seq("CTCGGTACCAAATTCCAGAAAAGAGGCCTCCCGAAAGGGGGGCCTTTTTTCGTTTTGGTCCGTGCCTACTCTGGAAAATCTTTTACGGCTAGCTCAGTCCTAGGTATAGTGCTAGCAGCTGTCACCGGATGTGCTTTCCGGTCTGATGAGTCCGTGAGGACGAAACAGCCTCTACAAATAATTTTGTTTAA", IUPAC.unambiguous_dna), "106"
     ))
@@ -232,20 +252,29 @@ def generate_linkers():
         seq_str = "GG" + word_str.upper()
         basic_linker = BasicLinker(
             seq=Seq(seq_str, alphabet=alphabet),
-            id=id 
+            id=id
         )
         return basic_linker
-    
+
     linkers = []
-    linkers.append(generate_basic_linker("UTR1-RBS1", "ctcgttgaacaccgtcTCAGGTAAGTATCAGTTGTAAatcacacaggactagtcc"))
-    linkers.append(generate_basic_linker("UTR1-RBS2", "ctcgttgaacaccgtcTCAGGTAAGTATCAGTTGTAAaaagaggggaaatagtcc"))
-    linkers.append(generate_basic_linker("UTR1-RBS3", "ctcgttgaacaccgtcTCAGGTAAGTATCAGTTGTAAaaagaggagaaatagtcc"))
-    linkers.append(generate_basic_linker("UTR2-RBS1", "ctcgtgttactattggCTGAGATAAGGGTAGCAGAAAatcacacaggactagtcc"))
-    linkers.append(generate_basic_linker("UTR2-RBS3", "ctcgtgttactattggCTGAGATAAGGGTAGCAGAAAaaagaggagaaatagtcc"))
-    linkers.append(generate_basic_linker("UTR3-RBS1", "ctcggtatctcgtggtCTGACGGTAAAATCTATTGTAatcacacaggactagtcc"))
-    linkers.append(generate_basic_linker("UTR3-RBS3", "ctcggtatctcgtggtCTGACGGTAAAATCTATTGTAaaagaggagaaatagtcc"))
-    linkers.append(generate_basic_linker("LMP", "ctcgggtaagaactcgCACTTCGTGGAAACACTATTAtctggtgggtctctgtcc"))
-    linkers.append(generate_basic_linker("LMS", "ctcgggagacctatcgGTAATAACAGTCCAATCTGGTGTaacttcggaatcgtcc"))
+    linkers.append(generate_basic_linker(
+        "UTR1-RBS1", "ctcgttgaacaccgtcTCAGGTAAGTATCAGTTGTAAatcacacaggactagtcc"))
+    linkers.append(generate_basic_linker(
+        "UTR1-RBS2", "ctcgttgaacaccgtcTCAGGTAAGTATCAGTTGTAAaaagaggggaaatagtcc"))
+    linkers.append(generate_basic_linker(
+        "UTR1-RBS3", "ctcgttgaacaccgtcTCAGGTAAGTATCAGTTGTAAaaagaggagaaatagtcc"))
+    linkers.append(generate_basic_linker(
+        "UTR2-RBS1", "ctcgtgttactattggCTGAGATAAGGGTAGCAGAAAatcacacaggactagtcc"))
+    linkers.append(generate_basic_linker(
+        "UTR2-RBS3", "ctcgtgttactattggCTGAGATAAGGGTAGCAGAAAaaagaggagaaatagtcc"))
+    linkers.append(generate_basic_linker(
+        "UTR3-RBS1", "ctcggtatctcgtggtCTGACGGTAAAATCTATTGTAatcacacaggactagtcc"))
+    linkers.append(generate_basic_linker(
+        "UTR3-RBS3", "ctcggtatctcgtggtCTGACGGTAAAATCTATTGTAaaagaggagaaatagtcc"))
+    linkers.append(generate_basic_linker(
+        "LMP", "ctcgggtaagaactcgCACTTCGTGGAAACACTATTAtctggtgggtctctgtcc"))
+    linkers.append(generate_basic_linker(
+        "LMS", "ctcgggagacctatcgGTAATAACAGTCCAATCTGGTGTaacttcggaatcgtcc"))
     return linkers
 
 
