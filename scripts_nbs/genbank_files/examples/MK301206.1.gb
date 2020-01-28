@@ -1,0 +1,55 @@
+LOCUS       MK301206                 830 bp    DNA     linear   SYN 13-MAR-2019
+DEFINITION  Synthetic construct sfGFP gene, complete cds.
+ACCESSION   MK301206
+VERSION     MK301206.1
+KEYWORDS    .
+SOURCE      synthetic construct
+  ORGANISM  synthetic construct
+            other sequences; artificial sequences.
+REFERENCE   1  (bases 1 to 830)
+  AUTHORS   Shields,R.C., Kaspar,J.R., Lee,K., Underhill,S., Hagen,S. and
+            Burne,R.A.
+  TITLE     Fluorescence microscopy tools for biofilm studies in Streptococcus
+            mutans
+  JOURNAL   Unpublished
+REFERENCE   2  (bases 1 to 830)
+  AUTHORS   Shields,R.C.
+  TITLE     Direct Submission
+  JOURNAL   Submitted (14-DEC-2018) Oral Biology, University of Florida, 1395
+            Center Dr, Gainesville, FL 32610, USA
+FEATURES             Location/Qualifiers
+     source          1..830
+                     /organism="synthetic construct"
+                     /mol_type="other DNA"
+                     /db_xref="taxon:32630"
+     regulatory      43..107
+                     /regulatory_class="promoter"
+                     /note="P3 promoter"
+     CDS             108..824
+                     /note="codon optimized B. subtilis"
+                     /codon_start=1
+                     /transl_table=11
+                     /product="sfGFP"
+                     /protein_id="QBK47042.1"
+                     /translation="MSKGEELFTGVVPILVELDGDVNGHKFSVRGEGEGDATNGKLTL
+                     KFICTTGKLPVPWPTLVTTLTYGVQCFSRYPDHMKRHDFFKSAMPEGYVQERTISFKD
+                     DGTYKTRAEVKFEGDTLVNRIELKGIDFKEDGNILGHKLEYNFNSHNVYITADKQKNG
+                     IKANFKIRHNVEDGSVQLADHYQQNTPIGDGPVLLPDNHYLSTQSVLSKDPNEKRDHM
+                     VLLEFVTAAGITHGMDELYK"
+ORIGIN      
+        1 gagctctaga tcgaattcca ctagtcattc tacagtttat tcttgacatt gcactgtccc
+       61 cctggtataa taactataca tgcaagatct aaataggagg aaaattaatg tcaaaaggag
+      121 aagagctgtt cacaggtgtt gtgccgattc tcgttgagct tgacggagat gtaaacggac
+      181 acaaattctc tgttcgcggt gaaggtgaag gagatgcaac aaacggcaag ctgacattga
+      241 agtttatttg cacaactgga aagctgccgg ttccttggcc gacacttgta acgacgctga
+      301 cttacggcgt tcaatgcttc tctcgttatc cagaccacat gaaacgccat gatttcttca
+      361 aatctgcaat gcctgaaggc tacgttcaag agcgtacgat cagcttcaaa gatgacggaa
+      421 cgtacaaaac aagagcagaa gtgaagtttg aaggtgacac acttgtgaac cgcattgaat
+      481 tgaaaggcat tgatttcaaa gaagatggaa acatccttgg acacaaactt gaatacaact
+      541 tcaacagcca caacgtatac atcactgctg acaaacaaaa aaacggcatc aaagcaaact
+      601 tcaaaatccg tcataacgta gaggacggtt ctgttcagct tgctgatcat tatcagcaaa
+      661 atacaccgat cggtgacggc ccggttcttc ttcctgataa ccattattta tcaactcaaa
+      721 gcgtattatc aaaagaccca aatgaaaagc gtgaccacat ggtgctgctt gaatttgtga
+      781 cagctgctgg tatcactcac ggcatggatg agctttataa gtaagcatgc
+//
+
