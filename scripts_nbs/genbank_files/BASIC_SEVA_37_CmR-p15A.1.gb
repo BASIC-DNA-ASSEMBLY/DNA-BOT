@@ -5,9 +5,9 @@ DEFINITION  backbone vector for BASIC DNA assembly containing chloramphenicol
 ACCESSION   BASIC_SEVA_37_CmR-p15A
 VERSION     BASIC_SEVA_37_CmR-p15A.1
 KEYWORDS    .
-SOURCE      .
-  ORGANISM  Escherichia coli
-            .
+SOURCE      synthetic construct
+  ORGANISM  synthetic construct
+            other sequences; artificial sequences.
 FEATURES             Location/Qualifiers
      regulatory      909..943
                      /label="PJ23119"

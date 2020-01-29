@@ -32,14 +32,14 @@ def main():
                 construct_dict["Linker 3"].append(gfp_rbs[y][x])
                 construct_dict["Part 3"].append(orf_arch("sfGFP"))
                 construct_dict["Linker 4"].append(bfp_rbs[y][x])
-                construct_dict["Part 4"].append(orf_arch("BFP"))
+                construct_dict["Part 4"].append(orf_arch("mTagBFP2"))
                 construct_dict["Linker 5"].append(rfp_rbs[y][x])
-                construct_dict["Part 5"].append(orf_arch("RFP"))
+                construct_dict["Part 5"].append(orf_arch("mCherry"))
             else:
                 construct_dict["Linker 3"].append(bfp_rbs[y][x])
-                construct_dict["Part 3"].append(orf_arch("BFP"))
+                construct_dict["Part 3"].append(orf_arch("mTagBFP2"))
                 construct_dict["Linker 4"].append(rfp_rbs[y][x])
-                construct_dict["Part 4"].append(orf_arch("RFP"))
+                construct_dict["Part 4"].append(orf_arch("mCherry"))
                 construct_dict["Linker 5"].append(gfp_rbs[y][x])
                 construct_dict["Part 5"].append(orf_arch("sfGFP"))
 

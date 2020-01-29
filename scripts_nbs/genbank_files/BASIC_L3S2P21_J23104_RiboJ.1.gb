@@ -3,9 +3,9 @@ DEFINITION  BASIC_L3S2P21_J23104_RiboJ.1 BASIC part stored in AmpR pUC vector.
 ACCESSION   BASIC_L3S2P21_J23104_RiboJ
 VERSION     BASIC_L3S2P21_J23104_RiboJ.1
 KEYWORDS    .
-SOURCE      .
-  ORGANISM  Escherichia coli
-            .
+SOURCE      synthetic construct
+  ORGANISM  synthetic construct
+            other sequences; artificial sequences.
 FEATURES             Location/Qualifiers
      misc_feature    1..47
                      /label="LinkerA"
