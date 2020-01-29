@@ -1,4 +1,4 @@
-LOCUS       dnabot_A1               5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_A1               5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23105_RiboJ.1', 'UTR1-RBS2', 'BASIC_sfGFP_ORF.1',
             'UTR2-RBS1', 'BASIC_mTagBFP2_ORF.1', 'UTR3-RBS1',
@@ -159,7 +159,7 @@ ORIGIN
      5701 atcaagttgg acatcacctc ccacaacgag gactacacca tcgtggaaca gtacgaacgc
      5761 gccgagggcc gccactccac cggcggcatg gacgagctgt acaagtaa
 //
-LOCUS       dnabot_B1               5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_B1               5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23105_RiboJ.1', 'UTR1-RBS2', 'BASIC_sfGFP_ORF.1',
             'UTR2-RBS1', 'BASIC_mTagBFP2_ORF.1', 'UTR3-RBS3',
@@ -320,7 +320,7 @@ ORIGIN
      5701 atcaagttgg acatcacctc ccacaacgag gactacacca tcgtggaaca gtacgaacgc
      5761 gccgagggcc gccactccac cggcggcatg gacgagctgt acaagtaa
 //
-LOCUS       dnabot_C1               5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_C1               5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23105_RiboJ.1', 'UTR1-RBS2', 'BASIC_sfGFP_ORF.1',
             'UTR2-RBS3', 'BASIC_mTagBFP2_ORF.1', 'UTR3-RBS1',
@@ -481,7 +481,7 @@ ORIGIN
      5701 atcaagttgg acatcacctc ccacaacgag gactacacca tcgtggaaca gtacgaacgc
      5761 gccgagggcc gccactccac cggcggcatg gacgagctgt acaagtaa
 //
-LOCUS       dnabot_D1               5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_D1               5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23105_RiboJ.1', 'UTR1-RBS2', 'BASIC_sfGFP_ORF.1',
             'UTR2-RBS3', 'BASIC_mTagBFP2_ORF.1', 'UTR3-RBS3',
@@ -642,7 +642,7 @@ ORIGIN
      5701 atcaagttgg acatcacctc ccacaacgag gactacacca tcgtggaaca gtacgaacgc
      5761 gccgagggcc gccactccac cggcggcatg gacgagctgt acaagtaa
 //
-LOCUS       dnabot_E1               5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_E1               5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23105_RiboJ.1', 'UTR2-RBS1', 'BASIC_mTagBFP2_ORF.1',
             'UTR3-RBS1', 'BASIC_mCherry_ORF.1', 'UTR1-RBS2',
@@ -803,7 +803,7 @@ ORIGIN
      5701 gtgctgagca aagatccgaa cgaaaaacgt gatcacatgg tcctgctgga atttgtgacc
      5761 gctgcgggca tcacccacgg tatggacgag ctgtataagc gtccgtaa
 //
-LOCUS       dnabot_F1               5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_F1               5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23105_RiboJ.1', 'UTR2-RBS1', 'BASIC_mTagBFP2_ORF.1',
             'UTR3-RBS3', 'BASIC_mCherry_ORF.1', 'UTR1-RBS2',
@@ -964,7 +964,7 @@ ORIGIN
      5701 gtgctgagca aagatccgaa cgaaaaacgt gatcacatgg tcctgctgga atttgtgacc
      5761 gctgcgggca tcacccacgg tatggacgag ctgtataagc gtccgtaa
 //
-LOCUS       dnabot_G1               5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_G1               5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23105_RiboJ.1', 'UTR2-RBS3', 'BASIC_mTagBFP2_ORF.1',
             'UTR3-RBS1', 'BASIC_mCherry_ORF.1', 'UTR1-RBS2',
@@ -1125,7 +1125,7 @@ ORIGIN
      5701 gtgctgagca aagatccgaa cgaaaaacgt gatcacatgg tcctgctgga atttgtgacc
      5761 gctgcgggca tcacccacgg tatggacgag ctgtataagc gtccgtaa
 //
-LOCUS       dnabot_H1               5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_H1               5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23105_RiboJ.1', 'UTR2-RBS3', 'BASIC_mTagBFP2_ORF.1',
             'UTR3-RBS3', 'BASIC_mCherry_ORF.1', 'UTR1-RBS2',
@@ -1286,7 +1286,7 @@ ORIGIN
      5701 gtgctgagca aagatccgaa cgaaaaacgt gatcacatgg tcctgctgga atttgtgacc
      5761 gctgcgggca tcacccacgg tatggacgag ctgtataagc gtccgtaa
 //
-LOCUS       dnabot_A2               5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_A2               5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23105_RiboJ.1', 'UTR1-RBS3', 'BASIC_sfGFP_ORF.1',
             'UTR2-RBS1', 'BASIC_mTagBFP2_ORF.1', 'UTR3-RBS1',
@@ -1447,7 +1447,7 @@ ORIGIN
      5701 atcaagttgg acatcacctc ccacaacgag gactacacca tcgtggaaca gtacgaacgc
      5761 gccgagggcc gccactccac cggcggcatg gacgagctgt acaagtaa
 //
-LOCUS       dnabot_B2               5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_B2               5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23105_RiboJ.1', 'UTR1-RBS3', 'BASIC_sfGFP_ORF.1',
             'UTR2-RBS1', 'BASIC_mTagBFP2_ORF.1', 'UTR3-RBS3',
@@ -1608,7 +1608,7 @@ ORIGIN
      5701 atcaagttgg acatcacctc ccacaacgag gactacacca tcgtggaaca gtacgaacgc
      5761 gccgagggcc gccactccac cggcggcatg gacgagctgt acaagtaa
 //
-LOCUS       dnabot_C2               5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_C2               5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23105_RiboJ.1', 'UTR1-RBS3', 'BASIC_sfGFP_ORF.1',
             'UTR2-RBS3', 'BASIC_mTagBFP2_ORF.1', 'UTR3-RBS1',
@@ -1769,7 +1769,7 @@ ORIGIN
      5701 atcaagttgg acatcacctc ccacaacgag gactacacca tcgtggaaca gtacgaacgc
      5761 gccgagggcc gccactccac cggcggcatg gacgagctgt acaagtaa
 //
-LOCUS       dnabot_D2               5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_D2               5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23105_RiboJ.1', 'UTR1-RBS3', 'BASIC_sfGFP_ORF.1',
             'UTR2-RBS3', 'BASIC_mTagBFP2_ORF.1', 'UTR3-RBS3',
@@ -1930,7 +1930,7 @@ ORIGIN
      5701 atcaagttgg acatcacctc ccacaacgag gactacacca tcgtggaaca gtacgaacgc
      5761 gccgagggcc gccactccac cggcggcatg gacgagctgt acaagtaa
 //
-LOCUS       dnabot_E2               5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_E2               5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23105_RiboJ.1', 'UTR2-RBS1', 'BASIC_mTagBFP2_ORF.1',
             'UTR3-RBS1', 'BASIC_mCherry_ORF.1', 'UTR1-RBS3',
@@ -2091,7 +2091,7 @@ ORIGIN
      5701 gtgctgagca aagatccgaa cgaaaaacgt gatcacatgg tcctgctgga atttgtgacc
      5761 gctgcgggca tcacccacgg tatggacgag ctgtataagc gtccgtaa
 //
-LOCUS       dnabot_F2               5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_F2               5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23105_RiboJ.1', 'UTR2-RBS1', 'BASIC_mTagBFP2_ORF.1',
             'UTR3-RBS3', 'BASIC_mCherry_ORF.1', 'UTR1-RBS3',
@@ -2252,7 +2252,7 @@ ORIGIN
      5701 gtgctgagca aagatccgaa cgaaaaacgt gatcacatgg tcctgctgga atttgtgacc
      5761 gctgcgggca tcacccacgg tatggacgag ctgtataagc gtccgtaa
 //
-LOCUS       dnabot_G2               5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_G2               5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23105_RiboJ.1', 'UTR2-RBS3', 'BASIC_mTagBFP2_ORF.1',
             'UTR3-RBS1', 'BASIC_mCherry_ORF.1', 'UTR1-RBS3',
@@ -2413,7 +2413,7 @@ ORIGIN
      5701 gtgctgagca aagatccgaa cgaaaaacgt gatcacatgg tcctgctgga atttgtgacc
      5761 gctgcgggca tcacccacgg tatggacgag ctgtataagc gtccgtaa
 //
-LOCUS       dnabot_H2               5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_H2               5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23105_RiboJ.1', 'UTR2-RBS3', 'BASIC_mTagBFP2_ORF.1',
             'UTR3-RBS3', 'BASIC_mCherry_ORF.1', 'UTR1-RBS3',
@@ -2574,7 +2574,7 @@ ORIGIN
      5701 gtgctgagca aagatccgaa cgaaaaacgt gatcacatgg tcctgctgga atttgtgacc
      5761 gctgcgggca tcacccacgg tatggacgag ctgtataagc gtccgtaa
 //
-LOCUS       dnabot_A3               5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_A3               5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23106_RiboJ.1', 'UTR1-RBS1', 'BASIC_sfGFP_ORF.1',
             'UTR2-RBS1', 'BASIC_mTagBFP2_ORF.1', 'UTR3-RBS1',
@@ -2735,7 +2735,7 @@ ORIGIN
      5701 atcaagttgg acatcacctc ccacaacgag gactacacca tcgtggaaca gtacgaacgc
      5761 gccgagggcc gccactccac cggcggcatg gacgagctgt acaagtaa
 //
-LOCUS       dnabot_B3               5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_B3               5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23106_RiboJ.1', 'UTR1-RBS1', 'BASIC_sfGFP_ORF.1',
             'UTR2-RBS1', 'BASIC_mTagBFP2_ORF.1', 'UTR3-RBS3',
@@ -2896,7 +2896,7 @@ ORIGIN
      5701 atcaagttgg acatcacctc ccacaacgag gactacacca tcgtggaaca gtacgaacgc
      5761 gccgagggcc gccactccac cggcggcatg gacgagctgt acaagtaa
 //
-LOCUS       dnabot_C3               5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_C3               5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23106_RiboJ.1', 'UTR1-RBS1', 'BASIC_sfGFP_ORF.1',
             'UTR2-RBS3', 'BASIC_mTagBFP2_ORF.1', 'UTR3-RBS1',
@@ -3057,7 +3057,7 @@ ORIGIN
      5701 atcaagttgg acatcacctc ccacaacgag gactacacca tcgtggaaca gtacgaacgc
      5761 gccgagggcc gccactccac cggcggcatg gacgagctgt acaagtaa
 //
-LOCUS       dnabot_D3               5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_D3               5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23106_RiboJ.1', 'UTR1-RBS1', 'BASIC_sfGFP_ORF.1',
             'UTR2-RBS3', 'BASIC_mTagBFP2_ORF.1', 'UTR3-RBS3',
@@ -3218,7 +3218,7 @@ ORIGIN
      5701 atcaagttgg acatcacctc ccacaacgag gactacacca tcgtggaaca gtacgaacgc
      5761 gccgagggcc gccactccac cggcggcatg gacgagctgt acaagtaa
 //
-LOCUS       dnabot_E3               5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_E3               5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23106_RiboJ.1', 'UTR2-RBS1', 'BASIC_mTagBFP2_ORF.1',
             'UTR3-RBS1', 'BASIC_mCherry_ORF.1', 'UTR1-RBS1',
@@ -3379,7 +3379,7 @@ ORIGIN
      5701 gtgctgagca aagatccgaa cgaaaaacgt gatcacatgg tcctgctgga atttgtgacc
      5761 gctgcgggca tcacccacgg tatggacgag ctgtataagc gtccgtaa
 //
-LOCUS       dnabot_F3               5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_F3               5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23106_RiboJ.1', 'UTR2-RBS1', 'BASIC_mTagBFP2_ORF.1',
             'UTR3-RBS3', 'BASIC_mCherry_ORF.1', 'UTR1-RBS1',
@@ -3540,7 +3540,7 @@ ORIGIN
      5701 gtgctgagca aagatccgaa cgaaaaacgt gatcacatgg tcctgctgga atttgtgacc
      5761 gctgcgggca tcacccacgg tatggacgag ctgtataagc gtccgtaa
 //
-LOCUS       dnabot_G3               5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_G3               5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23106_RiboJ.1', 'UTR2-RBS3', 'BASIC_mTagBFP2_ORF.1',
             'UTR3-RBS1', 'BASIC_mCherry_ORF.1', 'UTR1-RBS1',
@@ -3701,7 +3701,7 @@ ORIGIN
      5701 gtgctgagca aagatccgaa cgaaaaacgt gatcacatgg tcctgctgga atttgtgacc
      5761 gctgcgggca tcacccacgg tatggacgag ctgtataagc gtccgtaa
 //
-LOCUS       dnabot_H3               5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_H3               5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23106_RiboJ.1', 'UTR2-RBS3', 'BASIC_mTagBFP2_ORF.1',
             'UTR3-RBS3', 'BASIC_mCherry_ORF.1', 'UTR1-RBS1',
@@ -3862,7 +3862,7 @@ ORIGIN
      5701 gtgctgagca aagatccgaa cgaaaaacgt gatcacatgg tcctgctgga atttgtgacc
      5761 gctgcgggca tcacccacgg tatggacgag ctgtataagc gtccgtaa
 //
-LOCUS       dnabot_A4               5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_A4               5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23106_RiboJ.1', 'UTR1-RBS2', 'BASIC_sfGFP_ORF.1',
             'UTR2-RBS1', 'BASIC_mTagBFP2_ORF.1', 'UTR3-RBS1',
@@ -4023,7 +4023,7 @@ ORIGIN
      5701 atcaagttgg acatcacctc ccacaacgag gactacacca tcgtggaaca gtacgaacgc
      5761 gccgagggcc gccactccac cggcggcatg gacgagctgt acaagtaa
 //
-LOCUS       dnabot_B4               5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_B4               5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23106_RiboJ.1', 'UTR1-RBS2', 'BASIC_sfGFP_ORF.1',
             'UTR2-RBS1', 'BASIC_mTagBFP2_ORF.1', 'UTR3-RBS3',
@@ -4184,7 +4184,7 @@ ORIGIN
      5701 atcaagttgg acatcacctc ccacaacgag gactacacca tcgtggaaca gtacgaacgc
      5761 gccgagggcc gccactccac cggcggcatg gacgagctgt acaagtaa
 //
-LOCUS       dnabot_C4               5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_C4               5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23106_RiboJ.1', 'UTR1-RBS2', 'BASIC_sfGFP_ORF.1',
             'UTR2-RBS3', 'BASIC_mTagBFP2_ORF.1', 'UTR3-RBS1',
@@ -4345,7 +4345,7 @@ ORIGIN
      5701 atcaagttgg acatcacctc ccacaacgag gactacacca tcgtggaaca gtacgaacgc
      5761 gccgagggcc gccactccac cggcggcatg gacgagctgt acaagtaa
 //
-LOCUS       dnabot_D4               5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_D4               5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23106_RiboJ.1', 'UTR1-RBS2', 'BASIC_sfGFP_ORF.1',
             'UTR2-RBS3', 'BASIC_mTagBFP2_ORF.1', 'UTR3-RBS3',
@@ -4506,7 +4506,7 @@ ORIGIN
      5701 atcaagttgg acatcacctc ccacaacgag gactacacca tcgtggaaca gtacgaacgc
      5761 gccgagggcc gccactccac cggcggcatg gacgagctgt acaagtaa
 //
-LOCUS       dnabot_E4               5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_E4               5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23106_RiboJ.1', 'UTR2-RBS1', 'BASIC_mTagBFP2_ORF.1',
             'UTR3-RBS1', 'BASIC_mCherry_ORF.1', 'UTR1-RBS2',
@@ -4667,7 +4667,7 @@ ORIGIN
      5701 gtgctgagca aagatccgaa cgaaaaacgt gatcacatgg tcctgctgga atttgtgacc
      5761 gctgcgggca tcacccacgg tatggacgag ctgtataagc gtccgtaa
 //
-LOCUS       dnabot_F4               5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_F4               5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23106_RiboJ.1', 'UTR2-RBS1', 'BASIC_mTagBFP2_ORF.1',
             'UTR3-RBS3', 'BASIC_mCherry_ORF.1', 'UTR1-RBS2',
@@ -4828,7 +4828,7 @@ ORIGIN
      5701 gtgctgagca aagatccgaa cgaaaaacgt gatcacatgg tcctgctgga atttgtgacc
      5761 gctgcgggca tcacccacgg tatggacgag ctgtataagc gtccgtaa
 //
-LOCUS       dnabot_G4               5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_G4               5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23106_RiboJ.1', 'UTR2-RBS3', 'BASIC_mTagBFP2_ORF.1',
             'UTR3-RBS1', 'BASIC_mCherry_ORF.1', 'UTR1-RBS2',
@@ -4989,7 +4989,7 @@ ORIGIN
      5701 gtgctgagca aagatccgaa cgaaaaacgt gatcacatgg tcctgctgga atttgtgacc
      5761 gctgcgggca tcacccacgg tatggacgag ctgtataagc gtccgtaa
 //
-LOCUS       dnabot_H4               5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_H4               5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23106_RiboJ.1', 'UTR2-RBS3', 'BASIC_mTagBFP2_ORF.1',
             'UTR3-RBS3', 'BASIC_mCherry_ORF.1', 'UTR1-RBS2',
@@ -5150,7 +5150,7 @@ ORIGIN
      5701 gtgctgagca aagatccgaa cgaaaaacgt gatcacatgg tcctgctgga atttgtgacc
      5761 gctgcgggca tcacccacgg tatggacgag ctgtataagc gtccgtaa
 //
-LOCUS       dnabot_A5               5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_A5               5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23106_RiboJ.1', 'UTR1-RBS3', 'BASIC_sfGFP_ORF.1',
             'UTR2-RBS1', 'BASIC_mTagBFP2_ORF.1', 'UTR3-RBS1',
@@ -5311,7 +5311,7 @@ ORIGIN
      5701 atcaagttgg acatcacctc ccacaacgag gactacacca tcgtggaaca gtacgaacgc
      5761 gccgagggcc gccactccac cggcggcatg gacgagctgt acaagtaa
 //
-LOCUS       dnabot_B5               5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_B5               5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23106_RiboJ.1', 'UTR1-RBS3', 'BASIC_sfGFP_ORF.1',
             'UTR2-RBS1', 'BASIC_mTagBFP2_ORF.1', 'UTR3-RBS3',
@@ -5472,7 +5472,7 @@ ORIGIN
      5701 atcaagttgg acatcacctc ccacaacgag gactacacca tcgtggaaca gtacgaacgc
      5761 gccgagggcc gccactccac cggcggcatg gacgagctgt acaagtaa
 //
-LOCUS       dnabot_C5               5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_C5               5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23106_RiboJ.1', 'UTR1-RBS3', 'BASIC_sfGFP_ORF.1',
             'UTR2-RBS3', 'BASIC_mTagBFP2_ORF.1', 'UTR3-RBS1',
@@ -5633,7 +5633,7 @@ ORIGIN
      5701 atcaagttgg acatcacctc ccacaacgag gactacacca tcgtggaaca gtacgaacgc
      5761 gccgagggcc gccactccac cggcggcatg gacgagctgt acaagtaa
 //
-LOCUS       dnabot_D5               5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_D5               5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23106_RiboJ.1', 'UTR1-RBS3', 'BASIC_sfGFP_ORF.1',
             'UTR2-RBS3', 'BASIC_mTagBFP2_ORF.1', 'UTR3-RBS3',
@@ -5794,7 +5794,7 @@ ORIGIN
      5701 atcaagttgg acatcacctc ccacaacgag gactacacca tcgtggaaca gtacgaacgc
      5761 gccgagggcc gccactccac cggcggcatg gacgagctgt acaagtaa
 //
-LOCUS       dnabot_E5               5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_E5               5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23106_RiboJ.1', 'UTR2-RBS1', 'BASIC_mTagBFP2_ORF.1',
             'UTR3-RBS1', 'BASIC_mCherry_ORF.1', 'UTR1-RBS3',
@@ -5955,7 +5955,7 @@ ORIGIN
      5701 gtgctgagca aagatccgaa cgaaaaacgt gatcacatgg tcctgctgga atttgtgacc
      5761 gctgcgggca tcacccacgg tatggacgag ctgtataagc gtccgtaa
 //
-LOCUS       dnabot_F5               5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_F5               5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23106_RiboJ.1', 'UTR2-RBS1', 'BASIC_mTagBFP2_ORF.1',
             'UTR3-RBS3', 'BASIC_mCherry_ORF.1', 'UTR1-RBS3',
@@ -6116,7 +6116,7 @@ ORIGIN
      5701 gtgctgagca aagatccgaa cgaaaaacgt gatcacatgg tcctgctgga atttgtgacc
      5761 gctgcgggca tcacccacgg tatggacgag ctgtataagc gtccgtaa
 //
-LOCUS       dnabot_G5               5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_G5               5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23106_RiboJ.1', 'UTR2-RBS3', 'BASIC_mTagBFP2_ORF.1',
             'UTR3-RBS1', 'BASIC_mCherry_ORF.1', 'UTR1-RBS3',
@@ -6277,7 +6277,7 @@ ORIGIN
      5701 gtgctgagca aagatccgaa cgaaaaacgt gatcacatgg tcctgctgga atttgtgacc
      5761 gctgcgggca tcacccacgg tatggacgag ctgtataagc gtccgtaa
 //
-LOCUS       dnabot_H5               5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_H5               5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23106_RiboJ.1', 'UTR2-RBS3', 'BASIC_mTagBFP2_ORF.1',
             'UTR3-RBS3', 'BASIC_mCherry_ORF.1', 'UTR1-RBS3',
@@ -6438,7 +6438,7 @@ ORIGIN
      5701 gtgctgagca aagatccgaa cgaaaaacgt gatcacatgg tcctgctgga atttgtgacc
      5761 gctgcgggca tcacccacgg tatggacgag ctgtataagc gtccgtaa
 //
-LOCUS       dnabot_A6               5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_A6               5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23101_RiboJ.1', 'UTR1-RBS1', 'BASIC_sfGFP_ORF.1',
             'UTR2-RBS1', 'BASIC_mTagBFP2_ORF.1', 'UTR3-RBS1',
@@ -6599,7 +6599,7 @@ ORIGIN
      5701 atcaagttgg acatcacctc ccacaacgag gactacacca tcgtggaaca gtacgaacgc
      5761 gccgagggcc gccactccac cggcggcatg gacgagctgt acaagtaa
 //
-LOCUS       dnabot_B6               5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_B6               5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23101_RiboJ.1', 'UTR1-RBS1', 'BASIC_sfGFP_ORF.1',
             'UTR2-RBS1', 'BASIC_mTagBFP2_ORF.1', 'UTR3-RBS3',
@@ -6760,7 +6760,7 @@ ORIGIN
      5701 atcaagttgg acatcacctc ccacaacgag gactacacca tcgtggaaca gtacgaacgc
      5761 gccgagggcc gccactccac cggcggcatg gacgagctgt acaagtaa
 //
-LOCUS       dnabot_C6               5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_C6               5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23101_RiboJ.1', 'UTR1-RBS1', 'BASIC_sfGFP_ORF.1',
             'UTR2-RBS3', 'BASIC_mTagBFP2_ORF.1', 'UTR3-RBS1',
@@ -6921,7 +6921,7 @@ ORIGIN
      5701 atcaagttgg acatcacctc ccacaacgag gactacacca tcgtggaaca gtacgaacgc
      5761 gccgagggcc gccactccac cggcggcatg gacgagctgt acaagtaa
 //
-LOCUS       dnabot_D6               5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_D6               5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23101_RiboJ.1', 'UTR1-RBS1', 'BASIC_sfGFP_ORF.1',
             'UTR2-RBS3', 'BASIC_mTagBFP2_ORF.1', 'UTR3-RBS3',
@@ -7082,7 +7082,7 @@ ORIGIN
      5701 atcaagttgg acatcacctc ccacaacgag gactacacca tcgtggaaca gtacgaacgc
      5761 gccgagggcc gccactccac cggcggcatg gacgagctgt acaagtaa
 //
-LOCUS       dnabot_E6               5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_E6               5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23101_RiboJ.1', 'UTR2-RBS1', 'BASIC_mTagBFP2_ORF.1',
             'UTR3-RBS1', 'BASIC_mCherry_ORF.1', 'UTR1-RBS1',
@@ -7243,7 +7243,7 @@ ORIGIN
      5701 gtgctgagca aagatccgaa cgaaaaacgt gatcacatgg tcctgctgga atttgtgacc
      5761 gctgcgggca tcacccacgg tatggacgag ctgtataagc gtccgtaa
 //
-LOCUS       dnabot_F6               5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_F6               5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23101_RiboJ.1', 'UTR2-RBS1', 'BASIC_mTagBFP2_ORF.1',
             'UTR3-RBS3', 'BASIC_mCherry_ORF.1', 'UTR1-RBS1',
@@ -7404,7 +7404,7 @@ ORIGIN
      5701 gtgctgagca aagatccgaa cgaaaaacgt gatcacatgg tcctgctgga atttgtgacc
      5761 gctgcgggca tcacccacgg tatggacgag ctgtataagc gtccgtaa
 //
-LOCUS       dnabot_G6               5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_G6               5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23101_RiboJ.1', 'UTR2-RBS3', 'BASIC_mTagBFP2_ORF.1',
             'UTR3-RBS1', 'BASIC_mCherry_ORF.1', 'UTR1-RBS1',
@@ -7565,7 +7565,7 @@ ORIGIN
      5701 gtgctgagca aagatccgaa cgaaaaacgt gatcacatgg tcctgctgga atttgtgacc
      5761 gctgcgggca tcacccacgg tatggacgag ctgtataagc gtccgtaa
 //
-LOCUS       dnabot_H6               5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_H6               5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23101_RiboJ.1', 'UTR2-RBS3', 'BASIC_mTagBFP2_ORF.1',
             'UTR3-RBS3', 'BASIC_mCherry_ORF.1', 'UTR1-RBS1',
@@ -7726,7 +7726,7 @@ ORIGIN
      5701 gtgctgagca aagatccgaa cgaaaaacgt gatcacatgg tcctgctgga atttgtgacc
      5761 gctgcgggca tcacccacgg tatggacgag ctgtataagc gtccgtaa
 //
-LOCUS       dnabot_A7               5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_A7               5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23101_RiboJ.1', 'UTR1-RBS2', 'BASIC_sfGFP_ORF.1',
             'UTR2-RBS1', 'BASIC_mTagBFP2_ORF.1', 'UTR3-RBS1',
@@ -7887,7 +7887,7 @@ ORIGIN
      5701 atcaagttgg acatcacctc ccacaacgag gactacacca tcgtggaaca gtacgaacgc
      5761 gccgagggcc gccactccac cggcggcatg gacgagctgt acaagtaa
 //
-LOCUS       dnabot_B7               5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_B7               5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23101_RiboJ.1', 'UTR1-RBS2', 'BASIC_sfGFP_ORF.1',
             'UTR2-RBS1', 'BASIC_mTagBFP2_ORF.1', 'UTR3-RBS3',
@@ -8048,7 +8048,7 @@ ORIGIN
      5701 atcaagttgg acatcacctc ccacaacgag gactacacca tcgtggaaca gtacgaacgc
      5761 gccgagggcc gccactccac cggcggcatg gacgagctgt acaagtaa
 //
-LOCUS       dnabot_C7               5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_C7               5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23101_RiboJ.1', 'UTR1-RBS2', 'BASIC_sfGFP_ORF.1',
             'UTR2-RBS3', 'BASIC_mTagBFP2_ORF.1', 'UTR3-RBS1',
@@ -8209,7 +8209,7 @@ ORIGIN
      5701 atcaagttgg acatcacctc ccacaacgag gactacacca tcgtggaaca gtacgaacgc
      5761 gccgagggcc gccactccac cggcggcatg gacgagctgt acaagtaa
 //
-LOCUS       dnabot_D7               5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_D7               5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23101_RiboJ.1', 'UTR1-RBS2', 'BASIC_sfGFP_ORF.1',
             'UTR2-RBS3', 'BASIC_mTagBFP2_ORF.1', 'UTR3-RBS3',
@@ -8370,7 +8370,7 @@ ORIGIN
      5701 atcaagttgg acatcacctc ccacaacgag gactacacca tcgtggaaca gtacgaacgc
      5761 gccgagggcc gccactccac cggcggcatg gacgagctgt acaagtaa
 //
-LOCUS       dnabot_E7               5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_E7               5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23101_RiboJ.1', 'UTR2-RBS1', 'BASIC_mTagBFP2_ORF.1',
             'UTR3-RBS1', 'BASIC_mCherry_ORF.1', 'UTR1-RBS2',
@@ -8531,7 +8531,7 @@ ORIGIN
      5701 gtgctgagca aagatccgaa cgaaaaacgt gatcacatgg tcctgctgga atttgtgacc
      5761 gctgcgggca tcacccacgg tatggacgag ctgtataagc gtccgtaa
 //
-LOCUS       dnabot_F7               5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_F7               5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23101_RiboJ.1', 'UTR2-RBS1', 'BASIC_mTagBFP2_ORF.1',
             'UTR3-RBS3', 'BASIC_mCherry_ORF.1', 'UTR1-RBS2',
@@ -8692,7 +8692,7 @@ ORIGIN
      5701 gtgctgagca aagatccgaa cgaaaaacgt gatcacatgg tcctgctgga atttgtgacc
      5761 gctgcgggca tcacccacgg tatggacgag ctgtataagc gtccgtaa
 //
-LOCUS       dnabot_G7               5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_G7               5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23101_RiboJ.1', 'UTR2-RBS3', 'BASIC_mTagBFP2_ORF.1',
             'UTR3-RBS1', 'BASIC_mCherry_ORF.1', 'UTR1-RBS2',
@@ -8853,7 +8853,7 @@ ORIGIN
      5701 gtgctgagca aagatccgaa cgaaaaacgt gatcacatgg tcctgctgga atttgtgacc
      5761 gctgcgggca tcacccacgg tatggacgag ctgtataagc gtccgtaa
 //
-LOCUS       dnabot_H7               5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_H7               5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23101_RiboJ.1', 'UTR2-RBS3', 'BASIC_mTagBFP2_ORF.1',
             'UTR3-RBS3', 'BASIC_mCherry_ORF.1', 'UTR1-RBS2',
@@ -9014,7 +9014,7 @@ ORIGIN
      5701 gtgctgagca aagatccgaa cgaaaaacgt gatcacatgg tcctgctgga atttgtgacc
      5761 gctgcgggca tcacccacgg tatggacgag ctgtataagc gtccgtaa
 //
-LOCUS       dnabot_A8               5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_A8               5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23101_RiboJ.1', 'UTR1-RBS3', 'BASIC_sfGFP_ORF.1',
             'UTR2-RBS1', 'BASIC_mTagBFP2_ORF.1', 'UTR3-RBS1',
@@ -9175,7 +9175,7 @@ ORIGIN
      5701 atcaagttgg acatcacctc ccacaacgag gactacacca tcgtggaaca gtacgaacgc
      5761 gccgagggcc gccactccac cggcggcatg gacgagctgt acaagtaa
 //
-LOCUS       dnabot_B8               5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_B8               5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23101_RiboJ.1', 'UTR1-RBS3', 'BASIC_sfGFP_ORF.1',
             'UTR2-RBS1', 'BASIC_mTagBFP2_ORF.1', 'UTR3-RBS3',
@@ -9336,7 +9336,7 @@ ORIGIN
      5701 atcaagttgg acatcacctc ccacaacgag gactacacca tcgtggaaca gtacgaacgc
      5761 gccgagggcc gccactccac cggcggcatg gacgagctgt acaagtaa
 //
-LOCUS       dnabot_C8               5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_C8               5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23101_RiboJ.1', 'UTR1-RBS3', 'BASIC_sfGFP_ORF.1',
             'UTR2-RBS3', 'BASIC_mTagBFP2_ORF.1', 'UTR3-RBS1',
@@ -9497,7 +9497,7 @@ ORIGIN
      5701 atcaagttgg acatcacctc ccacaacgag gactacacca tcgtggaaca gtacgaacgc
      5761 gccgagggcc gccactccac cggcggcatg gacgagctgt acaagtaa
 //
-LOCUS       dnabot_D8               5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_D8               5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23101_RiboJ.1', 'UTR1-RBS3', 'BASIC_sfGFP_ORF.1',
             'UTR2-RBS3', 'BASIC_mTagBFP2_ORF.1', 'UTR3-RBS3',
@@ -9658,7 +9658,7 @@ ORIGIN
      5701 atcaagttgg acatcacctc ccacaacgag gactacacca tcgtggaaca gtacgaacgc
      5761 gccgagggcc gccactccac cggcggcatg gacgagctgt acaagtaa
 //
-LOCUS       dnabot_E8               5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_E8               5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23101_RiboJ.1', 'UTR2-RBS1', 'BASIC_mTagBFP2_ORF.1',
             'UTR3-RBS1', 'BASIC_mCherry_ORF.1', 'UTR1-RBS3',
@@ -9819,7 +9819,7 @@ ORIGIN
      5701 gtgctgagca aagatccgaa cgaaaaacgt gatcacatgg tcctgctgga atttgtgacc
      5761 gctgcgggca tcacccacgg tatggacgag ctgtataagc gtccgtaa
 //
-LOCUS       dnabot_F8               5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_F8               5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23101_RiboJ.1', 'UTR2-RBS1', 'BASIC_mTagBFP2_ORF.1',
             'UTR3-RBS3', 'BASIC_mCherry_ORF.1', 'UTR1-RBS3',
@@ -9980,7 +9980,7 @@ ORIGIN
      5701 gtgctgagca aagatccgaa cgaaaaacgt gatcacatgg tcctgctgga atttgtgacc
      5761 gctgcgggca tcacccacgg tatggacgag ctgtataagc gtccgtaa
 //
-LOCUS       dnabot_G8               5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_G8               5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23101_RiboJ.1', 'UTR2-RBS3', 'BASIC_mTagBFP2_ORF.1',
             'UTR3-RBS1', 'BASIC_mCherry_ORF.1', 'UTR1-RBS3',
@@ -10141,7 +10141,7 @@ ORIGIN
      5701 gtgctgagca aagatccgaa cgaaaaacgt gatcacatgg tcctgctgga atttgtgacc
      5761 gctgcgggca tcacccacgg tatggacgag ctgtataagc gtccgtaa
 //
-LOCUS       dnabot_H8               5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_H8               5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23101_RiboJ.1', 'UTR2-RBS3', 'BASIC_mTagBFP2_ORF.1',
             'UTR3-RBS3', 'BASIC_mCherry_ORF.1', 'UTR1-RBS3',
@@ -10302,7 +10302,7 @@ ORIGIN
      5701 gtgctgagca aagatccgaa cgaaaaacgt gatcacatgg tcctgctgga atttgtgacc
      5761 gctgcgggca tcacccacgg tatggacgag ctgtataagc gtccgtaa
 //
-LOCUS       dnabot_A9               5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_A9               5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23104_RiboJ.1', 'UTR1-RBS1', 'BASIC_sfGFP_ORF.1',
             'UTR2-RBS1', 'BASIC_mTagBFP2_ORF.1', 'UTR3-RBS1',
@@ -10463,7 +10463,7 @@ ORIGIN
      5701 atcaagttgg acatcacctc ccacaacgag gactacacca tcgtggaaca gtacgaacgc
      5761 gccgagggcc gccactccac cggcggcatg gacgagctgt acaagtaa
 //
-LOCUS       dnabot_B9               5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_B9               5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23104_RiboJ.1', 'UTR1-RBS1', 'BASIC_sfGFP_ORF.1',
             'UTR2-RBS1', 'BASIC_mTagBFP2_ORF.1', 'UTR3-RBS3',
@@ -10624,7 +10624,7 @@ ORIGIN
      5701 atcaagttgg acatcacctc ccacaacgag gactacacca tcgtggaaca gtacgaacgc
      5761 gccgagggcc gccactccac cggcggcatg gacgagctgt acaagtaa
 //
-LOCUS       dnabot_C9               5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_C9               5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23104_RiboJ.1', 'UTR1-RBS1', 'BASIC_sfGFP_ORF.1',
             'UTR2-RBS3', 'BASIC_mTagBFP2_ORF.1', 'UTR3-RBS1',
@@ -10785,7 +10785,7 @@ ORIGIN
      5701 atcaagttgg acatcacctc ccacaacgag gactacacca tcgtggaaca gtacgaacgc
      5761 gccgagggcc gccactccac cggcggcatg gacgagctgt acaagtaa
 //
-LOCUS       dnabot_D9               5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_D9               5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23104_RiboJ.1', 'UTR1-RBS1', 'BASIC_sfGFP_ORF.1',
             'UTR2-RBS3', 'BASIC_mTagBFP2_ORF.1', 'UTR3-RBS3',
@@ -10946,7 +10946,7 @@ ORIGIN
      5701 atcaagttgg acatcacctc ccacaacgag gactacacca tcgtggaaca gtacgaacgc
      5761 gccgagggcc gccactccac cggcggcatg gacgagctgt acaagtaa
 //
-LOCUS       dnabot_E9               5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_E9               5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23104_RiboJ.1', 'UTR2-RBS1', 'BASIC_mTagBFP2_ORF.1',
             'UTR3-RBS1', 'BASIC_mCherry_ORF.1', 'UTR1-RBS1',
@@ -11107,7 +11107,7 @@ ORIGIN
      5701 gtgctgagca aagatccgaa cgaaaaacgt gatcacatgg tcctgctgga atttgtgacc
      5761 gctgcgggca tcacccacgg tatggacgag ctgtataagc gtccgtaa
 //
-LOCUS       dnabot_F9               5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_F9               5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23104_RiboJ.1', 'UTR2-RBS1', 'BASIC_mTagBFP2_ORF.1',
             'UTR3-RBS3', 'BASIC_mCherry_ORF.1', 'UTR1-RBS1',
@@ -11268,7 +11268,7 @@ ORIGIN
      5701 gtgctgagca aagatccgaa cgaaaaacgt gatcacatgg tcctgctgga atttgtgacc
      5761 gctgcgggca tcacccacgg tatggacgag ctgtataagc gtccgtaa
 //
-LOCUS       dnabot_G9               5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_G9               5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23104_RiboJ.1', 'UTR2-RBS3', 'BASIC_mTagBFP2_ORF.1',
             'UTR3-RBS1', 'BASIC_mCherry_ORF.1', 'UTR1-RBS1',
@@ -11429,7 +11429,7 @@ ORIGIN
      5701 gtgctgagca aagatccgaa cgaaaaacgt gatcacatgg tcctgctgga atttgtgacc
      5761 gctgcgggca tcacccacgg tatggacgag ctgtataagc gtccgtaa
 //
-LOCUS       dnabot_H9               5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_H9               5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23104_RiboJ.1', 'UTR2-RBS3', 'BASIC_mTagBFP2_ORF.1',
             'UTR3-RBS3', 'BASIC_mCherry_ORF.1', 'UTR1-RBS1',
@@ -11590,7 +11590,7 @@ ORIGIN
      5701 gtgctgagca aagatccgaa cgaaaaacgt gatcacatgg tcctgctgga atttgtgacc
      5761 gctgcgggca tcacccacgg tatggacgag ctgtataagc gtccgtaa
 //
-LOCUS       dnabot_A10              5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_A10              5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23104_RiboJ.1', 'UTR1-RBS2', 'BASIC_sfGFP_ORF.1',
             'UTR2-RBS1', 'BASIC_mTagBFP2_ORF.1', 'UTR3-RBS1',
@@ -11751,7 +11751,7 @@ ORIGIN
      5701 atcaagttgg acatcacctc ccacaacgag gactacacca tcgtggaaca gtacgaacgc
      5761 gccgagggcc gccactccac cggcggcatg gacgagctgt acaagtaa
 //
-LOCUS       dnabot_B10              5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_B10              5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23104_RiboJ.1', 'UTR1-RBS2', 'BASIC_sfGFP_ORF.1',
             'UTR2-RBS1', 'BASIC_mTagBFP2_ORF.1', 'UTR3-RBS3',
@@ -11912,7 +11912,7 @@ ORIGIN
      5701 atcaagttgg acatcacctc ccacaacgag gactacacca tcgtggaaca gtacgaacgc
      5761 gccgagggcc gccactccac cggcggcatg gacgagctgt acaagtaa
 //
-LOCUS       dnabot_C10              5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_C10              5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23104_RiboJ.1', 'UTR1-RBS2', 'BASIC_sfGFP_ORF.1',
             'UTR2-RBS3', 'BASIC_mTagBFP2_ORF.1', 'UTR3-RBS1',
@@ -12073,7 +12073,7 @@ ORIGIN
      5701 atcaagttgg acatcacctc ccacaacgag gactacacca tcgtggaaca gtacgaacgc
      5761 gccgagggcc gccactccac cggcggcatg gacgagctgt acaagtaa
 //
-LOCUS       dnabot_D10              5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_D10              5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23104_RiboJ.1', 'UTR1-RBS2', 'BASIC_sfGFP_ORF.1',
             'UTR2-RBS3', 'BASIC_mTagBFP2_ORF.1', 'UTR3-RBS3',
@@ -12234,7 +12234,7 @@ ORIGIN
      5701 atcaagttgg acatcacctc ccacaacgag gactacacca tcgtggaaca gtacgaacgc
      5761 gccgagggcc gccactccac cggcggcatg gacgagctgt acaagtaa
 //
-LOCUS       dnabot_E10              5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_E10              5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23104_RiboJ.1', 'UTR2-RBS1', 'BASIC_mTagBFP2_ORF.1',
             'UTR3-RBS1', 'BASIC_mCherry_ORF.1', 'UTR1-RBS2',
@@ -12395,7 +12395,7 @@ ORIGIN
      5701 gtgctgagca aagatccgaa cgaaaaacgt gatcacatgg tcctgctgga atttgtgacc
      5761 gctgcgggca tcacccacgg tatggacgag ctgtataagc gtccgtaa
 //
-LOCUS       dnabot_F10              5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_F10              5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23104_RiboJ.1', 'UTR2-RBS1', 'BASIC_mTagBFP2_ORF.1',
             'UTR3-RBS3', 'BASIC_mCherry_ORF.1', 'UTR1-RBS2',
@@ -12556,7 +12556,7 @@ ORIGIN
      5701 gtgctgagca aagatccgaa cgaaaaacgt gatcacatgg tcctgctgga atttgtgacc
      5761 gctgcgggca tcacccacgg tatggacgag ctgtataagc gtccgtaa
 //
-LOCUS       dnabot_G10              5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_G10              5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23104_RiboJ.1', 'UTR2-RBS3', 'BASIC_mTagBFP2_ORF.1',
             'UTR3-RBS1', 'BASIC_mCherry_ORF.1', 'UTR1-RBS2',
@@ -12717,7 +12717,7 @@ ORIGIN
      5701 gtgctgagca aagatccgaa cgaaaaacgt gatcacatgg tcctgctgga atttgtgacc
      5761 gctgcgggca tcacccacgg tatggacgag ctgtataagc gtccgtaa
 //
-LOCUS       dnabot_H10              5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_H10              5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23104_RiboJ.1', 'UTR2-RBS3', 'BASIC_mTagBFP2_ORF.1',
             'UTR3-RBS3', 'BASIC_mCherry_ORF.1', 'UTR1-RBS2',
@@ -12878,7 +12878,7 @@ ORIGIN
      5701 gtgctgagca aagatccgaa cgaaaaacgt gatcacatgg tcctgctgga atttgtgacc
      5761 gctgcgggca tcacccacgg tatggacgag ctgtataagc gtccgtaa
 //
-LOCUS       dnabot_A11              5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_A11              5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23104_RiboJ.1', 'UTR1-RBS3', 'BASIC_sfGFP_ORF.1',
             'UTR2-RBS1', 'BASIC_mTagBFP2_ORF.1', 'UTR3-RBS1',
@@ -13039,7 +13039,7 @@ ORIGIN
      5701 atcaagttgg acatcacctc ccacaacgag gactacacca tcgtggaaca gtacgaacgc
      5761 gccgagggcc gccactccac cggcggcatg gacgagctgt acaagtaa
 //
-LOCUS       dnabot_B11              5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_B11              5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23104_RiboJ.1', 'UTR1-RBS3', 'BASIC_sfGFP_ORF.1',
             'UTR2-RBS1', 'BASIC_mTagBFP2_ORF.1', 'UTR3-RBS3',
@@ -13200,7 +13200,7 @@ ORIGIN
      5701 atcaagttgg acatcacctc ccacaacgag gactacacca tcgtggaaca gtacgaacgc
      5761 gccgagggcc gccactccac cggcggcatg gacgagctgt acaagtaa
 //
-LOCUS       dnabot_C11              5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_C11              5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23104_RiboJ.1', 'UTR1-RBS3', 'BASIC_sfGFP_ORF.1',
             'UTR2-RBS3', 'BASIC_mTagBFP2_ORF.1', 'UTR3-RBS1',
@@ -13361,7 +13361,7 @@ ORIGIN
      5701 atcaagttgg acatcacctc ccacaacgag gactacacca tcgtggaaca gtacgaacgc
      5761 gccgagggcc gccactccac cggcggcatg gacgagctgt acaagtaa
 //
-LOCUS       dnabot_D11              5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_D11              5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23104_RiboJ.1', 'UTR1-RBS3', 'BASIC_sfGFP_ORF.1',
             'UTR2-RBS3', 'BASIC_mTagBFP2_ORF.1', 'UTR3-RBS3',
@@ -13522,7 +13522,7 @@ ORIGIN
      5701 atcaagttgg acatcacctc ccacaacgag gactacacca tcgtggaaca gtacgaacgc
      5761 gccgagggcc gccactccac cggcggcatg gacgagctgt acaagtaa
 //
-LOCUS       dnabot_E11              5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_E11              5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23104_RiboJ.1', 'UTR2-RBS1', 'BASIC_mTagBFP2_ORF.1',
             'UTR3-RBS1', 'BASIC_mCherry_ORF.1', 'UTR1-RBS3',
@@ -13683,7 +13683,7 @@ ORIGIN
      5701 gtgctgagca aagatccgaa cgaaaaacgt gatcacatgg tcctgctgga atttgtgacc
      5761 gctgcgggca tcacccacgg tatggacgag ctgtataagc gtccgtaa
 //
-LOCUS       dnabot_F11              5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_F11              5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23104_RiboJ.1', 'UTR2-RBS1', 'BASIC_mTagBFP2_ORF.1',
             'UTR3-RBS3', 'BASIC_mCherry_ORF.1', 'UTR1-RBS3',
@@ -13844,7 +13844,7 @@ ORIGIN
      5701 gtgctgagca aagatccgaa cgaaaaacgt gatcacatgg tcctgctgga atttgtgacc
      5761 gctgcgggca tcacccacgg tatggacgag ctgtataagc gtccgtaa
 //
-LOCUS       dnabot_G11              5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_G11              5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23104_RiboJ.1', 'UTR2-RBS3', 'BASIC_mTagBFP2_ORF.1',
             'UTR3-RBS1', 'BASIC_mCherry_ORF.1', 'UTR1-RBS3',
@@ -14005,7 +14005,7 @@ ORIGIN
      5701 gtgctgagca aagatccgaa cgaaaaacgt gatcacatgg tcctgctgga atttgtgacc
      5761 gctgcgggca tcacccacgg tatggacgag ctgtataagc gtccgtaa
 //
-LOCUS       dnabot_H11              5808 bp    DNA     circular UNK 17-JAN-2020
+LOCUS       dnabot_H11              5808 bp    DNA     circular UNK 29-JAN-2020
 DEFINITION  BASIC DNA Assembly of ['LMS', 'BASIC_SEVA_37_CmR-p15A.1', 'LMP',
             'BASIC_L3S2P21_J23104_RiboJ.1', 'UTR2-RBS3', 'BASIC_mTagBFP2_ORF.1',
             'UTR3-RBS3', 'BASIC_mCherry_ORF.1', 'UTR1-RBS3',

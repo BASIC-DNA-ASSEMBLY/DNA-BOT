@@ -6,11 +6,23 @@ from Bio.Alphabet import IUPAC
 from Bio.SeqFeature import SeqFeature, FeatureLocation
 from pathlib import Path
 import csv
+import datetime
+
+DATE = datetime.datetime.now()
+DEFAULT_ANNOTATIONS = {
+                        "source": "synthetic construct",
+                        "organism": "synthetic construct",
+                        "taxonomy": ["other sequences", "artificial sequences"],
+                        "date": DATE.strftime("%d-") + DATE.strftime("%b").upper() + DATE.strftime("-%Y"),
+                        "accessions": [],
+                        "sequence_version": 1,
+                        "topology": "circular"
+                    }
 
 
 def main():
     # Define all the starting part and linker sequences as SeqRecord objects
-    basic_parts = generate_seqrecords()
+    basic_parts = generate_parts()
     for part in basic_parts:
         SeqIO.write(part, f"{part.id}.gb", "genbank")
     parts_linkers = basic_parts + generate_linkers()
@@ -30,19 +42,18 @@ def main():
                 assembled_seqrec = seqrec_assembly.assemble_seq_record(
                     id=f"dnabot_{row[0]}",
                     name=f"dnabot_{row[0]}",
-                    annotations={
-                        "source": "synthetic construct",
-                        "organism": "synthetic construct",
-                        "taxonomy": ["other sequences", "artificial sequences"],
-                        "date": "17-JAN-2020",
-                        "accessions": [],
-                        "sequence_version": 1,
-                        "topology": "circular"
-                    }
+                    annotations=DEFAULT_ANNOTATIONS
                 )
                 assembled_seqrec.seq.alphabet = IUPAC.unambiguous_dna
                 seqrec_assemblies.append(assembled_seqrec)
     SeqIO.write(seqrec_assemblies, "dnabot_constructs.gb", "genbank")
+    clean_basic_genbank(
+        "benchling_basic_seva_18_ampr-puc-1.gb", 
+        "BASIC_SEVA_18_AmpR-pUC.1.gb",
+        description="backbone vector for BASIC DNA assembly containing ampicillin resistance marker, pUC origin and mScarlet counter selection marker.",
+        id="BASIC_SEVA_18_AmpR-pUC.1",
+        name="BASIC_SEVA_18_AmpR-pUC"
+    )
 
 
 def identify_basic_part(target, candidate_list):
@@ -166,7 +177,7 @@ class AbrevOrf(_AbrevPart):
         super().__init__(seq, abrev, prefix, suffix, version, **kwargs)
 
 
-def generate_seqrecords():
+def generate_parts():
     parts = []
     parts.append(AbrevPromoter(
         Seq("CTCGGTACCAAATTCCAGAAAAGAGGCCTCCCGAAAGGGGGGCCTTTTTTCGTTTTGGTCCGTGCCTACTCTGGAAAATCTTTTACGGCTAGCTCAGTCCTAGGTACTATGCTAGCAGCTGTCACCGGATGTGCTTTCCGGTCTGATGAGTCCGTGAGGACGAAACAGCCTCTACAAATAATTTTGTTTAA", IUPAC.unambiguous_dna), "105"))
@@ -239,16 +250,8 @@ def generate_seqrecords():
     )
     )
     for ind, part in enumerate(parts_in_vectors):
-        parts_in_vectors[ind].name = part.id[:len(part.id)-2]
-        parts_in_vectors[ind].annotations = {
-            "source": "synthetic construct",
-            "organism": "synthetic construct",
-            "taxonomy": ["other sequences", "artificial sequences"],
-            "date": "17-JAN-2020",
-            "accessions": [],
-            "sequence_version": 1,
-            "topology": "circular"
-        }
+        parts_in_vectors[ind].name = clean_seqrec_name(part)
+        parts_in_vectors[ind].annotations = DEFAULT_ANNOTATIONS
     return parts_in_vectors
 
 
@@ -281,6 +284,28 @@ def generate_linkers():
     linkers.append(generate_basic_linker(
         "LMS", "ctcgggagacctatcgGTAATAACAGTCCAATCTGGTGTaacttcggaatcgtcc"))
     return linkers
+
+
+def clean_basic_genbank(file_path, return_path, **kwargs):
+    """Writes a cleaner genbank file for a BASIC part.
+
+    Args:
+        file_path: path to genbank file.
+        return_path: path the cleaned genbank file is returned to.
+        **kwargs: dict items used to update the seqrecord.
+
+    """
+    cleaned_genbank = SeqIO.read(file_path, "genbank")
+    cleaned_genbank.name = clean_seqrec_name(cleaned_genbank)
+    cleaned_genbank.annotations = DEFAULT_ANNOTATIONS
+    if kwargs:
+        for key, value in kwargs.items():
+            setattr(cleaned_genbank, key, value)
+    SeqIO.write(cleaned_genbank, return_path, "genbank")
+
+
+def clean_seqrec_name(seqrec):
+    return seqrec.id[:len(seqrec.id)-2]
 
 
 if __name__ == "__main__":
