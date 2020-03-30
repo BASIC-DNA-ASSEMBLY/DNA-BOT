@@ -113,7 +113,8 @@ class BasicLinker(SeqRecord):
                 location=FeatureLocation(2, len(self.seq), strand=+1),
                 qualifiers={
                     "function": ["BASIC DNA assembly linker"],
-                    "standard_name": [f"{self.id}"]
+                    "standard_name": [f"{self.id}"],
+                    "note": [f"{self.id}"]
                 }
             )
         )
@@ -217,7 +218,7 @@ def generate_parts():
                 }
             ))
 
-    rfp_seqrecord = SeqIO.read(Path().cwd() / "p004_rfp.gb", "genbank")
+    rfp_seqrecord = SeqIO.read(Path().cwd() / "p004_rfp_b.gb", "genbank")
     rfp_seqrecord.upper()
     mcherry_search = SeqUtils.nt_search(
         str(rfp_seqrecord.seq),
