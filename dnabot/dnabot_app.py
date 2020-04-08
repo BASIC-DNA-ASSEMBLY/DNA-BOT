@@ -249,13 +249,13 @@ def generate_sources_dict(paths):
     """
     sources_dict = {}
     for deck_index, path in enumerate(paths):
+        deck_pos = SOURCE_DECK_POS[deck_index]
         with open(path, 'r') as csvfile:
             csv_reader = csv.reader(csvfile)
-            for index, source in enumerate(csv_reader):
-                if index != 0:
-                    csv_values = source[1:]
-                    csv_values.append(SOURCE_DECK_POS[deck_index])
-                    sources_dict[str(source[0])] = tuple(csv_values)
+            next(csv_reader)
+            for source in csv_reader:
+                source.append(deck_pos)
+                sources_dict[str(source[0])] = tuple(source[1:])
     return sources_dict
 
 
