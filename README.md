@@ -1,6 +1,6 @@
 # dnabot
 
-Material for [DNA assembly using BASIC on OpenTrons (DNA-BOT)](https://www.biorxiv.org/content/10.1101/832139v1).
+Material for DNA assembly using BASIC on OpenTrons (DNA-BOT). This branch contains material as submitted for publication to OUP Synthetic Biology.
 
 ## Getting Started
 
