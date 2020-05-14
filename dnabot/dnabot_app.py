@@ -56,28 +56,27 @@ def main():
     print("Requesting user input, if not visible checked minimized windows.")
     root = tk.Tk()
     dnabotinst = gui.DnabotApp(root)
+
+    # User parses arguments
     root.mainloop()
     root.destroy()
+
+    # App recieves and checks arguments
     if dnabotinst.quit_status:
         sys.exit("User specified 'QUIT' during app.")
     root = tk.Tk()
-
-    # User parses csv paths
     construct_path = gui.UserDefinedPaths(root, 'Construct csv file')
     root.destroy()
     root = tk.Tk()
     sources_paths = gui.UserDefinedPaths(root, 'Sources csv files',
                                          multiple_files=True)
-
-    # Check user input correct
     if len(sources_paths.output) > len(SOURCE_DECK_POS):
         raise ValueError(
             'Number of source plates exceeds deck positions.')
     root.destroy()
-    os.chdir(os.path.dirname(construct_path.output))
     print('User input successfully collected.')
 
-    # Calculate clip reactions
+    # Calculate clip reactions required
     print('Processing input csv files...')
     constructs_list = generate_constructs_list(construct_path.output)
     clips_df = generate_clips_df(constructs_list)
@@ -85,7 +84,7 @@ def main():
     # Convert parts_linkers.csv to a dictionary
     sources_dict = generate_sources_dict(sources_paths.output)
 
-    # calculate OT2 script variables
+    # calculate variables for OT-2 scripts
     print('Calculating OT-2 variables...')
     clips_dict = generate_clips_dict(clips_df, sources_dict)
     magbead_sample_number = clips_df['number'].sum()
@@ -96,10 +95,11 @@ def main():
     spotting_tuples = generate_spotting_tuples(constructs_list,
                                                SPOTTING_VOLS_DICT)
 
-    # Write OT2 scripts
-    generator_dir = os.getcwd()
-    template_dir_path = os.path.join(generator_dir, TEMPLATE_DIR_NAME)
+    # Write OT2 scripts from variables and template scripts
     print('Writing files...')
+    generator_dir = os.getcwd()
+    os.chdir(os.path.dirname(construct_path.output))
+    template_dir_path = os.path.join(generator_dir, TEMPLATE_DIR_NAME)
     generate_ot2_script(CLIP_FNAME, os.path.join(
         template_dir_path, CLIP_TEMP_FNAME), clips_dict=clips_dict)
     generate_ot2_script(MAGBEAD_FNAME, os.path.join(
@@ -127,7 +127,7 @@ def main():
     sources_paths_df = generate_sources_paths_df(
         sources_paths.output, SOURCE_DECK_POS)
 
-    # Write metainformation files
+    # Write metainformation to files
     construct_base = os.path.basename(construct_path.output)
     construct_base = os.path.splitext(construct_base)[0]
     dfs_to_csv(construct_base + '_' + CLIPS_INFO_FNAME, index=False,
