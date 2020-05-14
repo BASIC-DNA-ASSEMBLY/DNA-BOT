@@ -139,21 +139,15 @@ def main():
 
 def generate_constructs_list(path):
     """Generates a list of dataframes corresponding to each construct. Each 
-    dataframe lists components of the CLIP reactions required.
-
-    """
+    dataframe lists components of the CLIP reactions required."""
 
     def process_construct(construct):
         """Processes an individual construct into a dataframe of CLIP reactions
-        outlining prefix linkers, parts and suffix linkers.
-
-        """
+        outlining prefix linkers, parts and suffix linkers."""
 
         def interogate_linker(linker):
             """Interogates linker to determine if the suffix linker is a UTR
-            linker.
-
-            """
+            linker."""
             if len(linker) >= 4:
                 if linker[:3] == 'UTR':
                     return linker[:4] + '-S'
@@ -196,9 +190,7 @@ def generate_constructs_list(path):
 
 def generate_clips_df(constructs_list):
     """Generates a dataframe containing information about all the unique CLIP 
-    reactions required to synthesise the constructs in constructs_list.
-
-    """
+    reactions required to synthesise the constructs in constructs_list."""
     merged_construct_dfs = pd.concat(constructs_list, ignore_index=True)
     unique_clips_df = merged_construct_dfs.drop_duplicates()
     unique_clips_df = unique_clips_df.reset_index(drop=True)
@@ -244,9 +236,7 @@ def generate_sources_dict(paths):
 
     Args:
         paths (list): list of strings each corresponding to a path for a 
-                      sources csv file. 
-
-    """
+                      sources csv file. """
     sources_dict = {}
     for deck_index, path in enumerate(paths):
         deck_pos = SOURCE_DECK_POS[deck_index]
@@ -261,9 +251,7 @@ def generate_sources_dict(paths):
 
 def generate_clips_dict(clips_df, sources_dict):
     """Using clips_df and sources_dict, returns a clips_dict which acts as the 
-    sole variable for the opentrons script "clip.ot2.py".
-
-    """
+    sole variable for the opentrons script "clip.ot2.py"."""
     max_part_vol = CLIP_VOL - (T4_BUFF_VOL + BSAI_VOL + T4_LIG_VOL
                                + CLIP_MAST_WATER + 2)
     clips_dict = {'prefixes_wells': [], 'prefixes_plates': [],
@@ -316,9 +304,7 @@ def generate_clips_dict(clips_df, sources_dict):
 def generate_final_assembly_dict(constructs_list, clips_df):
     """Using constructs_list and clips_df, returns a dictionary of final
     assemblies with keys defining destination plate well positions and values
-    indicating which clip reaction wells are used.
-
-    """
+    indicating which clip reaction wells are used."""
     final_assembly_dict = {}
     clips_count = np.zeros(len(clips_df.index))
     for construct_index, construct_df in enumerate(constructs_list):
@@ -340,9 +326,7 @@ def generate_final_assembly_dict(constructs_list, clips_df):
 
 def calculate_final_assembly_tipracks(final_assembly_dict):
     """Calculates the number of final assembly tipracks required ensuring
-    no more than MAX_FINAL_ASSEMBLY_TIPRACKS are used.
-
-    """
+    no more than MAX_FINAL_ASSEMBLY_TIPRACKS are used."""
     final_assembly_lens = []
     for values in final_assembly_dict.values():
         final_assembly_lens.append(len(values))
@@ -367,7 +351,7 @@ def generate_spotting_tuples(constructs_list, spotting_vols_dict):
     Args:
         spotting_vols_dict (dict): Part number defined by keys, spottting
             volumes defined by corresponding value.
-
+    
     """
     # Calculate wells and volumes
     wells = [mplates.final_well(x + 1) for x in range(len(constructs_list))]
@@ -393,9 +377,7 @@ def generate_ot2_script(ot2_script_path, template_path, **kwargs):
     """Generates an ot2 script named 'ot2_script_path', where kwargs are 
     written as global variables at the top of the script. For each kwarg, the 
     keyword defines the variable name while the value defines the name of the 
-    variable. The remainder of template file is subsequently written below.        
-
-    """
+    variable. The remainder of template file is subsequently written below."""
     with open(ot2_script_path, 'w') as wf:
         with open(template_path, 'r') as rf:
             for index, line in enumerate(rf):
@@ -422,9 +404,7 @@ def generate_ot2_script(ot2_script_path, template_path, **kwargs):
 
 def generate_master_mix_df(clip_number):
     """Generates a dataframe detailing the components required in the clip 
-    reaction master mix.
-
-    """
+    reaction master mix."""
     COMPONENTS = {'Component': ['Promega T4 DNA Ligase buffer, 10X',
                                 'Water', 'NEB BsaI-HFv2',
                                 'Promega T4 DNA Ligase']}
@@ -444,7 +424,7 @@ def generate_sources_paths_df(paths, deck_positions):
     Args:
         paths (list): list of strings specifying paths to source plates.
         deck_positions (list): list of strings specifying candidate deck positions.
-
+    
     """
     source_plates_dict = {'Deck position': [], 'Source plate': [], 'Path': []}
     for index, path in enumerate(paths):
@@ -457,9 +437,7 @@ def generate_sources_paths_df(paths, deck_positions):
 def dfs_to_csv(path, index=True, **kw_dfs):
     """Generates a csv file defined by path, where kw_dfs are 
     written one after another with each key acting as a title. If index=True,
-    df indexes are written to the csv file.
-
-    """
+    df indexes are written to the csv file."""
     with open(path, 'w', newline='') as csvfile:
         csvwriter = csv.writer(csvfile)
         for key, value in kw_dfs.items():
