@@ -52,11 +52,7 @@ SOURCE_DECK_POS = ['2', '5', '8', '7', '10', '11']
 
 
 def main():
-    # Parent directories
-    generator_dir = os.getcwd()
-    template_dir_path = os.path.join(generator_dir, TEMPLATE_DIR_NAME)
-
-    # Obtain user input
+    # Initialise GUI
     print("Requesting user input, if not visible checked minimized windows.")
     root = tk.Tk()
     dnabotinst = gui.DnabotApp(root)
@@ -65,24 +61,28 @@ def main():
     if dnabotinst.quit_status:
         sys.exit("User specified 'QUIT' during app.")
     root = tk.Tk()
+
+    # User parses csv paths
     construct_path = gui.UserDefinedPaths(root, 'Construct csv file')
     root.destroy()
     root = tk.Tk()
     sources_paths = gui.UserDefinedPaths(root, 'Sources csv files',
                                          multiple_files=True)
+
+    # Check user input correct
     if len(sources_paths.output) > len(SOURCE_DECK_POS):
         raise ValueError(
             'Number of source plates exceeds deck positions.')
     root.destroy()
     os.chdir(os.path.dirname(construct_path.output))
-    construct_base = os.path.basename(construct_path.output)
-    construct_base = os.path.splitext(construct_base)[0]
     print('User input successfully collected.')
 
-    # Process input csv files
+    # Calculate clip reactions
     print('Processing input csv files...')
     constructs_list = generate_constructs_list(construct_path.output)
     clips_df = generate_clips_df(constructs_list)
+
+    # Convert parts_linkers.csv to a dictionary
     sources_dict = generate_sources_dict(sources_paths.output)
 
     # calculate OT2 script variables
@@ -96,8 +96,10 @@ def main():
     spotting_tuples = generate_spotting_tuples(constructs_list,
                                                SPOTTING_VOLS_DICT)
 
-    print('Writing files...')
     # Write OT2 scripts
+    generator_dir = os.getcwd()
+    template_dir_path = os.path.join(generator_dir, TEMPLATE_DIR_NAME)
+    print('Writing files...')
     generate_ot2_script(CLIP_FNAME, os.path.join(
         template_dir_path, CLIP_TEMP_FNAME), clips_dict=clips_dict)
     generate_ot2_script(MAGBEAD_FNAME, os.path.join(
@@ -113,15 +115,21 @@ def main():
         spotting_tuples=spotting_tuples,
         soc_well=f"A{dnabotinst.soc_column}")
 
-    # Write non-OT2 scripts
+    # Check if "metainformation" directory exists and make if missing
     if 'metainformation' in os.listdir():
         pass
     else:
-        os.makedirs('metainformation')
+        os.makedirs('metainformation')    
     os.chdir('metainformation')
+
+    # Calculate additional metainformation
     master_mix_df = generate_master_mix_df(clips_df['number'].sum())
     sources_paths_df = generate_sources_paths_df(
         sources_paths.output, SOURCE_DECK_POS)
+
+    # Write metainformation files
+    construct_base = os.path.basename(construct_path.output)
+    construct_base = os.path.splitext(construct_base)[0]
     dfs_to_csv(construct_base + '_' + CLIPS_INFO_FNAME, index=False,
                MASTER_MIX=master_mix_df, SOURCE_PLATES=sources_paths_df,
                CLIP_REACTIONS=clips_df)
