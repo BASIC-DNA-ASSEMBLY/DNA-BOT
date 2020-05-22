@@ -31,7 +31,7 @@ def clip(
     PART_MIX_SETTINGS = (4, 5)
 
     # Tiprack slots
-    total_tips = 4 * len(parts_wells)
+    total_tips = 4 * len(parts_wells) + 1
     letter_dict = {'A': 0, 'B': 1, 'C': 2,
                    'D': 3, 'E': 4, 'F': 5, 'G': 6, 'H': 7}
     tiprack_1_tips = (
