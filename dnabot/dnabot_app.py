@@ -278,16 +278,16 @@ def generate_clips_dict(clips_df, sources_dict):
             clips_dict['prefixes_wells'].append([sources_dict[prefix_linker][0]]
                                                 * clip_info['number'])
             clips_dict['prefixes_plates'].append(
-                [sources_dict[prefix_linker][2]] * clip_info['number'])
+                [handle_2_columns(sources_dict[prefix_linker])[2]] * clip_info['number'])
             suffix_linker = clip_info['suffixes']
             clips_dict['suffixes_wells'].append([sources_dict[suffix_linker][0]]
                                                 * clip_info['number'])
             clips_dict['suffixes_plates'].append(
-                [sources_dict[suffix_linker][2]] * clip_info['number'])
+                [handle_2_columns(sources_dict[suffix_linker])[2]] * clip_info['number'])
             part = clip_info['parts']
             clips_dict['parts_wells'].append([sources_dict[part][0]]
                                              * clip_info['number'])
-            clips_dict['parts_plates'].append([sources_dict[part][2]]
+            clips_dict['parts_plates'].append([handle_2_columns(sources_dict[part])[2]]
                                               * clip_info['number'])
             if not sources_dict[part][1]:
                 clips_dict['parts_vols'].append([DEFAULT_PART_VOL] *
@@ -467,6 +467,29 @@ def dfs_to_csv(path, index=True, **kw_dfs):
             value.to_csv(csvfile, index=index)
             csvwriter.writerow('')
 
+def handle_2_columns(datalist):
+    """This function has the intent of changing:
+    ('A8', '2') => ('A8', '', '2')
+    ('A8', '', '2') => ('A8', '', '2')
+    [('E2', '5')] => [('E2', '', '5')]
+    [('G1', '', '5')] => [('G1', '', '5')]
+    with the purpose of handling 2 column csv part file inputs,
+    as at times when 2 column csv files are input it creates tuples
+    of length 2 instead of 3
+    """
+    return_list = 0
+    if isinstance(datalist,list):
+        datalist = datalist[0]
+        return_list = 1
+    if len(datalist) == 2:
+        datalist = list(datalist)
+        datalist.insert(1,"")
+        datalist = tuple(datalist)
+    if return_list:
+        mylist = [""]
+        mylist[0] = datalist
+        return mylist
+    return datalist
 
 if __name__ == '__main__':
     main()
