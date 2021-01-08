@@ -150,13 +150,12 @@ def generate_constructs_list(path):
         """
 
         def interogate_linker(linker):
-            """Interogates linker to determine if the suffix linker is a UTR
+            """Interrogates linker to determine if the suffix linker is a UTR
             linker.
 
             """
-            if len(linker) >= 4:
-                if linker[:3] == 'UTR':
-                    return linker[:4] + '-S'
+            if linker.startswith('U'):
+                return linker.split('-')[0] + '-S'
             else:
                 return linker + "-S"
 
