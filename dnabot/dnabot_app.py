@@ -6,6 +6,7 @@ Created on Thu Apr 11 14:26:07 2019
 """
 import os
 import csv
+import argparse
 import pandas as pd
 import numpy as np
 import json
@@ -51,10 +52,49 @@ SPOTTING_VOLS_DICT = {2: 5, 3: 5, 4: 5, 5: 5, 6: 5, 7: 5}
 SOURCE_DECK_POS = ['2', '5', '8', '7', '10', '11']
 
 
-def main():
-    # Parent directories
-    generator_dir = os.getcwd()
-    template_dir_path = os.path.join(generator_dir, TEMPLATE_DIR_NAME)
+def __cli():
+    """Command line interface.
+
+    :returns: CLI arguments
+    :rtype: <argparse.Namespace>
+    """
+    desc = "DNA assembly using BASIC on OpenTrons."
+    parser = argparse.ArgumentParser(description=desc)
+
+    # Specific options for collecting settings from command line
+    subparsers = parser.add_subparsers(help='Optional, to define settings from the terminal instead of the graphical '
+                                            'interface. Type "python dnabot_app.py nogui -h" for more info.')
+    parser_nogui = subparsers.add_parser('nogui')
+    parser_nogui.add_argument('--construct_path', help='Construct CSV file.', required=True)
+    parser_nogui.add_argument('--source_paths', help='Source CSV files.', nargs='+', required=True)
+    parser_nogui.add_argument('--etoh_well', help='Well coordinate for Ethanol. Default: A11', default='A11', type=str)
+    parser_nogui.add_argument('--soc_column', help='Column coordinate for SOC. Default: 1', default=1, type=int)
+    parser_nogui.add_argument('--output_dir',
+                              help='Output directory. Default: same directory than the one containing the '
+                                   '"construct_path" file',
+                              default=None, type=str or None)
+    parser_nogui.add_argument('--template_dir',
+                              help='Template directory. Default: "template_ot2_scripts" located next to the present '
+                                   'script.',
+                              default=None, type=str or None)
+    # Makes life easier to decide if we should switch to GUI or not
+    parser.set_defaults(nogui=False)
+    parser_nogui.set_defaults(nogui=True)
+    return parser.parse_args()
+
+
+def __info_from_gui():
+    """Pop GUI to collect user inputs.
+
+    :returns user_inputs: info collected
+    :rtype: dict
+    """
+    user_inputs = {
+        'construct_path': None,
+        'sources_paths': None,
+        'etoh_well': None,
+        'soc_column': None
+    }
 
     # Obtain user input
     print("Requesting user input, if not visible checked minimized windows.")
@@ -64,26 +104,75 @@ def main():
     root.destroy()
     if dnabotinst.quit_status:
         sys.exit("User specified 'QUIT' during app.")
+    # etoh_well and soc_column are silently collected by the gui
+    user_inputs['etoh_well'] = dnabotinst.etoh_well
+    user_inputs['soc_column'] = dnabotinst.soc_column
+    # construct file path
     root = tk.Tk()
-    construct_path = gui.UserDefinedPaths(root, 'Construct csv file')
+    user_inputs['construct_path'] = gui.UserDefinedPaths(root, 'Construct csv file').output
     root.destroy()
+
+    # part & linker file paths
     root = tk.Tk()
-    sources_paths = gui.UserDefinedPaths(root, 'Sources csv files',
-                                         multiple_files=True)
-    if len(sources_paths.output) > len(SOURCE_DECK_POS):
-        raise ValueError(
-            'Number of source plates exceeds deck positions.')
+    user_inputs['sources_paths'] = gui.UserDefinedPaths(root, 'Sources csv files', multiple_files=True).output
     root.destroy()
-    os.chdir(os.path.dirname(construct_path.output))
-    construct_base = os.path.basename(construct_path.output)
+
+    return user_inputs
+
+
+def main():
+    # Settings
+    args = __cli()
+    if args.nogui:
+        etoh_well = args.etoh_well
+        soc_column = args.soc_column
+        construct_path = args.construct_path
+        sources_paths = args.source_paths
+        output_dir = args.output_dir
+        template_dir = args.template_dir
+    else:
+        user_inputs = __info_from_gui()
+        etoh_well = user_inputs['etoh_well']
+        soc_column = user_inputs['soc_column']
+        construct_path = user_inputs['construct_path']
+        sources_paths = user_inputs['sources_paths']
+        output_dir = os.path.dirname(construct_path)
+        template_dir = None
+
+    # Args checking
+    if len(sources_paths) > len(SOURCE_DECK_POS):
+        raise ValueError('Number of source plates exceeds deck positions.')
+
+    # Path to template directory
+    if template_dir is not None:
+        # Just to comment this case: only way to fall here is that the variable has been set throught the command
+        # line arguments, nothing to do.^
+        template_dir_path = template_dir
+        pass
+    elif __name__ == '__main__':
+        # Alternatively, try to automatically deduce the path relatively to the main script path
+        script_path = os.path.abspath(__file__)
+        template_dir_path = os.path.abspath(os.path.join(script_path, '..', TEMPLATE_DIR_NAME))
+    else:
+        # Fallback
+        generator_dir = os.getcwd()
+        template_dir_path = os.path.abspath(os.path.join(generator_dir, TEMPLATE_DIR_NAME))
+
+    # Dealing with output dir
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+    os.chdir(output_dir)
+
+    # Prefix name
+    construct_base = os.path.basename(construct_path)
     construct_base = os.path.splitext(construct_base)[0]
     print('User input successfully collected.')
 
     # Process input csv files
     print('Processing input csv files...')
-    constructs_list = generate_constructs_list(construct_path.output)
+    constructs_list = generate_constructs_list(construct_path)
     clips_df = generate_clips_df(constructs_list)
-    sources_dict = generate_sources_dict(sources_paths.output)
+    sources_dict = generate_sources_dict(sources_paths)
 
     # calculate OT2 script variables
     print('Calculating OT-2 variables...')
@@ -103,7 +192,7 @@ def main():
     generate_ot2_script(MAGBEAD_FNAME, os.path.join(
         template_dir_path, MAGBEAD_TEMP_FNAME),
         sample_number=magbead_sample_number,
-        ethanol_well=dnabotinst.etoh_well)
+        ethanol_well=etoh_well)
     generate_ot2_script(F_ASSEMBLY_FNAME, os.path.join(
         template_dir_path, F_ASSEMBLY_TEMP_FNAME),
         final_assembly_dict=final_assembly_dict,
@@ -111,7 +200,7 @@ def main():
     generate_ot2_script(TRANS_SPOT_FNAME, os.path.join(
         template_dir_path, TRANS_SPOT_TEMP_FNAME),
         spotting_tuples=spotting_tuples,
-        soc_well=f"A{dnabotinst.soc_column}")
+        soc_well=f"A{soc_column}")
 
     # Write non-OT2 scripts
     if 'metainformation' in os.listdir():
@@ -120,8 +209,7 @@ def main():
         os.makedirs('metainformation')
     os.chdir('metainformation')
     master_mix_df = generate_master_mix_df(clips_df['number'].sum())
-    sources_paths_df = generate_sources_paths_df(
-        sources_paths.output, SOURCE_DECK_POS)
+    sources_paths_df = generate_sources_paths_df(sources_paths, SOURCE_DECK_POS)
     dfs_to_csv(construct_base + '_' + CLIPS_INFO_FNAME, index=False,
                MASTER_MIX=master_mix_df, SOURCE_PLATES=sources_paths_df,
                CLIP_REACTIONS=clips_df)
@@ -131,9 +219,9 @@ def main():
         for final_assembly_well, construct_clips in final_assembly_dict.items():
             csvwriter.writerow([final_assembly_well, construct_clips])
     with open(construct_base + '_' + WELL_OUTPUT_FNAME, 'w') as f:
-        f.write('Magbead ethanol well: {}'.format(dnabotinst.etoh_well))
+        f.write('Magbead ethanol well: {}'.format(etoh_well))
         f.write('\n')
-        f.write('SOC column: {}'.format(dnabotinst.soc_column))
+        f.write('SOC column: {}'.format(soc_column))
     print('BOT-2 generator successfully completed!')
 
 
