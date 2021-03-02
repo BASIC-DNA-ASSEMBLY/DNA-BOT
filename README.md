@@ -1,4 +1,6 @@
-# dnabot
+# DNA-BOTv2
+
+The DNA-BOT-APIv2 branch is being used to update the DNA-BOT App to the Opentrons APIv2. It will also include options for using the thermocycler module and will be updated for Gen2 pipettes and hardware modules. This is currently a work in progress.
 
 Material for [DNA assembly using BASIC on OpenTrons (DNA-BOT)](https://www.biorxiv.org/content/10.1101/832139v1).
 
