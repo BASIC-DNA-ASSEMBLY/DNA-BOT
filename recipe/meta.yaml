@@ -1,0 +1,61 @@
+{% set name = "dnabot" %}
+{% set data = load_setup_py_data() %}
+
+package:
+  name: {{ name|lower }}
+  version: {{ data['version'] }}
+
+source:
+  path: ..
+
+build:
+  number: 0
+  script: {{ PYTHON }} -m pip install --no-deps --ignore-installed -vv .
+
+requirements:
+  host:
+    - python {{ python }}
+  run:
+    - python {{ python }}
+    - aiohttp
+    - async-timeout
+    - attrs
+    - chardet
+    - idna
+    - importlib-metadata
+    - jsonschema
+    - more-itertools
+    - multidict
+    - numpy
+    - opentrons
+    - pandas
+    - pyrsistent
+    - pyserial
+    - python-dateutil
+    - pytz
+    - six
+    - urwid
+    - yarl
+    - zipp
+
+test:
+  # source_files:
+  #   - tests
+  imports:
+    - {{ name|lower }}
+  requires:
+    - pytest
+  commands:
+    - python dnabot/dnabot_app.py nogui --help
+    # - cd tests ; pytest -v
+
+about:
+  home: https://github.com/brsynth/DNA-BOT
+  summary: {{ data['description'] }}
+  license: {{ data.get('license') }}
+  license_file: LICENSE
+#  description: {{ data['long_description'] }}
+
+extra:
+  recipe-maintainers:
+    - tduigou
