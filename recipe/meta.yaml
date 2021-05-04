@@ -17,37 +17,29 @@ requirements:
     - python {{ python }}
   run:
     - python {{ python }}
-    - aiohttp
-    - async-timeout
-    - attrs
-    - chardet
+    - aiohttp==3.7.4
+    - async-timeout==3.0.1
+    - attrs==19.3.0
+    - chardet==3.0.4
     - idna
     - importlib-metadata
     - jsonschema
-    - more-itertools
+    - more-itertools==7.2.0
     - multidict
     - numpy
-    - opentrons
     - pandas
     - pyrsistent
-    - pyserial
-    - python-dateutil
-    - pytz
+    - pyserial==3.4
+    - python-dateutil==2.8.0
+    - pytz==2019.3
     - six
     - urwid
     - yarl
-    - zipp
+    - zipp==0.6.0
 
 test:
-  # source_files:
-  #   - tests
   imports:
     - {{ name|lower }}
-  requires:
-    - pytest
-  commands:
-    - python dnabot/dnabot_app.py nogui --help
-    # - cd tests ; pytest -v
 
 about:
   home: https://github.com/brsynth/DNA-BOT
