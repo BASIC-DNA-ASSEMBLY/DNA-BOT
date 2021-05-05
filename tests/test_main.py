@@ -13,7 +13,7 @@ in_file_linker = Path(__file__).resolve().parent / 'inputs' / 'linker_parts_coor
 in_file_user = Path(__file__).resolve().parent / 'inputs' / 'user_parts_coords.csv'
 
 
-files_to_tests=['1_clip.ot2.py', '2_purification.ot2.py', '3_assembly.ot2.py', '4_transformation.ot2.py', join('metainformation','constructs_wells.txt'), join('metainformation','constructs_final_assembly_run_info.csv'), join('metainformation','constructs_clip_run_info.csv')]
+files_to_tests=['1_clip.ot2.py', '2_purification.ot2.py', '3_assembly.ot2.py', '4_transformation.ot2.py', join('metainformation','constructs_wells.txt'), join('metainformation','constructs_final_assembly_run_info.csv')]
 
 
 def test_output(tmpdir):
