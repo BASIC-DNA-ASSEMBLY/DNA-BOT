@@ -1,23 +1,25 @@
 # -*- coding: utf-8 -*-
 
-import os
+#import os
 import pytest
 import subprocess
+from pathlib import Path
+from os.path import dirname, abspath, join
 
-path = os. getcwd()
 
-tool = os.path.join(path, 'dnabot', 'dnabot_app.py')
-in_file_construct = os.path.join(path, 'tests', 'inputs', 'constructs.csv')
-in_file_linker = os.path.join(path, 'tests', 'inputs', 'linker_parts_coords.csv')
-in_file_user = os.path.join(path, 'tests', 'inputs', 'user_parts_coords.csv')
+tool = join(dirname(dirname(abspath(__file__))), 'dnabot', 'dnabot_app.py')
+in_file_construct = Path(__file__).resolve().parent / 'inputs' / 'constructs.csv'
+in_file_linker = Path(__file__).resolve().parent / 'inputs' / 'linker_parts_coords.csv'
+in_file_user = Path(__file__).resolve().parent / 'inputs' / 'user_parts_coords.csv'
 
-files_to_tests=['1_clip.ot2.py', '2_purification.ot2.py', '3_assembly.ot2.py', '4_transformation.ot2.py', os.path.join('metainformation','constructs_wells.txt'), os.path.join('metainformation','constructs_final_assembly_run_info.csv'), os.path.join('metainformation','constructs_clip_run_info.csv')]
+
+files_to_tests=['1_clip.ot2.py', '2_purification.ot2.py', '3_assembly.ot2.py', '4_transformation.ot2.py', join('metainformation','constructs_wells.txt'), join('metainformation','constructs_final_assembly_run_info.csv'), join('metainformation','constructs_clip_run_info.csv')]
 
 
 def test_output(tmpdir):
 
     #compare the contents of output files actual vs expected
-    #python dnabot/dnabot_app.py nogui --construct_path inputs/constructs.csv --source_paths inputs/linker_parts_coords.csv /home/kenza/Bureau/conda_packaging/DNA-BOT/inputs/user_parts_coords.csv --output_dir bot_py36_out
+    #python DNA-BOT/dnabot/dnabot_app.py nogui --construct_path DNA-BOT/tests/inputs/constructs.csv --source_paths DNA-BOT/tests/inputs/linker_parts_coords.csv DNA-BOT/tests/inputs/user_parts_coords.csv --output_dir tmpdir
     
     result = subprocess.run(['python', tool, 'nogui', '--construct_path', in_file_construct, '--source_paths', in_file_linker, in_file_user, '--output_dir', tmpdir], stdout=subprocess.PIPE)
 
@@ -26,7 +28,7 @@ def test_output(tmpdir):
         with open(out_file) as f:
             actual = f.read()
 
-        fname = os.path.join('tests', 'outputs', i)
+        fname = Path(__file__).resolve().parent / 'outputs' / i
         with open(fname) as f:
             expected = f.read()
 
