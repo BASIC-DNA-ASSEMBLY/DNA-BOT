@@ -84,6 +84,15 @@ conda deactivate
 conda env remove -n <dev_env>
 ```
 
+### Tests
+
+You need to install *pytest* if it's not done yet (`conda install pytest`).
+
+```bash
+cd <repository>
+python -m pytest
+```
+
 ## Authors
 
 * **Matthew C Haines** - [hainesm6](https://github.com/hainesm6)
