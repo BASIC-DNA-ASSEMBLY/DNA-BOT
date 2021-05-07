@@ -38,8 +38,15 @@ requirements:
     - zipp==0.6.0
 
 test:
+  source_files:
+    - tests
   imports:
     - {{ name|lower }}
+  requires:
+    - pytest
+  commands:
+    - python -m {{ name|lower }}.dnabot_app nogui --help
+    - pytest -v
 
 about:
   home: https://github.com/brsynth/DNA-BOT
