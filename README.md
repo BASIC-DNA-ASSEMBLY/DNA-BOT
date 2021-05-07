@@ -28,9 +28,9 @@ After a git clone:
 conda activate <myenv>
 python -m dnabot.dnabot_app nogui --help
 python -m dnabot.dnabot_app nogui \
-    --construct_path path/to/constructs.csv \
+    --construct_path /path/to/constructs.csv \
     --source_paths /path/to/linker_parts_coord.csv /path/to/user_parts_coord.csv \
-    --output_dir path/to/output/dir
+    --output_dir /path/to/output/dir
 ```
 
 ## Command line arguments
@@ -73,7 +73,7 @@ Test your installation with:
 
 ```bash
 conda activate <dev_env>
-python dnabot/dnabot_app.py nogui --help
+python -m dnabot.dnabot_app nogui --help
 ```
 
 To uninstall:
