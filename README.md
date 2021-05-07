@@ -15,7 +15,7 @@ dnabot can be run in 2 modes:
 ```bash
 conda create --name <myenv>
 conda activate <myenv>
-conda install -c conda-forge dnabot
+conda install -c conda-forge -c brsynth dnabot
 ```
 
 `<myenv>` has to be replaced by whatever meaningful name that will pleased the user.
@@ -26,8 +26,8 @@ After a git clone:
 
 ```bash
 conda activate <myenv>
-python dnabot/dnabot_app.py nogui --help
-python dnabot/dnabot_app.py nogui \
+python -m dnabot.dnabot_app nogui --help
+python -m dnabot.dnabot_app nogui \
     --construct_path path/to/constructs.csv \
     --source_paths /path/to/linker_parts_coord.csv /path/to/user_parts_coord.csv \
     --output_dir path/to/output/dir
@@ -35,7 +35,7 @@ python dnabot/dnabot_app.py nogui \
 
 ## Command line arguments
 
-```bash
+```
  optional arguments:
    -h, --help            show this help message and exit
    --construct_path CONSTRUCT_PATH
@@ -63,11 +63,10 @@ After a git clone:
 ```bash
 cd <repository>
 conda env create -f environment.yaml -n <dev_env>
-conda activate <dev_env>
 conda develop -n <dev_env> .
 ```
 
-You may be prompted to install *conda-build* in your base environment (`conda install conda-build`).
+You may be prompted to install `conda-build` in your base environment (`conda install conda-build`).
 The default conda environment name will be `dev_dnabot` if not specified by `-n <dev_env>`.
 
 Test your installation with:
@@ -90,6 +89,7 @@ You need to install *pytest* if it's not done yet (`conda install pytest`).
 
 ```bash
 cd <repository>
+conda install pytest
 python -m pytest
 ```
 
