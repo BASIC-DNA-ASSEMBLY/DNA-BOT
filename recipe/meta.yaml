@@ -1,0 +1,53 @@
+{% set name = "dnabot" %}
+{% set data = load_setup_py_data() %}
+
+package:
+  name: {{ name|lower }}
+  version: {{ data['version'] }}
+
+source:
+  path: ..
+
+build:
+  number: 0
+  script: {{ PYTHON }} -m pip install --no-deps --ignore-installed -vv .
+
+requirements:
+  host:
+    - python {{ python }}
+  run:
+    - python {{ python }}
+    - aiohttp==3.7.4
+    - async-timeout==3.0.1
+    - attrs==19.3.0
+    - chardet==3.0.4
+    - idna
+    - importlib-metadata
+    - jsonschema
+    - more-itertools==7.2.0
+    - multidict
+    - numpy
+    - pandas
+    - pyrsistent
+    - pyserial==3.4
+    - python-dateutil==2.8.0
+    - pytz==2019.3
+    - six
+    - urwid
+    - yarl
+    - zipp==0.6.0
+
+test:
+  imports:
+    - {{ name|lower }}
+
+about:
+  home: https://github.com/brsynth/DNA-BOT
+  summary: {{ data['description'] }}
+  license: {{ data.get('license') }}
+  license_file: LICENSE
+#  description: {{ data['long_description'] }}
+
+extra:
+  recipe-maintainers:
+    - tduigou

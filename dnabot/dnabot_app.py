@@ -11,8 +11,9 @@ import pandas as pd
 import numpy as np
 import json
 import sys
-import dnabot_gui as gui
 import tkinter as tk
+
+import dnabot_gui as gui
 import mplates
 
 # Constant str
