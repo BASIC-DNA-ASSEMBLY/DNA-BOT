@@ -1,0 +1,8 @@
+name: build_env
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python < 3.9  # TD: anaconda upload has troubles with python 3.9 (base64.encodestring alias removed)
+  - conda-build
+  - anaconda-client
