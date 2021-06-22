@@ -12,19 +12,41 @@ import numpy as np
 import json
 import sys
 import tkinter as tk
-from dnabot import dnabot_gui as gui
-from dnabot import mplates
+import dnabot_gui as gui
+import mplates
 
 # Constant str
 TEMPLATE_DIR_NAME = 'template_ot2_scripts'
-CLIP_TEMP_FNAME = 'clip_template.py'
-MAGBEAD_TEMP_FNAME = 'purification_template.py'
-F_ASSEMBLY_TEMP_FNAME = 'assembly_template.py'
-TRANS_SPOT_TEMP_FNAME = 'transformation_template.py'
-CLIP_FNAME = '1_clip.ot2.py'
-MAGBEAD_FNAME = '2_purification.ot2.py'
-F_ASSEMBLY_FNAME = '3_assembly.ot2.py'
-TRANS_SPOT_FNAME = '4_transformation.ot2.py'
+CLIP_TEMP_FNAME_1 = 'clip_template_APIv1.py'
+CLIP_TEMP_FNAME_2 = 'clip_template_APIv2.8.py'
+CLIP_TEMP_FNAME_3 = 'clip_template_Thermocycler_module_APIv2.8.py'
+
+MAGBEAD_TEMP_FNAME_1 = 'purification_template_APIv1.py'
+MAGBEAD_TEMP_FNAME_2 = 'purification_template_APIv2.8.py'
+
+F_ASSEMBLY_TEMP_FNAME_1 = 'assembly_template_APIv1.py'
+F_ASSEMBLY_TEMP_FNAME_2 = 'assembly_template_APIv2.8.py'
+F_ASSEMBLY_TEMP_FNAME_3 = 'assembly_template_Thermocycler_module_APIv2.8.py'
+
+TRANS_SPOT_TEMP_FNAME_1 = 'transformation_template_APIv1.py'
+TRANS_SPOT_TEMP_FNAME_2 = 'transformation_template_APIv2.8.py'
+TRANS_SPOT_TEMP_FNAME_3 = 'transformation_template_Thermocycler_module_APIv2.8.py'
+
+CLIP_FNAME_1 = '1_clip_ot2_APIv1.py'
+CLIP_FNAME_2 = '1_clip_ot2_APIv2.8.py'
+CLIP_FNAME_3 = '1_clip_ot2_Thermocycler_APIv2.8.py'
+
+MAGBEAD_FNAME_1 = '2_purification_ot2_APIv1.py'
+MAGBEAD_FNAME_2 = '2_purification_ot2_APIv2.8.py'
+
+F_ASSEMBLY_FNAME_1 = '3_assembly_ot2_APIv1.py'
+F_ASSEMBLY_FNAME_2 = '3_assembly_ot2_APIv2.8.py'
+F_ASSEMBLY_FNAME_3 = '3_assembly_ot2_Thermocycler_APIv2.8.py'
+
+TRANS_SPOT_FNAME_1 = '4_transformation_ot2_APIv1.py'
+TRANS_SPOT_FNAME_2 = '4_transformation_ot2_APIv2.8.py'
+TRANS_SPOT_FNAME_3 = '4_transformation_ot2_Thermocycler_APIv2.8.py'
+
 CLIPS_INFO_FNAME = 'clip_run_info.csv'
 FINAL_ASSEMBLIES_INFO_FNAME = 'final_assembly_run_info.csv'
 WELL_OUTPUT_FNAME = 'wells.txt'
@@ -187,18 +209,45 @@ def main():
 
     print('Writing files...')
     # Write OT2 scripts
-    generate_ot2_script(CLIP_FNAME, os.path.join(
-        template_dir_path, CLIP_TEMP_FNAME), clips_dict=clips_dict)
-    generate_ot2_script(MAGBEAD_FNAME, os.path.join(
-        template_dir_path, MAGBEAD_TEMP_FNAME),
+    generate_ot2_script(CLIP_FNAME_1, os.path.join(
+        template_dir_path, CLIP_TEMP_FNAME_1), clips_dict=clips_dict)
+    generate_ot2_script(CLIP_FNAME_2, os.path.join(
+        template_dir_path, CLIP_TEMP_FNAME_2), clips_dict=clips_dict)
+    generate_ot2_script(CLIP_FNAME_3, os.path.join(
+        template_dir_path, CLIP_TEMP_FNAME_3), clips_dict=clips_dict)
+       
+    generate_ot2_script(MAGBEAD_FNAME_1, os.path.join(
+        template_dir_path, MAGBEAD_TEMP_FNAME_1),
         sample_number=magbead_sample_number,
         ethanol_well=etoh_well)
-    generate_ot2_script(F_ASSEMBLY_FNAME, os.path.join(
-        template_dir_path, F_ASSEMBLY_TEMP_FNAME),
+    generate_ot2_script(MAGBEAD_FNAME_2, os.path.join(
+        template_dir_path, MAGBEAD_TEMP_FNAME_2),
+        sample_number=magbead_sample_number,
+        ethanol_well=etoh_well)
+    
+    generate_ot2_script(F_ASSEMBLY_FNAME_1, os.path.join(
+        template_dir_path, F_ASSEMBLY_TEMP_FNAME_1),
         final_assembly_dict=final_assembly_dict,
         tiprack_num=final_assembly_tipracks)
-    generate_ot2_script(TRANS_SPOT_FNAME, os.path.join(
-        template_dir_path, TRANS_SPOT_TEMP_FNAME),
+    generate_ot2_script(F_ASSEMBLY_FNAME_2, os.path.join(
+        template_dir_path, F_ASSEMBLY_TEMP_FNAME_2),
+        final_assembly_dict=final_assembly_dict,
+        tiprack_num=final_assembly_tipracks)
+    generate_ot2_script(F_ASSEMBLY_FNAME_3, os.path.join(
+        template_dir_path, F_ASSEMBLY_TEMP_FNAME_3),
+        final_assembly_dict=final_assembly_dict,
+        tiprack_num=final_assembly_tipracks)
+    
+    generate_ot2_script(TRANS_SPOT_FNAME_1, os.path.join(
+        template_dir_path, TRANS_SPOT_TEMP_FNAME_1),
+        spotting_tuples=spotting_tuples,
+        soc_well=f"A{soc_column}")
+    generate_ot2_script(TRANS_SPOT_FNAME_2, os.path.join(
+        template_dir_path, TRANS_SPOT_TEMP_FNAME_2),
+        spotting_tuples=spotting_tuples,
+        soc_well=f"A{soc_column}")
+    generate_ot2_script(TRANS_SPOT_FNAME_3, os.path.join(
+        template_dir_path, TRANS_SPOT_TEMP_FNAME_3),
         spotting_tuples=spotting_tuples,
         soc_well=f"A{soc_column}")
 
@@ -226,7 +275,7 @@ def main():
 
 
 def generate_constructs_list(path):
-    """Generates a list of dataframes corresponding to each construct. Each 
+    """Generates a list of dataframes corresponding to each construct. Each
     dataframe lists components of the CLIP reactions required.
 
     """
@@ -282,7 +331,7 @@ def generate_constructs_list(path):
 
 
 def generate_clips_df(constructs_list):
-    """Generates a dataframe containing information about all the unique CLIP 
+    """Generates a dataframe containing information about all the unique CLIP
     reactions required to synthesise the constructs in constructs_list.
 
     """
@@ -325,13 +374,13 @@ def generate_clips_df(constructs_list):
 
 
 def generate_sources_dict(paths):
-    """Imports csvs files containing a series of parts/linkers with 
+    """Imports csvs files containing a series of parts/linkers with
     corresponding information into a dictionary where the key corresponds with
     part/linker and the value contains a tuple of corresponding information.
 
     Args:
-        paths (list): list of strings each corresponding to a path for a 
-                      sources csv file. 
+        paths (list): list of strings each corresponding to a path for a
+                      sources csv file.
 
     """
     sources_dict = {}
@@ -347,7 +396,7 @@ def generate_sources_dict(paths):
 
 
 def generate_clips_dict(clips_df, sources_dict):
-    """Using clips_df and sources_dict, returns a clips_dict which acts as the 
+    """Using clips_df and sources_dict, returns a clips_dict which acts as the
     sole variable for the opentrons script "clip.ot2.py".
 
     """
@@ -446,7 +495,7 @@ def calculate_final_assembly_tipracks(final_assembly_dict):
 
 def generate_spotting_tuples(constructs_list, spotting_vols_dict):
     """Using constructs_list, generates a spotting tuple
-    (Refer to 'transformation_spotting_template.py') for every column of 
+    (Refer to 'transformation_spotting_template.py') for every column of
     constructs, assuming the 1st construct is located in well A1 and wells
     increase linearly. Target wells locations are equivalent to construct well
     locations and spotting volumes are defined by spotting_vols_dict.
@@ -477,10 +526,10 @@ def generate_spotting_tuples(constructs_list, spotting_vols_dict):
 
 
 def generate_ot2_script(ot2_script_path, template_path, **kwargs):
-    """Generates an ot2 script named 'ot2_script_path', where kwargs are 
-    written as global variables at the top of the script. For each kwarg, the 
-    keyword defines the variable name while the value defines the name of the 
-    variable. The remainder of template file is subsequently written below.        
+    """Generates an ot2 script named 'ot2_script_path', where kwargs are
+    written as global variables at the top of the script. For each kwarg, the
+    keyword defines the variable name while the value defines the name of the
+    variable. The remainder of template file is subsequently written below.
 
     """
     with open(ot2_script_path, 'w') as wf:
@@ -508,7 +557,7 @@ def generate_ot2_script(ot2_script_path, template_path, **kwargs):
 
 
 def generate_master_mix_df(clip_number):
-    """Generates a dataframe detailing the components required in the clip 
+    """Generates a dataframe detailing the components required in the clip
     reaction master mix.
 
     """
@@ -542,7 +591,7 @@ def generate_sources_paths_df(paths, deck_positions):
 
 
 def dfs_to_csv(path, index=True, **kw_dfs):
-    """Generates a csv file defined by path, where kw_dfs are 
+    """Generates a csv file defined by path, where kw_dfs are
     written one after another with each key acting as a title. If index=True,
     df indexes are written to the csv file.
 
