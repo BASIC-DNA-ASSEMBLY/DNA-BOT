@@ -1,0 +1,28 @@
+MASTER_MIX
+Component,Volume (uL)
+"Promega T4 DNA Ligase buffer, 10X",45.0
+Water,232.5
+NEB BsaI-HFv2,15.0
+Promega T4 DNA Ligase,7.5
+
+SOURCE_PLATES
+Deck position,Source plate,Path
+2,linker_parts_coords.csv,/home/kenza/Bureau/conda_packaging/DNA-BOT/tests/inputs/linker_parts_coords.csv
+5,user_parts_coords.csv,/home/kenza/Bureau/conda_packaging/DNA-BOT/tests/inputs/user_parts_coords.csv
+
+CLIP_REACTIONS
+prefixes,parts,suffixes,number,mag_well
+LMS-P,BASIC_SEVA_37_CmR-p15A.1,LMP-S,1,"('A7',)"
+LMP-P,PJ23104_BASIC,U1-S,1,"('B7',)"
+U1-RBS2-P,D5AP78,U3-S,1,"('C7',)"
+U3-RBS3-P,Q1XBU4,U2-S,1,"('D7',)"
+U2-RBS1-P,O66129,LMS-S,1,"('E7',)"
+LMP-P,PJ23101_BASIC,U1-S,1,"('F7',)"
+U1-RBS1-P,D2WKD9,U2-S,1,"('G7',)"
+U2-RBS3-P,O48935,U3-S,1,"('H7',)"
+U3-RBS1-P,O66952,LMS-S,1,"('A8',)"
+LMP-P,PJ23104_BASIC,U2-S,1,"('B8',)"
+U2-RBS2-P,P48537,U3-S,1,"('C8',)"
+U3-RBS2-P,O07333,U1-S,1,"('D8',)"
+U1-RBS2-P,Q9C446,LMS-S,1,"('E8',)"
+

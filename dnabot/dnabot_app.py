@@ -11,9 +11,9 @@ import pandas as pd
 import numpy as np
 import json
 import sys
-import dnabot_gui as gui
 import tkinter as tk
-import mplates
+from dnabot import dnabot_gui as gui
+from dnabot import mplates
 
 # Constant str
 TEMPLATE_DIR_NAME = 'template_ot2_scripts'

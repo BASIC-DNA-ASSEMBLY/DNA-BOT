@@ -1,0 +1,25 @@
+name: dev_dnabot
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python > 3.6, <=3.9
+  - aiohttp==3.7.4
+  - async-timeout==3.0.1
+  - attrs==19.3.0
+  - chardet==3.0.4
+  - idna
+  - importlib-metadata
+  - jsonschema
+  - more-itertools==7.2.0
+  - multidict
+  - numpy
+  - pandas
+  - pyrsistent
+  - pyserial==3.4
+  - python-dateutil==2.8.0
+  - pytz==2019.3
+  - six
+  - urwid
+  - yarl
+  - zipp==0.6.0
