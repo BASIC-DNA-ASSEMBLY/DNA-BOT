@@ -12,13 +12,13 @@ metadata = {
 final_assembly_dict={ "A1": ['A7', 'B7', 'C7', 'F7'], "B1": ['A7', 'B7', 'D7', 'G7'], "C1": ['A7', 'B7', 'E7', 'H7']}
 tiprack_num=1
 def run(protocol: protocol_api.ProtocolContext):
-    def final_assembly(final_assembly_dict, tiprack_num, tiprack_type="opentrons_96_filtertiprack_10ul"):
+    def final_assembly(final_assembly_dict, tiprack_num, tiprack_type="opentrons_96_tiprack_20ul"):
             # Constants, we update all the labware name in version 2
             #Tiprack
             CANDIDATE_TIPRACK_SLOTS = ['3', '6', '9', '2', '5', '8', '11']
             PIPETTE_MOUNT = 'right'
             #Plate of sample after  purification
-            MAG_PLATE_TYPE = '4ti_96_wellplate_200ul'
+            MAG_PLATE_TYPE = '4ti_0960RIG_wellplate_200ul'
             MAG_PLATE_POSITION = '1'
             #Tuberack
             TUBE_RACK_TYPE = 'opentrons_24_tuberack_eppendorf_1.5ml_safelock_snapcap'
@@ -39,20 +39,17 @@ def run(protocol: protocol_api.ProtocolContext):
                 
             slots = CANDIDATE_TIPRACK_SLOTS[:tiprack_num]
             tipracks = [protocol.load_labware(tiprack_type, slot) for slot in slots]
-            pipette = protocol.load_instrument('p20_single_gen2', PIPETTE_MOUNT, tip_racks=tipracks)#old code: pipette = instruments.P10_Single(mount=PIPETTE_MOUNT, tip_racks=tipracks)
+            pipette = protocol.load_instrument('p20_single_gen2', PIPETTE_MOUNT, tip_racks=tipracks)
+       
             
             # Define Labware and set temperature
             magbead_plate = protocol.load_labware(MAG_PLATE_TYPE, MAG_PLATE_POSITION)
-           #old code: magbead_plate = labware.load(MAG_PLATE_TYPE, MAG_PLATE_POSITION)
             tube_rack = protocol.load_labware(TUBE_RACK_TYPE, TUBE_RACK_POSITION)
-           #old code: tube_rack = labware.load(TUBE_RACK_TYPE, TUBE_RACK_POSITION)
             tempdeck = protocol.load_module('tempdeck', TEMPDECK_SLOT)
-           #old code: tempdeck = modules.load('tempdeck', TEMPDECK_SLOT)
             destination_plate = tempdeck.load_labware(
             DESTINATION_PLATE_TYPE, TEMPDECK_SLOT)
             tempdeck.set_temperature(TEMP)
-           #old code: destination_plate = labware.load(DESTINATION_PLATE_TYPE, TEMPDECK_SLOT, share=True)tempdeck.set_temperature(TEMP)tempdeck.wait_for_temp()
-            
+                      
              # Master mix transfers
             final_assembly_lens = []
             for values in final_assembly_dict.values():
