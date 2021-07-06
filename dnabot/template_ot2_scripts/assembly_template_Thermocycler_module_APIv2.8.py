@@ -4,7 +4,7 @@ import numpy as np
 metadata = {
 'protocolName': 'DNABOT Assembly Thermocycler',
 'description': 'DNABOT Assembly Step3 with Thermocycler',
-'apiLevel': '2.7'
+'apiLevel': '2.8'
 }
 
 # This module has limited tiprack slots availibility (5 slots), calculate tips needed for large number of assembilies.
