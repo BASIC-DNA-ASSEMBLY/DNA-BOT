@@ -21,13 +21,12 @@ def run(protocol: protocol_api.ProtocolContext):
     ### Constants - these have been moved out of the def clip() for clarity
         
     #Tiprack
-    tiprack_type="opentrons_96_tiprack_10ul"
+    tiprack_type="opentrons_96_tiprack_20ul"
     INITIAL_TIP = 'A1'
     CANDIDATE_TIPRACK_SLOTS = ['3', '6', '9']
         
     # Pipettes - pipette instructions in a single location so redefining pipette type is simpler
     PIPETTE_TYPE = 'p20_single_gen2'
-             # API 2 supports gen_1 pipettes like the p10_single
     PIPETTE_MOUNT = 'right'
         ### Load Pipette        
         # checks if it's a P10 Single pipette
@@ -37,20 +36,16 @@ def run(protocol: protocol_api.ProtocolContext):
 #Thermocycler Module
     tc_mod = protocol.load_module('Thermocycler Module')
 # Destination Plates    
-    DESTINATION_PLATE_TYPE = '4ti_96_wellplate_200ul'
+    DESTINATION_PLATE_TYPE = '4ti_0960RIG_wellplate_200ul'
     # Loads destination plate onto Thermocycler Module
     destination_plate = tc_mod.load_labware(DESTINATION_PLATE_TYPE)
-        # not supported by API 1
-    # DESTINATION_PLATE_POSITION removed, as it is on the thermocylcer module (which is always on the same slot)
-    # DESTINATION_PLATE_POSITION = '1'   
-    # INITIAL_DESTINATION_WELL constant removed, as destination_plate.wells() automatically starts from A1
           
     # Source Plates
-    SOURCE_PLATE_TYPE = '4ti_96_wellplate_200ul'
+    SOURCE_PLATE_TYPE = '4ti_0960RIG_wellplate_200ul'
             # modified from custom labware as API 2 doesn't support labware.create anymore, so the old add_labware script can't be used
          
     # Tube Rack
-    TUBE_RACK_TYPE = 'opentrons_24_tuberack_eppendorf_1.5ml_safelock_snapcap'
+    TUBE_RACK_TYPE = '1.5mlstarlabtubes_24_tuberack_1500ul'
             # modified from custom labware as API 2 doesn't support labware.create anymore, so the old add_labware script can't be used
     TUBE_RACK_POSITION = '4'
     MASTER_MIX_WELL = 'A1'
@@ -91,25 +86,13 @@ def run(protocol: protocol_api.ProtocolContext):
         
         # Loads pipette according to constants assigned above
         pipette = protocol.load_instrument(PIPETTE_TYPE, mount=PIPETTE_MOUNT, tip_racks=tipracks)
-            # changed to protocol.load_labware for API 2.8
-            # removed 'pipette.start_at_tip(tipracks[0].well(INITIAL_TIP))'
-                # start_at_tip supported by API v1 up to API v2.7, but returns error for 2.8:
-                    # 'InstrumentContext' object has no attribute 'start_at_tip'
-            # Because of this, ability to specify INITIAL_TIP was removed. Possible future improvement.
         
         # Defines where the destination wells are within the destination plate
         destination_wells = destination_plate.wells()[0:len(parts_wells)]
-      
-            # old code:
-                # destination_wells = destination_plate.wells(INITIAL_DESTINATION_WELL, length=int(len(parts_wells)))
-            # For API 2.8 and above, '.wells' will no longer take length arguments
-            # Therefore the length arguement replaced by '[0:len(parts_wells)]'
-            # Because of this, ability to specify INITIAL_DESTINATION_WELL was removed. Possible future improvement.
         
         ### Load Tube Rack        
         # Loads tube rack according to constants assigned above
         tube_rack = protocol.load_labware(TUBE_RACK_TYPE, TUBE_RACK_POSITION)
-            # changed to protocol.load_labware for API 2.8
             
         # Defines positions of master mix and water within the tube rack
         master_mix = tube_rack.wells(MASTER_MIX_WELL)
@@ -123,7 +106,6 @@ def run(protocol: protocol_api.ProtocolContext):
         # Loads plates according to the source plate key
         for key in source_plates_keys:
             source_plates[key]=protocol.load_labware(SOURCE_PLATE_TYPE, key)
-                # changed to protocol.load_labware for API 2.8      
     
         ### Transfers
         
