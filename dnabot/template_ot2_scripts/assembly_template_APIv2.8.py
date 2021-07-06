@@ -4,7 +4,7 @@ import numpy as np
 metadata = {
 'protocolName': 'My Protocol',
 'description': 'Simple protocol to get started using OT2',
-'apiLevel': '2.7'
+'apiLevel': '2.8'
 }
 
 # protocol run function. the part after the colon lets your editor know
