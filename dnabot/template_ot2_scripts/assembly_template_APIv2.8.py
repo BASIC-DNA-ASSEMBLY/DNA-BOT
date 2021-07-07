@@ -9,8 +9,10 @@ metadata = {
 
 # protocol run function. the part after the colon lets your editor know
 
-final_assembly_dict={ "A1": ['A7', 'B7', 'C7', 'F7'], "B1": ['A7', 'B7', 'D7', 'G7'], "C1": ['A7', 'B7', 'E7', 'H7']}
-tiprack_num=1
+
+# test dict can be used for simulation
+# final_assembly_dict={ "A1": ['A7', 'B7', 'C7', 'F7'], "B1": ['A7', 'B7', 'D7', 'G7'], "C1": ['A7', 'B7', 'E7', 'H7']}
+# tiprack_num=1
 def run(protocol: protocol_api.ProtocolContext):
     def final_assembly(final_assembly_dict, tiprack_num, tiprack_type="opentrons_96_tiprack_20ul"):
             # Constants, we update all the labware name in version 2
@@ -36,12 +38,12 @@ def run(protocol: protocol_api.ProtocolContext):
             sample_number = len(final_assembly_dict.keys())
             if sample_number > 96:
                 raise ValueError('Final assembly nummber cannot exceed 96.')
-                
+
             slots = CANDIDATE_TIPRACK_SLOTS[:tiprack_num]
             tipracks = [protocol.load_labware(tiprack_type, slot) for slot in slots]
             pipette = protocol.load_instrument('p20_single_gen2', PIPETTE_MOUNT, tip_racks=tipracks)
-       
-            
+
+
             # Define Labware and set temperature
             magbead_plate = protocol.load_labware(MAG_PLATE_TYPE, MAG_PLATE_POSITION)
             tube_rack = protocol.load_labware(TUBE_RACK_TYPE, TUBE_RACK_POSITION)
@@ -49,7 +51,7 @@ def run(protocol: protocol_api.ProtocolContext):
             destination_plate = tempdeck.load_labware(
             DESTINATION_PLATE_TYPE, TEMPDECK_SLOT)
             tempdeck.set_temperature(TEMP)
-                      
+
              # Master mix transfers
             final_assembly_lens = []
             for values in final_assembly_dict.values():
@@ -74,8 +76,7 @@ def run(protocol: protocol_api.ProtocolContext):
                     pipette.transfer(PART_VOL, magbead_plate.wells(value),
                                      destination_plate.wells(key), mix_after=MIX_SETTINGS,
                                      new_tip='always')#transfer parts in one tube
-            
+
             tempdeck.deactivate() #stop increasing the temperature
-            
+
     final_assembly(final_assembly_dict=final_assembly_dict, tiprack_num=tiprack_num)
-            
