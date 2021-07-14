@@ -13,8 +13,8 @@ metadata = {
 
 
 # test dictionary can be used for simulation
-# final_assembly_dict={ "A1": ['A7', 'B7', 'C7', 'F7'], "B1": ['A7', 'B7', 'D7', 'G7'], "C1": ['A7', 'B7', 'E7', 'H7']}
-# tiprack_num=1
+#final_assembly_dict={ "A1": ['A7', 'B7', 'C7', 'F7'], "B1": ['A7', 'B7', 'D7', 'G7'], "C1": ['A7', 'B7', 'E7', 'H7']}
+#tiprack_num=1
 def run(protocol: protocol_api.ProtocolContext):
     def final_assembly(final_assembly_dict, tiprack_num, tiprack_type="opentrons_96_tiprack_20ul"):
             # Constants, we update all the labware name in version 2
@@ -22,13 +22,13 @@ def run(protocol: protocol_api.ProtocolContext):
             CANDIDATE_TIPRACK_SLOTS = ['3', '6', '9', '2', '3']
             PIPETTE_MOUNT = 'right'
             #Plate of sample after  purification
-            MAG_PLATE_TYPE = '4ti_0960RIG_96_wellplate_200ul'
+            MAG_PLATE_TYPE = '4ti0960rig_96_wellplate_200ul'
             MAG_PLATE_POSITION = '1'
             #Tuberack
-            TUBE_RACK_TYPE = 'E1415-1500_starlabtubes_24_tuberack_1500ul'
+            TUBE_RACK_TYPE = 'e14151500starlab_24_tuberack_1500ul'
             TUBE_RACK_POSITION = '5'
             #Destination plate
-            DESTINATION_PLATE_TYPE = '4ti_0960RIG_96_wellplate_200ul'
+            DESTINATION_PLATE_TYPE = '4ti0960rig_96_wellplate_200ul'
             #Temperature control plate
             TEMPDECK_SLOT = '4'
             TEMP = 20

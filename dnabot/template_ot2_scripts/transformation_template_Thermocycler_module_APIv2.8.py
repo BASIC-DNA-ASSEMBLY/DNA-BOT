@@ -11,12 +11,12 @@ metadata = {
      'description': 'Transformation reactions using an opentrons OT-2 for BASIC assembly.'}
 
 # Example output produced by DNA-BOT for a single construct, uncomment and run to test the template
-# spotting_tuples=[(('A1','B1','C1'), ('A1','B1', 'C1'), (8,8,8))]
-# soc_well='A1'
+#spotting_tuples=[(('A1','B1','C1'), ('A1','B1', 'C1'), (8,8,8))]
+#soc_well='A1'
 
 # Example output produced by DNA-BOT for 88 constructs, uncomment and run to test the template
 #spotting_tuples=[(('A1', 'B1', 'C1', 'D1', 'E1', 'F1', 'G1', 'H1'), ('A1', 'B1', 'C1', 'D1', 'E1', 'F1', 'G1', 'H1'), (5, 5, 5, 5, 5, 5, 5, 5)), (('A2', 'B2', 'C2', 'D2', 'E2', 'F2', 'G2', 'H2'), ('A2', 'B2', 'C2', 'D2', 'E2', 'F2', 'G2', 'H2'), (5, 5, 5, 5, 5, 5, 5, 5)), (('A3', 'B3', 'C3', 'D3', 'E3', 'F3', 'G3', 'H3'), ('A3', 'B3', 'C3', 'D3', 'E3', 'F3', 'G3', 'H3'), (5, 5, 5, 5, 5, 5, 5, 5)), (('A4', 'B4', 'C4', 'D4', 'E4', 'F4', 'G4', 'H4'), ('A4', 'B4', 'C4', 'D4', 'E4', 'F4', 'G4', 'H4'), (5, 5, 5, 5, 5, 5, 5, 5)), (('A5', 'B5', 'C5', 'D5', 'E5', 'F5', 'G5', 'H5'), ('A5', 'B5', 'C5', 'D5', 'E5', 'F5', 'G5', 'H5'), (5, 5, 5, 5, 5, 5, 5, 5)), (('A6', 'B6', 'C6', 'D6', 'E6', 'F6', 'G6', 'H6'), ('A6', 'B6', 'C6', 'D6', 'E6', 'F6', 'G6', 'H6'), (5, 5, 5, 5, 5, 5, 5, 5)), (('A7', 'B7', 'C7', 'D7', 'E7', 'F7', 'G7', 'H7'), ('A7', 'B7', 'C7', 'D7', 'E7', 'F7', 'G7', 'H7'), (5, 5, 5, 5, 5, 5, 5, 5)), (('A8', 'B8', 'C8', 'D8', 'E8', 'F8', 'G8', 'H8'), ('A8', 'B8', 'C8', 'D8', 'E8', 'F8', 'G8', 'H8'), (5, 5, 5, 5, 5, 5, 5, 5)), (('A9', 'B9', 'C9', 'D9', 'E9', 'F9', 'G9', 'H9'), ('A9', 'B9', 'C9', 'D9', 'E9', 'F9', 'G9', 'H9'), (5, 5, 5, 5, 5, 5, 5, 5)), (('A10', 'B10', 'C10', 'D10', 'E10', 'F10', 'G10', 'H10'), ('A10', 'B10', 'C10', 'D10', 'E10', 'F10', 'G10', 'H10'), (5, 5, 5, 5, 5, 5, 5, 5)), (('A11', 'B11', 'C11', 'D11', 'E11', 'F11', 'G11', 'H11'), ('A11', 'B11', 'C11', 'D11', 'E11', 'F11', 'G11', 'H11'), (5, 5, 5, 5, 5, 5, 5, 5))]
-soc_well='A1'
+#soc_well='A1'
 
 def run(protocol: protocol_api.ProtocolContext):
 # added run function for API version 2
@@ -27,18 +27,18 @@ def run(protocol: protocol_api.ProtocolContext):
     P300_TIPRACK_TYPE = 'opentrons_96_tiprack_300ul'
     P20_MOUNT = 'right'
     P300_MOUNT = 'left'
-    ASSEMBLY_PLATE_TYPE = '4Ti_0960RIG_96_wellplate_200ul'
+    ASSEMBLY_PLATE_TYPE = '4ti0960rig_96_wellplate_200ul'
     ASSEMBLY_PLATE_SLOT = '2'
 
-    TRANSFORMATION_PLATE_TYPE = '4Ti_0960RIG_96_wellplate_200ul'
-    SOC_PLATE_TYPE = '4Ti_0131_Reservoir_12_trough_21000ul'
+    TRANSFORMATION_PLATE_TYPE = '4ti0960rig_96_wellplate_200ul'
+    SOC_PLATE_TYPE = '4ti0136_96_wellplate_2200ul'
         # changed from '4ti0136_96_deep-well'
     SOC_PLATE_SLOT = '5'
-    TUBE_RACK_TYPE = 'E1415-1500_starlabtubes_24_tuberack_1500ul'
+    TUBE_RACK_TYPE = 'e14151500starlab_24_tuberack_1500ul'
         # changed from 'tube-rack_E1415-1500'
     TUBE_RACK_SLOT = '9'
     SPOTTING_WASTE_WELL = 'A1'
-    AGAR_PLATE_TYPE = '4Ti_0960RIG_96_wellplate_200ul'
+    AGAR_PLATE_TYPE = '4ti0960rig_96_wellplate_200ul'
         # changed from 'Nunc_Omnitray'
             # it is a 1 well plate filled with agar;
             # but for the Opentron to spot in the locations of a 96 wp, it is defined similar to a 96 wp
@@ -71,38 +71,6 @@ def run(protocol: protocol_api.ProtocolContext):
     AGAR_PLATE_SLOT = '1'
 
     TEMPDECK_SLOT = '4'
-
-
-    # Tiprack slots
-
-    p20_p300_tiprack_slots = tiprack_slots(spotting_tuples)
-    p20_slots = CANDIDATE_p20_SLOTS[:p20_p300_tiprack_slots[0]]
-    p300_slots = CANDIDATE_P300_SLOTS[:p20_p300_tiprack_slots[1]]
-
-    # Define labware
-    p20_tipracks = [protocol.load_labware(P20_TIPRACK_TYPE, slot) for slot in p20_slots]
-        # changed to protocol.load_labware for API version 2
-    p300_tipracks = [protocol.load_labware(P300_TIPRACK_TYPE, slot) for slot in p300_slots]
-        # changed to protocol.load_labware for API version 2
-    p20_pipette = protocol.load_instrument('p20_single_gen2', P20_MOUNT, tip_racks=p20_tipracks)
-        # changed to protocol.load_instrument for API version 2
-    p300_pipette = protocol.load_instrument('p300_multi_gen2', P300_MOUNT, tip_racks=p300_tipracks)
-        # changed to protocol.load_instrument for API version 2
-
-    assembly_plate = protocol.load_labware(ASSEMBLY_PLATE_TYPE, ASSEMBLY_PLATE_SLOT)
-        # changed to protocol.load_labware for API version 2
-    tempdeck = protocol.load_module('tempdeck', TEMPDECK_SLOT)
-    transformation_plate = tempdeck.load_labware(TRANSFORMATION_PLATE_TYPE, TEMPDECK_SLOT)
-        # changed to protocol.load_labware for API version 2
-        # removed share=True, not required in API version 2
-        # removed TEMPDECK_SLOT as it is loaded directly onto temperature module
-    soc_plate = protocol.load_labware(SOC_PLATE_TYPE, SOC_PLATE_SLOT)
-        # changed to protocol.load_labware for API version 2
-    tube_rack = protocol.load_labware(TUBE_RACK_TYPE, TUBE_RACK_SLOT)
-        # changed to protocol.load_labware for API version 2
-    spotting_waste = tube_rack.wells(SPOTTING_WASTE_WELL)
-    agar_plate = protocol.load_labware(AGAR_PLATE_TYPE, AGAR_PLATE_SLOT)
-        # changed to protocol.load_labware for API version 2
 
     
     def generate_transformation_wells(spotting_tuples):
@@ -215,7 +183,7 @@ def run(protocol: protocol_api.ProtocolContext):
         #Thermocycler Module
         tc_mod = protocol.load_module('Thermocycler Module')
         # Destination Plates
-        DESTINATION_PLATE_TYPE = '4ti_96_wellplate_200ul'
+        DESTINATION_PLATE_TYPE = '4ti0960rig_96_wellplate_200ul'
         # Loads destination plate onto Thermocycler Module
         destination_plate = tc_mod.load_labware(DESTINATION_PLATE_TYPE)
         tc_mod.set_block_temperature(42, hold_time_minutes=1, block_max_volume=180)
@@ -470,6 +438,37 @@ def run(protocol: protocol_api.ProtocolContext):
                 p300_pipette.drop_tip()
             spot_tuple(spotting_tuple)
 
+
+    # Tiprack slots
+
+    p20_p300_tiprack_slots = tiprack_slots(spotting_tuples)
+    p20_slots = CANDIDATE_p20_SLOTS[:p20_p300_tiprack_slots[0]]
+    p300_slots = CANDIDATE_P300_SLOTS[:p20_p300_tiprack_slots[1]]
+
+    # Define labware
+    p20_tipracks = [protocol.load_labware(P20_TIPRACK_TYPE, slot) for slot in p20_slots]
+        # changed to protocol.load_labware for API version 2
+    p300_tipracks = [protocol.load_labware(P300_TIPRACK_TYPE, slot) for slot in p300_slots]
+        # changed to protocol.load_labware for API version 2
+    p20_pipette = protocol.load_instrument('p20_single_gen2', P20_MOUNT, tip_racks=p20_tipracks)
+        # changed to protocol.load_instrument for API version 2
+    p300_pipette = protocol.load_instrument('p300_multi_gen2', P300_MOUNT, tip_racks=p300_tipracks)
+        # changed to protocol.load_instrument for API version 2
+
+    assembly_plate = protocol.load_labware(ASSEMBLY_PLATE_TYPE, ASSEMBLY_PLATE_SLOT)
+        # changed to protocol.load_labware for API version 2
+    tempdeck = protocol.load_module('tempdeck', TEMPDECK_SLOT)
+    transformation_plate = tempdeck.load_labware(TRANSFORMATION_PLATE_TYPE, TEMPDECK_SLOT)
+        # changed to protocol.load_labware for API version 2
+        # removed share=True, not required in API version 2
+        # removed TEMPDECK_SLOT as it is loaded directly onto temperature module
+    soc_plate = protocol.load_labware(SOC_PLATE_TYPE, SOC_PLATE_SLOT)
+        # changed to protocol.load_labware for API version 2
+    tube_rack = protocol.load_labware(TUBE_RACK_TYPE, TUBE_RACK_SLOT)
+        # changed to protocol.load_labware for API version 2
+    spotting_waste = tube_rack.wells(SPOTTING_WASTE_WELL)
+    agar_plate = protocol.load_labware(AGAR_PLATE_TYPE, AGAR_PLATE_SLOT)
+        # changed to protocol.load_labware for API version 2
 
 
     ### Run protocol

@@ -11,8 +11,8 @@ metadata = {
 
 
 # example values produced by DNA-BOT for a single construct containing 5 parts, un-comment and run to test the template:
-# sample_number=8
-# ethanol_well='A3'
+#sample_number=8
+#ethanol_well='A3'
 
 def run(protocol: protocol_api.ProtocolContext):
 # added run function for API verison 2
@@ -62,17 +62,17 @@ def run(protocol: protocol_api.ProtocolContext):
         MAGDECK_POSITION = '1'
 
         # Mix Plate
-        MIX_PLATE_TYPE = '4ti_0960RIG_96_wellplate_200ul'
+        MIX_PLATE_TYPE = '4ti0960rig_96_wellplate_200ul'
             # modified from custom labware as API 2 doesn't support labware.create anymore, so the old add_labware script can't be used
             # also acts as the type of plate loaded onto the magnetic module
         MIX_PLATE_POSITION = '4'
 
         # Reagents
-        REAGENT_CONTAINER_TYPE = '4Ti_0131_Reservoir_12_trough_21000ul'
+        REAGENT_CONTAINER_TYPE = '4ti0131_12_reservoir_21000ul'
         REAGENT_CONTAINER_POSITION = '7'
 
         # Beads
-        BEAD_CONTAINER_TYPE = '4Ti_0131_Reservoir_12_trough_21000ul'
+        BEAD_CONTAINER_TYPE = '4ti0136_96_wellplate_2200ul'
         BEAD_CONTAINER_POSITION = '8'
 
         # Settings
