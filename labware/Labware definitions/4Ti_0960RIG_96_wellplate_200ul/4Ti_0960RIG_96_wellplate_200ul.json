@@ -128,7 +128,7 @@
         ]
     },
     "metadata": {
-        "displayName": "4Ti 0960RIG Well Plate 200 µL",
+        "displayName": "4Ti 0960RIG 96 Well Plate 200 µL",
         "displayCategory": "wellPlate",
         "displayVolumeUnits": "µL",
         "tags": []
@@ -1114,7 +1114,7 @@
         "quirks": [],
         "isTiprack": false,
         "isMagneticModuleCompatible": false,
-        "loadName": "4ti_96_wellplate_200ul"
+        "loadName": "4Ti_96_wellplate_200ul"
     },
     "namespace": "custom_beta",
     "version": 1,
