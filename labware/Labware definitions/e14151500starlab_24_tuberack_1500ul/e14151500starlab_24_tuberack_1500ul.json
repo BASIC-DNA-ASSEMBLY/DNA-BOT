@@ -38,13 +38,13 @@
         ]
     ],
     "brand": {
-        "brand": "Starlab",
+        "brand": "E1415-1500-Starlab",
         "brandId": [
             "E1415-1500"
         ]
     },
     "metadata": {
-        "displayName": "E1415-1500 starlab microcentrifuge tube 24 tuberack_1500ul",
+        "displayName": "E1415-1500-Starlab 24 Tube Rack 1500 µL",
         "displayCategory": "tubeRack",
         "displayVolumeUnits": "µL",
         "tags": []
@@ -311,7 +311,7 @@
         "quirks": [],
         "isTiprack": false,
         "isMagneticModuleCompatible": false,
-        "loadName": "E1415-1500_starlabtubes_24_tuberack_1500ul"
+        "loadName": "e14151500starlab_24_tuberack_1500ul"
     },
     "namespace": "custom_beta",
     "version": 1,

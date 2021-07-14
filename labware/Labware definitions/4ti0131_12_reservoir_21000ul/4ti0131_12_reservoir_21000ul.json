@@ -38,14 +38,14 @@
         ]
     ],
     "brand": {
-        "brand": "4Ti",
+        "brand": "4-Ti-0131",
         "brandId": [
-            "4ti-0131"
+            "4-Ti-0131"
         ]
     },
     "metadata": {
-        "displayName": "4Ti-0131 Reservoir 12 Trough 21000 µL",
-        "displayCategory": "wellPlate",
+        "displayName": "4-Ti-0131 12 Reservoir 21000 µL",
+        "displayCategory": "reservoir",
         "displayVolumeUnits": "µL",
         "tags": []
     },
@@ -205,7 +205,7 @@
         ],
         "isTiprack": false,
         "isMagneticModuleCompatible": false,
-        "loadName": "4Ti_0131_Reservoir_12_trough_21000ul"
+        "loadName": "4ti0131_12_reservoir_21000ul"
     },
     "namespace": "custom_beta",
     "version": 1,

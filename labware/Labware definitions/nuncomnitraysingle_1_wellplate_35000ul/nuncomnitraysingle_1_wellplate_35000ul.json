@@ -5,13 +5,11 @@
         ]
     ],
     "brand": {
-        "brand": "Nunc™ OmniTray™ Single-Well Plate",
-        "brandId": [
-            "242811"
-        ]
+        "brand": "Nuncomnitraysingle",
+        "brandId": []
     },
     "metadata": {
-        "displayName": "Nunc™ OmniTray™ Single-Well Plate 1 Well Plate 35000 µL",
+        "displayName": "Nuncomnitraysingle 1 Well Plate 35000 µL",
         "displayCategory": "wellPlate",
         "displayVolumeUnits": "µL",
         "tags": []
@@ -51,7 +49,7 @@
         ],
         "isTiprack": false,
         "isMagneticModuleCompatible": false,
-        "loadName": "nuncomnitraysinglewellplate_1_wellplate_35000ul"
+        "loadName": "nuncomnitraysingle_1_wellplate_35000ul"
     },
     "namespace": "custom_beta",
     "version": 1,
