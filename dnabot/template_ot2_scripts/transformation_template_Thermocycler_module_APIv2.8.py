@@ -20,7 +20,91 @@ soc_well='A1'
 
 def run(protocol: protocol_api.ProtocolContext):
 # added run function for API version 2
+    # Constants
+    CANDIDATE_p20_SLOTS = ['3']
+    CANDIDATE_P300_SLOTS = ['6']
+    P20_TIPRACK_TYPE = 'opentrons_96_tiprack_20ul'
+    P300_TIPRACK_TYPE = 'opentrons_96_tiprack_300ul'
+    P20_MOUNT = 'right'
+    P300_MOUNT = 'left'
+    ASSEMBLY_PLATE_TYPE = '4Ti_0960RIG_96_wellplate_200ul'
+    ASSEMBLY_PLATE_SLOT = '2'
 
+    TRANSFORMATION_PLATE_TYPE = '4Ti_0960RIG_96_wellplate_200ul'
+    SOC_PLATE_TYPE = '4Ti_0131_Reservoir_12_trough_21000ul'
+        # changed from '4ti0136_96_deep-well'
+    SOC_PLATE_SLOT = '5'
+    TUBE_RACK_TYPE = 'E1415-1500_starlabtubes_24_tuberack_1500ul'
+        # changed from 'tube-rack_E1415-1500'
+    TUBE_RACK_SLOT = '9'
+    SPOTTING_WASTE_WELL = 'A1'
+    AGAR_PLATE_TYPE = '4Ti_0960RIG_96_wellplate_200ul'
+        # changed from 'Nunc_Omnitray'
+            # it is a 1 well plate filled with agar;
+            # but for the Opentron to spot in the locations of a 96 wp, it is defined similar to a 96 wp
+            # was previously defined in add.labware.py, API version 2 doesn't support labware.create anymore
+
+        # !!! CURRENT PLATE IS A PLACEHOLDER FOR RUNNING SIMMULATION WITHOUT CUSTOM LABWARE!!!
+        # !!! name made with Opentron Labware Creator = 'nuncomnitray_96_wellplate_0.01ul' !!!!
+
+
+        # custom labware made using Opentron's Labware Creator:
+            # external dimensions:
+                # footprint length = 127.76 mm
+                # footrpint width = 85.48 mm
+                # footprint height = 15.70 mm
+                # taken from Thermofisher's documentation for Nunc Omnitray
+                # https://www.thermofisher.com/document-connect/document-connect.html?url=https%3A%2F%2Fassets.thermofisher.com%2FTFS-Assets%2FLSG%2Fmanuals%2FD03023.pdf&title=VGVjaG5pY2FsIERhdGEgU2hlZXQ6IE51bmMgT21uaXRyYXk=
+            # well measurements
+                # depth = 0.01 mm
+                # diameter =  0.01 mm
+                # in old add.labware.py, they were defined as 0, but Labware Creator requires a value >0
+            # spacing
+                # x-offset = 14.38 mm
+                # y-offset = 11.24 mm
+                # x-spacing = 9.00 mm
+                # y-spacing) = 9.00 mm
+                # taken from Nest 96 well plates
+                # https://labware.opentrons.com/nest_96_wellplate_100ul_pcr_full_skirt/
+        # before using protocol, need to upload the 'nuncomnitray_96_wellplate_0.01ul.json' custom labware file into Opentrons app
+
+    AGAR_PLATE_SLOT = '1'
+
+    TEMPDECK_SLOT = '4'
+
+
+    # Tiprack slots
+
+    p20_p300_tiprack_slots = tiprack_slots(spotting_tuples)
+    p20_slots = CANDIDATE_p20_SLOTS[:p20_p300_tiprack_slots[0]]
+    p300_slots = CANDIDATE_P300_SLOTS[:p20_p300_tiprack_slots[1]]
+
+    # Define labware
+    p20_tipracks = [protocol.load_labware(P20_TIPRACK_TYPE, slot) for slot in p20_slots]
+        # changed to protocol.load_labware for API version 2
+    p300_tipracks = [protocol.load_labware(P300_TIPRACK_TYPE, slot) for slot in p300_slots]
+        # changed to protocol.load_labware for API version 2
+    p20_pipette = protocol.load_instrument('p20_single_gen2', P20_MOUNT, tip_racks=p20_tipracks)
+        # changed to protocol.load_instrument for API version 2
+    p300_pipette = protocol.load_instrument('p300_multi_gen2', P300_MOUNT, tip_racks=p300_tipracks)
+        # changed to protocol.load_instrument for API version 2
+
+    assembly_plate = protocol.load_labware(ASSEMBLY_PLATE_TYPE, ASSEMBLY_PLATE_SLOT)
+        # changed to protocol.load_labware for API version 2
+    tempdeck = protocol.load_module('tempdeck', TEMPDECK_SLOT)
+    transformation_plate = tempdeck.load_labware(TRANSFORMATION_PLATE_TYPE, TEMPDECK_SLOT)
+        # changed to protocol.load_labware for API version 2
+        # removed share=True, not required in API version 2
+        # removed TEMPDECK_SLOT as it is loaded directly onto temperature module
+    soc_plate = protocol.load_labware(SOC_PLATE_TYPE, SOC_PLATE_SLOT)
+        # changed to protocol.load_labware for API version 2
+    tube_rack = protocol.load_labware(TUBE_RACK_TYPE, TUBE_RACK_SLOT)
+        # changed to protocol.load_labware for API version 2
+    spotting_waste = tube_rack.wells(SPOTTING_WASTE_WELL)
+    agar_plate = protocol.load_labware(AGAR_PLATE_TYPE, AGAR_PLATE_SLOT)
+        # changed to protocol.load_labware for API version 2
+
+    
     def generate_transformation_wells(spotting_tuples):
         """
         Evaluates spotting_tuples and returns transformation wells.
@@ -389,102 +473,6 @@ def run(protocol: protocol_api.ProtocolContext):
 
 
     ### Run protocol
-
-    # Constants
-    CANDIDATE_p20_SLOTS = ['3']
-    CANDIDATE_P300_SLOTS = ['6']
-    P20_TIPRACK_TYPE = 'opentrons_96_tiprack_10ul'
-        # changed from 'tiprack-10ul'
-    P300_TIPRACK_TYPE = 'opentrons_96_tiprack_300ul'
-    P20_MOUNT = 'right'
-    P300_MOUNT = 'left'
-    ASSEMBLY_PLATE_TYPE = '4ti_96_wellplate_200ul'
-        # changed from '4ti-0960_FrameStar'
-        # was previously defined in add.labware.py, API version 2 doesn't support labware.create anymore
-    ASSEMBLY_PLATE_SLOT = '2'
-
-    TRANSFORMATION_PLATE_TYPE = 'opentrons_96_aluminumblock_biorad_wellplate_200ul'
-        # changed from 'Eppendorf_30133366_plate_96'
-            # was previously defined in add.labware.py, API version 2 doesn't support labware.create anymore
-
-        # !!! CURRENT PLATE IS A PLACEHOLDER FOR RUNNING SIMMULATION WITHOUT CUSTOM LABWARE!!!
-        # name made with Opentron Labware Creator = (not yet made)
-
-        # custom labware not defined: what plate to change to? why is this plate used?
-            # according to add_labware.py, it is a 250ul 96 well plate with spacing identical to the 4ti0960-FrameStar 96 wp
-
-    SOC_PLATE_TYPE = 'brooks96squaredeepwellstoragemicroplate_96_wellplate_2200ul'
-        # changed from '4ti0136_96_deep-well'
-    SOC_PLATE_SLOT = '5'
-    TUBE_RACK_TYPE = 'opentrons_24_tuberack_eppendorf_1.5ml_safelock_snapcap'
-        # changed from 'tube-rack_E1415-1500'
-    TUBE_RACK_SLOT = '9'
-    SPOTTING_WASTE_WELL = 'A1'
-    AGAR_PLATE_TYPE = '4ti_96_wellplate_200ul'
-        # changed from 'Nunc_Omnitray'
-            # it is a 1 well plate filled with agar;
-            # but for the Opentron to spot in the locations of a 96 wp, it is defined similar to a 96 wp
-            # was previously defined in add.labware.py, API version 2 doesn't support labware.create anymore
-
-        # !!! CURRENT PLATE IS A PLACEHOLDER FOR RUNNING SIMMULATION WITHOUT CUSTOM LABWARE!!!
-        # !!! name made with Opentron Labware Creator = 'nuncomnitray_96_wellplate_0.01ul' !!!!
-
-
-        # custom labware made using Opentron's Labware Creator:
-            # external dimensions:
-                # footprint length = 127.76 mm
-                # footrpint width = 85.48 mm
-                # footprint height = 15.70 mm
-                # taken from Thermofisher's documentation for Nunc Omnitray
-                # https://www.thermofisher.com/document-connect/document-connect.html?url=https%3A%2F%2Fassets.thermofisher.com%2FTFS-Assets%2FLSG%2Fmanuals%2FD03023.pdf&title=VGVjaG5pY2FsIERhdGEgU2hlZXQ6IE51bmMgT21uaXRyYXk=
-            # well measurements
-                # depth = 0.01 mm
-                # diameter =  0.01 mm
-                # in old add.labware.py, they were defined as 0, but Labware Creator requires a value >0
-            # spacing
-                # x-offset = 14.38 mm
-                # y-offset = 11.24 mm
-                # x-spacing = 9.00 mm
-                # y-spacing) = 9.00 mm
-                # taken from Nest 96 well plates
-                # https://labware.opentrons.com/nest_96_wellplate_100ul_pcr_full_skirt/
-        # before using protocol, need to upload the 'nuncomnitray_96_wellplate_0.01ul.json' custom labware file into Opentrons app
-
-    AGAR_PLATE_SLOT = '1'
-
-    TEMPDECK_SLOT = '4'
-
-
-    # Tiprack slots
-
-    p20_p300_tiprack_slots = tiprack_slots(spotting_tuples)
-    p20_slots = CANDIDATE_p20_SLOTS[:p20_p300_tiprack_slots[0]]
-    p300_slots = CANDIDATE_P300_SLOTS[:p20_p300_tiprack_slots[1]]
-
-    # Define labware
-    p20_tipracks = [protocol.load_labware(P20_TIPRACK_TYPE, slot) for slot in p20_slots]
-        # changed to protocol.load_labware for API version 2
-    p300_tipracks = [protocol.load_labware(P300_TIPRACK_TYPE, slot) for slot in p300_slots]
-        # changed to protocol.load_labware for API version 2
-    p20_pipette = protocol.load_instrument('p20_single_gen2', P20_MOUNT, tip_racks=p20_tipracks)
-        # changed to protocol.load_instrument for API version 2
-    p300_pipette = protocol.load_instrument('p300_multi_gen2', P300_MOUNT, tip_racks=p300_tipracks)
-        # changed to protocol.load_instrument for API version 2
-
-    assembly_plate = protocol.load_labware(ASSEMBLY_PLATE_TYPE, ASSEMBLY_PLATE_SLOT)
-        # changed to protocol.load_labware for API version 2
-    tempdeck = protocol.load_module('tempdeck', TEMPDECK_SLOT)
-    transformation_plate = tempdeck.load_labware(TRANSFORMATION_PLATE_TYPE, TEMPDECK_SLOT)
-        # changed to protocol.load_labware for API version 2
-        # removed share=True, not required in API version 2
-        # removed TEMPDECK_SLOT as it is loaded directly onto temperature module
-    soc_plate = protocol.load_labware(SOC_PLATE_TYPE, SOC_PLATE_SLOT)
-        # changed to protocol.load_labware for API version 2
-    tube_rack = protocol.load_labware(TUBE_RACK_TYPE, TUBE_RACK_SLOT)
-        # changed to protocol.load_labware for API version 2
-    spotting_waste = tube_rack.wells(SPOTTING_WASTE_WELL)
-    agar_plate = protocol.load_labware(AGAR_PLATE_TYPE, AGAR_PLATE_SLOT)
-        # changed to protocol.load_labware for API version 2
 
 
 

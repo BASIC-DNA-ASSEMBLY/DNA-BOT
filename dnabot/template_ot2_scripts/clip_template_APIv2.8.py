@@ -34,16 +34,16 @@ def run(protocol: protocol_api.ProtocolContext):
         exit()
 
     # Source Plates
-    SOURCE_PLATE_TYPE = '4ti_0960RIG_wellplate_200ul'
+    SOURCE_PLATE_TYPE = '4ti_0960RIG_96_wellplate_200ul'
             # modified from custom labware as API 2 doesn't support labware.create anymore, so the old add_labware script can't be used
 
     # Destination Plates
-    DESTINATION_PLATE_TYPE = '4ti_0960RIG_wellplate_200ul'
+    DESTINATION_PLATE_TYPE = '4ti_0960RIG_96_wellplate_200ul'
     DESTINATION_PLATE_POSITION = '1'
             # INITIAL_DESTINATION_WELL constant removed, as destination_plate.wells() automatically starts from A1
 
     # Tube Rack
-    TUBE_RACK_TYPE = '1.5mlstarlabtubes_24_tuberack_1500ul'
+    TUBE_RACK_TYPE = 'E1415-1500_starlabtubes_24_tuberack_1500ul'
     TUBE_RACK_POSITION = '4'
     MASTER_MIX_WELL = 'A1'
     WATER_WELL = 'A2'

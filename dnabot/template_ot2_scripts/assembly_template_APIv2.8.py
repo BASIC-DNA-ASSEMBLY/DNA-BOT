@@ -20,13 +20,13 @@ def run(protocol: protocol_api.ProtocolContext):
             CANDIDATE_TIPRACK_SLOTS = ['3', '6', '9', '2', '5', '8', '11']
             PIPETTE_MOUNT = 'right'
             #Plate of sample after  purification
-            MAG_PLATE_TYPE = '4ti_0960RIG_wellplate_200ul'
+            MAG_PLATE_TYPE = '4ti_0960RIG_96_wellplate_200ul'
             MAG_PLATE_POSITION = '1'
             #Tuberack
-            TUBE_RACK_TYPE = 'opentrons_24_tuberack_eppendorf_1.5ml_safelock_snapcap'
+            TUBE_RACK_TYPE = 'E1415-1500_starlabtubes_24_tuberack_1500ul'
             TUBE_RACK_POSITION = '7'
             #Destination plate
-            DESTINATION_PLATE_TYPE = 'opentrons_96_aluminumblock_biorad_wellplate_200ul'
+            DESTINATION_PLATE_TYPE = '4ti_0960RIG_96_wellplate_200ul'
             #Temperature control plate
             TEMPDECK_SLOT = '4'
             TEMP = 20

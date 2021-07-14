@@ -62,19 +62,17 @@ def run(protocol: protocol_api.ProtocolContext):
         MAGDECK_POSITION = '1'
 
         # Mix Plate
-        MIX_PLATE_TYPE = '4ti_0960RIG_wellplate_200ul'
+        MIX_PLATE_TYPE = '4ti_0960RIG_96_wellplate_200ul'
             # modified from custom labware as API 2 doesn't support labware.create anymore, so the old add_labware script can't be used
             # also acts as the type of plate loaded onto the magnetic module
         MIX_PLATE_POSITION = '4'
 
         # Reagents
-        REAGENT_CONTAINER_TYPE = 'brooksreservoirplate_12_wellplate_21000ul'
-            # modified from custom labware as API 2 doesn't support labware.create anymore, so the old add_labware script can't be used
+        REAGENT_CONTAINER_TYPE = '4Ti_0131_Reservoir_12_trough_21000ul'
         REAGENT_CONTAINER_POSITION = '7'
 
         # Beads
-        BEAD_CONTAINER_TYPE = 'brooksreservoirplate_12_wellplate_21000ul'
-                    # old plate type was '4ti0136_96_deep-well'
+        BEAD_CONTAINER_TYPE = '4Ti_0131_Reservoir_12_trough_21000ul'
         BEAD_CONTAINER_POSITION = '8'
 
         # Settings
@@ -112,10 +110,6 @@ def run(protocol: protocol_api.ProtocolContext):
         ### Loading Pipettes
 
         pipette = protocol.load_instrument(PIPETTE_TYPE, mount="left", tip_racks=tipracks)
-            # changed to protocol.load_labware for API version 2
-            # changed from P300_MULTI to PIPETTE_TYPE constant, which is set to p300_multi_gen2
-            # removed 'aspirate_flow_rate=PIPETTE_ASPIRATE_RATE, dispense_flow_rate=PIPETTE_DISPENSE_RATE'
-                # no longer taken as arguements in API version 2
         pipette.aspirate_flow_rate=PIPETTE_ASPIRATE_RATE
         pipette.dispense_flow_rate=PIPETTE_DISPENSE_RATE
             # for reference: default aspirate/dispense flow rate for p300_multi_gen2 is 94 ul/s
@@ -220,7 +214,6 @@ def run(protocol: protocol_api.ProtocolContext):
             for target in samples:
                 pipette.transfer(ETHANOL_VOL, ethanol, target, air_gap=air_vol)
             protocol.delay(minutes=WASH_TIME)
-            # API Version 2 no longer has delay() for pipettes, it uses protocol.delay() to pause the entire protocol
             for target in samples:
                 pipette.transfer(ETHANOL_VOL + ETHANOL_DEAD_VOL, target, liquid_waste, air_gap=air_vol)
 

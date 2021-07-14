@@ -32,17 +32,17 @@ def run(protocol: protocol_api.ProtocolContext):
     P300_TIPRACK_TYPE = 'opentrons_96_tiprack_300ul'
     P20_MOUNT = 'right'
     P300_MOUNT = 'left'
-    ASSEMBLY_PLATE_TYPE = '4ti_0960RIG_wellplate_200ul'
+    ASSEMBLY_PLATE_TYPE = '4ti_0960RIG_96_wellplate_200ul'
     ASSEMBLY_PLATE_SLOT = '8'
 
-    TRANSFORMATION_PLATE_TYPE = '4ti_0960RIG_wellplate_200ul'
+    TRANSFORMATION_PLATE_TYPE = '4ti_0960RIG_96_wellplate_200ul'
 
-    SOC_PLATE_TYPE = 'brooks96squaredeepwellstoragemicroplate_96_wellplate_2200ul'
+    SOC_PLATE_TYPE = '4Ti_0136_DeepWell_96_wellplate_2200ul'
     SOC_PLATE_SLOT = '7'
-    TUBE_RACK_TYPE = '1.5mlstarlabtubes_24_tuberack_1500ul'
+    TUBE_RACK_TYPE = 'E1415-1500_starlabtubes_24_tuberack_1500ul'
     TUBE_RACK_SLOT = '11'
     SPOTTING_WASTE_WELL = 'A1'
-    AGAR_PLATE_TYPE = '4ti_0960RIG_wellplate_200ul'
+    AGAR_PLATE_TYPE = '4ti_0960RIG_96_wellplate_200ul'
         # changed from 'Nunc_Omnitray'
             # it is a 1 well plate filled with agar;
             # but for the Opentron to spot in the locations of a 96 wp, it is defined similar to a 96 wp
