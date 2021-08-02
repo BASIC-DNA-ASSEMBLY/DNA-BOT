@@ -13,7 +13,7 @@ metadata = {
 
 
 # Example output produced by DNA-BOT for a single construct, uncomment and run to test the template
-#spotting_tuples=[(('A1','B1','C1'), ('A1','B1', 'C1'), (8,8,8))]
+#spotting_tuples=[(('A1','B1','C1'), ('A1','B1', 'C1'), (5,5,5))]
 #soc_well='A1'
 
 # Example output produced by DNA-BOT for 88 constructs, uncomment and run to test the template
@@ -409,8 +409,7 @@ def run(protocol: protocol_api.ProtocolContext):
     unique_cols = [col for i, col in enumerate(spotting_tuples_cols) if spotting_tuples_cols.index(col) == i]
     outgrowth(cols=unique_cols, soc_well=soc_well)
     spot_transformations(spotting_tuples)
-    protocol.pause('Let the spotted cells get dry')
-
-    # Spot again to increase the chances of getting more colonies
-    spot_transformations(spotting_tuples)
+    # Spot again to increase the chances of getting more colonies. Second spotting will only work for small number of assemblies where there is enough space on the deck for tipracks.
+    # protocol.pause('Let the spotted cells get dry')
+    # spot_transformations(spotting_tuples)
     print(unique_cols)
