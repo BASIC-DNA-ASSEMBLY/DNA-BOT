@@ -231,8 +231,8 @@ def run(protocol: protocol_api.ProtocolContext):
             spotting_tuples,
             dead_vol=1,
             spotting_dispense_rate=0.025,
-            stabbing_depth=2,
-            max_spot_vol=10):
+            stabbing_depth=10,
+            max_spot_vol=5):
         """
         Spots transformation reactions.
 
