@@ -5,12 +5,17 @@ Created on Thu Apr 11 14:26:07 2019
 @author: mh2210
 """
 import os
+import sys
+
+#add dnabot module to syspath
+abs_path = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, abs_path)
+
 import csv
 import argparse
 import pandas as pd
 import numpy as np
 import json
-import sys
 import tkinter as tk
 import dnabot_gui as gui
 import mplates
