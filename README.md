@@ -90,7 +90,7 @@ You need to install *pytest* if it's not done yet (`conda install pytest`).
 ```bash
 cd <repository>
 conda install pytest
-python -m pytest
+python -m pytest tests
 ```
 
 ## Authors
