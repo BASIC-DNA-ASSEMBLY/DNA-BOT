@@ -171,10 +171,14 @@ def main():
     if args.nogui:
         etoh_well = args.etoh_well
         soc_column = args.soc_column
+        # labware_settings  # already set
         construct_path = args.construct_path
         sources_paths = args.source_paths
-        output_dir = args.output_dir
         template_dir = args.template_dir
+        if args.output_dir is not None:
+            output_dir = args.output_dir
+        else:
+            output_dir = os.path.dirname(construct_path)
     else:
         user_inputs = __info_from_gui(labware_settings)
         etoh_well = user_inputs['etoh_well']
