@@ -36,6 +36,7 @@ requirements:
     - urwid
     - yarl
     - zipp==0.6.0
+    - pyyaml
 
 test:
   source_files:
