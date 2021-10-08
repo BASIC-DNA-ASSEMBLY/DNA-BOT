@@ -17,6 +17,9 @@ import pandas as pd
 import numpy as np
 import json
 import tkinter as tk
+import yaml
+from pathlib import Path
+
 import dnabot_gui as gui
 import mplates
 
@@ -78,6 +81,9 @@ SPOTTING_VOLS_DICT = {2: 5, 3: 5, 4: 5, 5: 5, 6: 5, 7: 5}
 # Constant lists
 SOURCE_DECK_POS = ['2', '5', '8', '7', '10', '11']
 
+# Settings
+LABWARE_SETTINGS_FILE = Path(__file__).resolve().parent / 'labware_settings.yaml'
+
 
 def __cli():
     """Command line interface.
@@ -87,10 +93,14 @@ def __cli():
     """
     desc = "DNA assembly using BASIC on OpenTrons."
     parser = argparse.ArgumentParser(description=desc)
-
+    parser.add_argument('--labware_settings_file',
+                        help='Optional, file providing labware IDs to be used. '
+                             'Default: ' + str(LABWARE_SETTINGS_FILE) +'.',
+                        default= LABWARE_SETTINGS_FILE)
     # Specific options for collecting settings from command line
-    subparsers = parser.add_subparsers(help='Optional, to define settings from the terminal instead of the graphical '
-                                            'interface. Type "python dnabot_app.py nogui -h" for more info.')
+    subparsers = parser.add_subparsers(help='Optional, to define settings from the terminal '
+                                            'instead of the graphical interface. '
+                                            'Type "python dnabot_app.py nogui -h" for more info.')
     parser_nogui = subparsers.add_parser('nogui')
     parser_nogui.add_argument('--construct_path', help='Construct CSV file.', required=True)
     parser_nogui.add_argument('--source_paths', help='Source CSV files.', nargs='+', required=True)
@@ -110,13 +120,21 @@ def __cli():
     return parser.parse_args()
 
 
-def __info_from_gui():
-    """Pop GUI to collect user inputs.
+def __info_from_gui(default_labware_settings):
+    """Pop GUI to collect user inputs
 
-    :returns user_inputs: info collected
-    :rtype: dict
+    Parameters
+    ----------
+    settings : dict
+        default labware and parameter settings
+
+    Returns
+    -------
+    dict
+        actual settings to be used
     """
-    user_inputs = {
+    user_settings = {
+        'labwares': default_labware_settings,
         'construct_path': None,
         'sources_paths': None,
         'etoh_well': None,
@@ -125,31 +143,31 @@ def __info_from_gui():
 
     # Obtain user input
     print("Requesting user input, if not visible checked minimized windows.")
-    root = tk.Tk()
-    dnabotinst = gui.DnabotApp(root)
-    root.mainloop()
+    # Collect info
+    root = tk.Tk() 
+    gui_inst = gui.GUI(root, user_settings)
     root.destroy()
-    if dnabotinst.quit_status:
+    # User asked to quit?
+    if gui_inst.quit_status:
         sys.exit("User specified 'QUIT' during app.")
-    # etoh_well and soc_column are silently collected by the gui
-    user_inputs['etoh_well'] = dnabotinst.etoh_well
-    user_inputs['soc_column'] = dnabotinst.soc_column
-    # construct file path
-    root = tk.Tk()
-    user_inputs['construct_path'] = gui.UserDefinedPaths(root, 'Construct csv file').output
-    root.destroy()
+    # Collect info
+    user_settings = gui_inst.user_settings
 
-    # part & linker file paths
-    root = tk.Tk()
-    user_inputs['sources_paths'] = gui.UserDefinedPaths(root, 'Sources csv files', multiple_files=True).output
-    root.destroy()
+    return user_settings
 
-    return user_inputs
 
+def __get_labware_settings_from_file(file_path):
+    with open(file_path) as ifh:
+        return yaml.safe_load(ifh)['labwares']
 
 def main():
-    # Settings
+    
+    # Parse args if any
     args = __cli()
+
+    # Settings on labwares
+    labware_settings = __get_labware_settings_from_file(args.labware_settings_file)
+
     if args.nogui:
         etoh_well = args.etoh_well
         soc_column = args.soc_column
@@ -158,9 +176,10 @@ def main():
         output_dir = args.output_dir
         template_dir = args.template_dir
     else:
-        user_inputs = __info_from_gui()
+        user_inputs = __info_from_gui(labware_settings)
         etoh_well = user_inputs['etoh_well']
         soc_column = user_inputs['soc_column']
+        labware_settings = user_inputs['labwares']  # update labware settings
         construct_path = user_inputs['construct_path']
         sources_paths = user_inputs['sources_paths']
         output_dir = os.path.dirname(construct_path)
@@ -172,8 +191,8 @@ def main():
 
     # Path to template directory
     if template_dir is not None:
-        # Just to comment this case: only way to fall here is that the variable has been set throught the command
-        # line arguments, nothing to do.^
+        # Just to comment this case: only way to fall here is that the variable
+        # has been set throught the command line arguments, nothing to do.
         template_dir_path = template_dir
         pass
     elif __name__ == '__main__':
