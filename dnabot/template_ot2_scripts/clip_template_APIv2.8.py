@@ -13,7 +13,8 @@ metadata = {
 #clips_dict={"prefixes_wells": ["A8", "A7", "C5", "C7", "C10"], "prefixes_plates": ["2", "2", "2", "2", "2"], "suffixes_wells": ["B7", "C1", "C2", "C3", "B8"], "suffixes_plates": ["2", "2", "2", "2", "2"], "parts_wells": ["E2", "F2", "C2", "B2", "D2"], "parts_plates": ["5", "5", "5", "5", "5"], "parts_vols": [1, 1, 1, 1, 1], "water_vols": [7.0, 7.0, 7.0, 7.0, 7.0]}
 
 # __LABWARES is expected to be redefined by "generate_ot2_script" method
-__LABWARES={"p10_single": {"id": "p20_single_gen2"}, "p300_multi": {"id": "p300_multi_gen2"}, "mag_deck": {"id": "magdeck"}, "24_tuberack_1500ul": {"id": "e14151500starlab_24_tuberack_1500ul"}, "96_tiprack_10ul": {"id": "opentrons_96_tiprack_20ul"}, "96_tiprack_300ul": {"id": "opentrons_96_tiprack_300ul"}, "96_wellplate_200ul_pcr": {"id": "4ti0960rig_96_wellplate_200ul"}, "12_reservoir_21000ul": {"id": "4ti0131_12_reservoir_21000ul"}, "96_deepwellplate_2ml": {"id": "4ti0136_96_wellplate_2200ul"}}
+# Test dict
+# __LABWARES={"p10_single": {"id": "p20_single_gen2"}, "p300_multi": {"id": "p300_multi_gen2"}, "mag_deck": {"id": "magdeck"}, "24_tuberack_1500ul": {"id": "e14151500starlab_24_tuberack_1500ul"}, "96_tiprack_10ul": {"id": "opentrons_96_tiprack_20ul"}, "96_tiprack_300ul": {"id": "opentrons_96_tiprack_300ul"}, "96_wellplate_200ul_pcr": {"id": "4ti0960rig_96_wellplate_200ul"}, "12_reservoir_21000ul": {"id": "4ti0131_12_reservoir_21000ul"}, "96_deepwellplate_2ml": {"id": "4ti0136_96_wellplate_2200ul"}}
 
 def run(protocol: protocol_api.ProtocolContext):
 # added run function for API 2.8
@@ -21,12 +22,12 @@ def run(protocol: protocol_api.ProtocolContext):
     ### Constants - these have been moved out of the def clip() for clarity
 
     #Tiprack
-    tiprack_type=__LABWARES['96_tiprack_10ul']
+    tiprack_type=__LABWARES['96_tiprack_10ul']['id']
     INITIAL_TIP = 'A1'
     CANDIDATE_TIPRACK_SLOTS = ['3', '6', '9']
 
     # Pipettes - pipette instructions in a single location so redefining pipette type is simpler
-    PIPETTE_TYPE = __LABWARES['p10_single']
+    PIPETTE_TYPE = __LABWARES['p10_single']['id']
              # API 2 supports gen_1 pipettes like the p10_single
     PIPETTE_MOUNT = 'right'
         ### Load Pipette
@@ -36,16 +37,16 @@ def run(protocol: protocol_api.ProtocolContext):
         exit()
 
     # Source Plates
-    SOURCE_PLATE_TYPE = __LABWARES['96_wellplate_200ul_pcr']
+    SOURCE_PLATE_TYPE = __LABWARES['96_wellplate_200ul_pcr']['id']
             # modified from custom labware as API 2 doesn't support labware.create anymore, so the old add_labware script can't be used
 
     # Destination Plates
-    DESTINATION_PLATE_TYPE = __LABWARES['96_wellplate_200ul_pcr']
+    DESTINATION_PLATE_TYPE = __LABWARES['96_wellplate_200ul_pcr']['id']
     DESTINATION_PLATE_POSITION = '1'
             # INITIAL_DESTINATION_WELL constant removed, as destination_plate.wells() automatically starts from A1
 
     # Tube Rack
-    TUBE_RACK_TYPE = __LABWARES['24_tuberack_1500ul']
+    TUBE_RACK_TYPE = __LABWARES['24_tuberack_1500ul']['id']
     TUBE_RACK_POSITION = '4'
     MASTER_MIX_WELL = 'A1'
     WATER_WELL = 'A2'

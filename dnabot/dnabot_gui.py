@@ -216,15 +216,15 @@ class GUI:
         self.user_settings['etoh_well'] = self.etoh_well.get()
         self.user_settings['soc_column'] = self.soc_column.get()
         # Step 2
-        self.user_settings['labwares']['p10_single'] = self.p10_single_entry.get()
-        self.user_settings['labwares']['p300_multi'] = self.p300_multi_entry.get()
-        self.user_settings['labwares']['mag_deck'] = self.mag_deck_entry.get()
-        self.user_settings['labwares']['a24_tuberack_1500ul'] = self.a24_tuberack_1500ul_entry.get()
-        self.user_settings['labwares']['a96_tiprack_10ul'] = self.a96_tiprack_10ul_entry.get()
-        self.user_settings['labwares']['a96_tiprack_300ul'] = self.a96_tiprack_300ul_entry.get()
-        self.user_settings['labwares']['a96_wellplate_200ul_pcr'] = self.a96_wellplate_200ul_pcr_entry.get()
-        self.user_settings['labwares']['a12_reservoir_21000ul'] = self.a12_reservoir_21000ul.get()
-        self.user_settings['labwares']['a96_deepwellplate_2ml'] = self.a96_deepwellplate_2ml.get()
+        self.user_settings['labwares']['p10_single']['id'] = self.p10_single_entry.get()
+        self.user_settings['labwares']['p300_multi']['id'] = self.p300_multi_entry.get()
+        self.user_settings['labwares']['mag_deck']['id'] = self.mag_deck_entry.get()
+        self.user_settings['labwares']['24_tuberack_1500ul']['id'] = self.a24_tuberack_1500ul_entry.get()
+        self.user_settings['labwares']['96_tiprack_10ul']['id'] = self.a96_tiprack_10ul_entry.get()
+        self.user_settings['labwares']['96_tiprack_300ul']['id'] = self.a96_tiprack_300ul_entry.get()
+        self.user_settings['labwares']['96_wellplate_200ul_pcr']['id'] = self.a96_wellplate_200ul_pcr_entry.get()
+        self.user_settings['labwares']['12_reservoir_21000ul']['id'] = self.a12_reservoir_21000ul.get()
+        self.user_settings['labwares']['96_deepwellplate_2ml']['id'] = self.a96_deepwellplate_2ml.get()
         # Step 3
         self.user_settings['construct_path'] = self.construct_file_selector.get()
         # Step 4
@@ -240,66 +240,66 @@ class GUI:
         return labware_entry
 
 
-class DnabotApp:
-    dnabot_title = "dnabot app"
-    intro_text = "Welcome to the dnabot App! Please follow these instructions to create the 4 DNA-BOT scripts:"
-    instruction_text1 = '1. From the dropdown menus select wells/columns for ethanol (2_purification script) and SOC media (4_transformation script).'
-    instruction_text2 = """2. Click the 'GENERATE' button and select a csv file describing constructs. In the 2nd window select up to 6 csv files describing plates containing BASIC parts and linkers.
-    If all files are not within one folder, absolute paths should be given."""
-    app_font = ("Helvetica", 12)
-    trough_wells = ['A{}'.format(x + 1) for x in range(12)]
+# class DnabotApp:
+#     dnabot_title = "dnabot app"
+#     intro_text = "Welcome to the dnabot App! Please follow these instructions to create the 4 DNA-BOT scripts:"
+#     instruction_text1 = '1. From the dropdown menus select wells/columns for ethanol (2_purification script) and SOC media (4_transformation script).'
+#     instruction_text2 = """2. Click the 'GENERATE' button and select a csv file describing constructs. In the 2nd window select up to 6 csv files describing plates containing BASIC parts and linkers.
+#     If all files are not within one folder, absolute paths should be given."""
+#     app_font = ("Helvetica", 12)
+#     trough_wells = ['A{}'.format(x + 1) for x in range(12)]
 
-    def __init__(self, master):
-        self.master = master
-        self.master.lift()
+#     def __init__(self, master):
+#         self.master = master
+#         self.master.lift()
 
-        # Titles and labels
-        self.master.title(DnabotApp.dnabot_title)
+#         # Titles and labels
+#         self.master.title(DnabotApp.dnabot_title)
 
-        intro = tk.Label(self.master, text=DnabotApp.intro_text, font=DnabotApp.app_font)
-        intro.grid(row=0, columnspan=2)
+#         intro = tk.Label(self.master, text=DnabotApp.intro_text, font=DnabotApp.app_font)
+#         intro.grid(row=0, columnspan=2)
 
-        instruction1 = tk.Label(self.master, text=DnabotApp.instruction_text1, font=DnabotApp.app_font)
-        instruction1.grid(row=1, columnspan=2, sticky=tk.W)
+#         instruction1 = tk.Label(self.master, text=DnabotApp.instruction_text1, font=DnabotApp.app_font)
+#         instruction1.grid(row=1, columnspan=2, sticky=tk.W)
 
-        instruction2 = tk.Label(self.master, text=DnabotApp.instruction_text2, font=DnabotApp.app_font)
-        instruction2.grid(row=2, columnspan=2, sticky=tk.W)
+#         instruction2 = tk.Label(self.master, text=DnabotApp.instruction_text2, font=DnabotApp.app_font)
+#         instruction2.grid(row=2, columnspan=2, sticky=tk.W)
 
-        etoh_well_label = tk.Label(self.master, text='Trough well for ethanol during purification:', font=DnabotApp.app_font)
-        etoh_well_label.grid(row = 3, column = 0, sticky = tk.E)
+#         etoh_well_label = tk.Label(self.master, text='Trough well for ethanol during purification:', font=DnabotApp.app_font)
+#         etoh_well_label.grid(row = 3, column = 0, sticky = tk.E)
 
-        soc_column_label = tk.Label(self.master, text='Deep-well plate column for SOC media during transformation:', font=DnabotApp.app_font)
-        soc_column_label.grid(row=4, column=0, sticky=tk.E)
+#         soc_column_label = tk.Label(self.master, text='Deep-well plate column for SOC media during transformation:', font=DnabotApp.app_font)
+#         soc_column_label.grid(row=4, column=0, sticky=tk.E)
 
-        # Buttons and menus
-        self.quit_status=False
+#         # Buttons and menus
+#         self.quit_status=False
         
-        quit_button=tk.Button(self.master, text='QUIT', fg='red', command=self.quitter, font=DnabotApp.app_font)
-        quit_button.grid(row = 5, column = 0)
+#         quit_button=tk.Button(self.master, text='QUIT', fg='red', command=self.quitter, font=DnabotApp.app_font)
+#         quit_button.grid(row = 5, column = 0)
 
-        generate_button=tk.Button(master, text='GENERATE', command=self.generate, font=DnabotApp.app_font)
-        generate_button.grid(row=5, column=1)
+#         generate_button=tk.Button(master, text='GENERATE', command=self.generate, font=DnabotApp.app_font)
+#         generate_button.grid(row=5, column=1)
 
-        self.etoh_well=tk.StringVar(master)
-        self.etoh_well.set(DnabotApp.trough_wells[10])
-        etoh_w=tk.OptionMenu(master, self.etoh_well, *tuple(DnabotApp.trough_wells[1:11]))
-        etoh_w.grid(row=3, column=1, sticky=tk.W)
-        etoh_w.config(font=DnabotApp.app_font)
+#         self.etoh_well=tk.StringVar(master)
+#         self.etoh_well.set(DnabotApp.trough_wells[10])
+#         etoh_w=tk.OptionMenu(master, self.etoh_well, *tuple(DnabotApp.trough_wells[1:11]))
+#         etoh_w.grid(row=3, column=1, sticky=tk.W)
+#         etoh_w.config(font=DnabotApp.app_font)
 
-        self.soc_column=tk.StringVar(master)
-        self.soc_column.set("1")
-        soc_w=tk.OptionMenu(master, self.soc_column, *tuple(['{}'.format(x + 1) for x in range(12)]))
-        soc_w.grid(row=4, column=1, sticky=tk.W)
-        soc_w.config(font=DnabotApp.app_font)
+#         self.soc_column=tk.StringVar(master)
+#         self.soc_column.set("1")
+#         soc_w=tk.OptionMenu(master, self.soc_column, *tuple(['{}'.format(x + 1) for x in range(12)]))
+#         soc_w.grid(row=4, column=1, sticky=tk.W)
+#         soc_w.config(font=DnabotApp.app_font)
 
-    def quitter(self):
-        self.quit_status=True
-        self.master.quit()
+#     def quitter(self):
+#         self.quit_status=True
+#         self.master.quit()
 
-    def generate(self):
-        self.etoh_well=self.etoh_well.get()
-        self.soc_column=self.soc_column.get()
-        self.master.quit()
+#     def generate(self):
+#         self.etoh_well=self.etoh_well.get()
+#         self.soc_column=self.soc_column.get()
+#         self.master.quit()
 
 
 def main():
@@ -309,8 +309,11 @@ def main():
     #    constructs_list = basic_ot2_generator_v11_beta.generate_constructs_list(
     #            construct_path.output)
     #    print(constructs_list)
-    root=tk.Tk()
-    dnabotinst=DnabotApp(root)
+
+    default_user_settings = {"labwares": {"p10_single": {"id": "p20_single_gen2"}, "p300_multi": {"id": "p300_multi_gen2"}, "mag_deck": {"id": "magdeck"}, "24_tuberack_1500ul": {"id": "e14151500starlab_24_tuberack_1500ul"}, "96_tiprack_10ul": {"id": "opentrons_96_tiprack_20ul"}, "96_tiprack_300ul": {"id": "opentrons_96_tiprack_300ul"}, "96_wellplate_200ul_pcr": {"id": "4ti0960rig_96_wellplate_200ul"}, "12_reservoir_21000ul": {"id": "4ti0131_12_reservoir_21000ul"}, "96_deepwellplate_2ml": {"id": "4ti0136_96_wellplate_2200ul"}}}
+
+    root = tk.Tk()
+    dnabotinst = GUI(root, default_user_settings)
     root.mainloop()
     root.destroy()
     if dnabotinst.quit_status:

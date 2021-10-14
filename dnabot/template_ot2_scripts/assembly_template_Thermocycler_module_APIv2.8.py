@@ -19,22 +19,23 @@ metadata = {
 #tiprack_num=5
 
 # __LABWARES is expected to be redefined by "generate_ot2_script" method
-__LABWARES={"p10_single": {"id": "p20_single_gen2"}, "p300_multi": {"id": "p300_multi_gen2"}, "mag_deck": {"id": "magdeck"}, "24_tuberack_1500ul": {"id": "e14151500starlab_24_tuberack_1500ul"}, "96_tiprack_10ul": {"id": "opentrons_96_tiprack_20ul"}, "96_tiprack_300ul": {"id": "opentrons_96_tiprack_300ul"}, "96_wellplate_200ul_pcr": {"id": "4ti0960rig_96_wellplate_200ul"}, "12_reservoir_21000ul": {"id": "4ti0131_12_reservoir_21000ul"}, "96_deepwellplate_2ml": {"id": "4ti0136_96_wellplate_2200ul"}}
+# Test dict
+# __LABWARES={"p10_single": {"id": "p20_single_gen2"}, "p300_multi": {"id": "p300_multi_gen2"}, "mag_deck": {"id": "magdeck"}, "24_tuberack_1500ul": {"id": "e14151500starlab_24_tuberack_1500ul"}, "96_tiprack_10ul": {"id": "opentrons_96_tiprack_20ul"}, "96_tiprack_300ul": {"id": "opentrons_96_tiprack_300ul"}, "96_wellplate_200ul_pcr": {"id": "4ti0960rig_96_wellplate_200ul"}, "12_reservoir_21000ul": {"id": "4ti0131_12_reservoir_21000ul"}, "96_deepwellplate_2ml": {"id": "4ti0136_96_wellplate_2200ul"}}
 
 def run(protocol: protocol_api.ProtocolContext):
-    def final_assembly(final_assembly_dict, tiprack_num, tiprack_type=__LABWARES['96_tiprack_10ul']):
+    def final_assembly(final_assembly_dict, tiprack_num, tiprack_type=__LABWARES['96_tiprack_10ul']['id']):
             # Constants, we update all the labware name in version 2
             #Tiprack
             CANDIDATE_TIPRACK_SLOTS = ['2', '3', '5', '6', '9']
             PIPETTE_MOUNT = 'right'
             #Plate of sample after  purification
-            MAG_PLATE_TYPE = __LABWARES['96_wellplate_200ul_pcr']
+            MAG_PLATE_TYPE = __LABWARES['96_wellplate_200ul_pcr']['id']
             MAG_PLATE_POSITION = '1'
             #Tuberack
-            TUBE_RACK_TYPE = __LABWARES['24_tuberack_1500ul']
+            TUBE_RACK_TYPE = __LABWARES['24_tuberack_1500ul']['id']
             TUBE_RACK_POSITION = '4'
             #Destination plate
-            DESTINATION_PLATE_TYPE = __LABWARES['96_wellplate_200ul_pcr']
+            DESTINATION_PLATE_TYPE = __LABWARES['96_wellplate_200ul_pcr']['id']
             TOTAL_VOL = 15
             PART_VOL = 1.5
             MIX_SETTINGS = (1, 3)
@@ -46,7 +47,7 @@ def run(protocol: protocol_api.ProtocolContext):
 
             slots = CANDIDATE_TIPRACK_SLOTS[:tiprack_num]
             tipracks = [protocol.load_labware(tiprack_type, slot) for slot in slots]
-            pipette = protocol.load_instrument(__LABWARES['p10_single'], PIPETTE_MOUNT, tip_racks=tipracks)
+            pipette = protocol.load_instrument(__LABWARES['p10_single']['id'], PIPETTE_MOUNT, tip_racks=tipracks)
 
             # Define Labware and set temperature
             magbead_plate = protocol.load_labware(MAG_PLATE_TYPE, MAG_PLATE_POSITION)

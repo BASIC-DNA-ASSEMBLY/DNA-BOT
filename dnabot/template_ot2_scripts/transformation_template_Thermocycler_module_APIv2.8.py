@@ -19,7 +19,8 @@ metadata = {
 #soc_well='A1'
 
 # __LABWARES is expected to be redefined by "generate_ot2_script" method
-__LABWARES={"p10_single": {"id": "p20_single_gen2"}, "p300_multi": {"id": "p300_multi_gen2"}, "mag_deck": {"id": "magdeck"}, "24_tuberack_1500ul": {"id": "e14151500starlab_24_tuberack_1500ul"}, "96_tiprack_10ul": {"id": "opentrons_96_tiprack_20ul"}, "96_tiprack_300ul": {"id": "opentrons_96_tiprack_300ul"}, "96_wellplate_200ul_pcr": {"id": "4ti0960rig_96_wellplate_200ul"}, "12_reservoir_21000ul": {"id": "4ti0131_12_reservoir_21000ul"}, "96_deepwellplate_2ml": {"id": "4ti0136_96_wellplate_2200ul"}}
+# Test dict
+# __LABWARES={"p10_single": {"id": "p20_single_gen2"}, "p300_multi": {"id": "p300_multi_gen2"}, "mag_deck": {"id": "magdeck"}, "24_tuberack_1500ul": {"id": "e14151500starlab_24_tuberack_1500ul"}, "96_tiprack_10ul": {"id": "opentrons_96_tiprack_20ul"}, "96_tiprack_300ul": {"id": "opentrons_96_tiprack_300ul"}, "96_wellplate_200ul_pcr": {"id": "4ti0960rig_96_wellplate_200ul"}, "12_reservoir_21000ul": {"id": "4ti0131_12_reservoir_21000ul"}, "96_deepwellplate_2ml": {"id": "4ti0136_96_wellplate_2200ul"}}
 
 def run(protocol: protocol_api.ProtocolContext):
 # added run function for API version 2
@@ -27,22 +28,22 @@ def run(protocol: protocol_api.ProtocolContext):
     # Constants
     CANDIDATE_p20_SLOTS = ['3']
     CANDIDATE_P300_SLOTS = ['6']
-    P20_TIPRACK_TYPE = __LABWARES['96_tiprack_10ul']
-    P300_TIPRACK_TYPE = __LABWARES['96_tiprack_300ul']
+    P20_TIPRACK_TYPE = __LABWARES['96_tiprack_10ul']['id']
+    P300_TIPRACK_TYPE = __LABWARES['96_tiprack_300ul']['id']
     P20_MOUNT = 'right'
     P300_MOUNT = 'left'
-    ASSEMBLY_PLATE_TYPE = __LABWARES['96_wellplate_200ul_pcr']
+    ASSEMBLY_PLATE_TYPE = __LABWARES['96_wellplate_200ul_pcr']['id']
     ASSEMBLY_PLATE_SLOT = '2'
 
-    TRANSFORMATION_PLATE_TYPE = __LABWARES['96_wellplate_200ul_pcr']
-    SOC_PLATE_TYPE = __LABWARES['96_deepwellplate_2ml']
+    TRANSFORMATION_PLATE_TYPE = __LABWARES['96_wellplate_200ul_pcr']['id']
+    SOC_PLATE_TYPE = __LABWARES['96_deepwellplate_2ml']['id']
         # changed from '4ti0136_96_deep-well'
     SOC_PLATE_SLOT = '5'
-    TUBE_RACK_TYPE = __LABWARES['24_tuberack_1500ul']
+    TUBE_RACK_TYPE = __LABWARES['24_tuberack_1500ul']['id']
         # changed from 'tube-rack_E1415-1500'
     TUBE_RACK_SLOT = '9'
     SPOTTING_WASTE_WELL = 'A1'
-    AGAR_PLATE_TYPE = __LABWARES['96_wellplate_200ul_pcr']
+    AGAR_PLATE_TYPE = __LABWARES['96_wellplate_200ul_pcr']['id']
         # changed from 'Nunc_Omnitray'
             # it is a 1 well plate filled with agar;
             # but for the Opentron to spot in the locations of a 96 wp, it is defined similar to a 96 wp
@@ -187,7 +188,7 @@ def run(protocol: protocol_api.ProtocolContext):
         #Thermocycler Module
         tc_mod = protocol.load_module('Thermocycler Module')
         # Destination Plates
-        DESTINATION_PLATE_TYPE = __LABWARES['96_wellplate_200ul_pcr']
+        DESTINATION_PLATE_TYPE = __LABWARES['96_wellplate_200ul_pcr']['id']
         # Loads destination plate onto Thermocycler Module
         destination_plate = tc_mod.load_labware(DESTINATION_PLATE_TYPE)
         tc_mod.set_block_temperature(42, hold_time_minutes=1, block_max_volume=180)
@@ -454,9 +455,9 @@ def run(protocol: protocol_api.ProtocolContext):
         # changed to protocol.load_labware for API version 2
     p300_tipracks = [protocol.load_labware(P300_TIPRACK_TYPE, slot) for slot in p300_slots]
         # changed to protocol.load_labware for API version 2
-    p20_pipette = protocol.load_instrument(__LABWARES['p10_single'], P20_MOUNT, tip_racks=p20_tipracks)
+    p20_pipette = protocol.load_instrument(__LABWARES['p10_single']['id'], P20_MOUNT, tip_racks=p20_tipracks)
         # changed to protocol.load_instrument for API version 2
-    p300_pipette = protocol.load_instrument(__LABWARES['p300_multi'], P300_MOUNT, tip_racks=p300_tipracks)
+    p300_pipette = protocol.load_instrument(__LABWARES['p300_multi']['id'], P300_MOUNT, tip_racks=p300_tipracks)
         # changed to protocol.load_instrument for API version 2
 
     assembly_plate = protocol.load_labware(ASSEMBLY_PLATE_TYPE, ASSEMBLY_PLATE_SLOT)
