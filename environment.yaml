@@ -1,4 +1,4 @@
-name: dev_dnabot
+name: dnabot-dev
 channels:
   - conda-forge
   - defaults
