@@ -16,7 +16,7 @@ metadata = {
 
 # __LABWARES is expected to be redefined by "generate_ot2_script" method
 # Test dict
-# __LABWARES={"p10_single": {"id": "p20_single_gen2"}, "p300_multi": {"id": "p300_multi_gen2"}, "mag_deck": {"id": "magdeck"}, "24_tuberack_1500ul": {"id": "e14151500starlab_24_tuberack_1500ul"}, "96_tiprack_10ul": {"id": "opentrons_96_tiprack_20ul"}, "96_tiprack_300ul": {"id": "opentrons_96_tiprack_300ul"}, "96_wellplate_200ul_pcr": {"id": "4ti0960rig_96_wellplate_200ul"}, "12_reservoir_21000ul": {"id": "4ti0131_12_reservoir_21000ul"}, "96_deepwellplate_2ml": {"id": "4ti0136_96_wellplate_2200ul"}}
+# __LABWARES={"p10_single": {"id": "p20_single_gen2"}, "p300_multi": {"id": "p300_multi_gen2"}, "mag_deck": {"id": "magdeck"}, "24_tuberack_1500ul": {"id": "e14151500starlab_24_tuberack_1500ul"}, "96_tiprack_10ul": {"id": "opentrons_96_tiprack_20ul"}, "96_tiprack_300ul": {"id": "opentrons_96_tiprack_300ul"}, "96_wellplate_200ul_pcr_step_14": {"id": "4ti0960rig_96_wellplate_200ul"}, "96_wellplate_200ul_pcr_step_2": {"id": "4ti0960rig_96_wellplate_200ul"}, "96_wellplate_200ul_pcr_step_3": {"id": "4ti0960rig_96_wellplate_200ul"}, "12_reservoir_21000ul": {"id": "4ti0131_12_reservoir_21000ul"}, "96_deepwellplate_2ml": {"id": "4ti0136_96_wellplate_2200ul"}}
 
 def run(protocol: protocol_api.ProtocolContext):
 # added run function for API verison 2
@@ -66,7 +66,7 @@ def run(protocol: protocol_api.ProtocolContext):
         MAGDECK_POSITION = '1'
 
         # Mix Plate
-        MIX_PLATE_TYPE = __LABWARES['96_wellplate_200ul_pcr']['id']
+        MIX_PLATE_TYPE = __LABWARES['96_wellplate_200ul_pcr_step_2']['id']
             # modified from custom labware as API 2 doesn't support labware.create anymore, so the old add_labware script can't be used
             # also acts as the type of plate loaded onto the magnetic module
         MIX_PLATE_POSITION = '4'

@@ -157,21 +157,44 @@ class GUI:
             label="Opentrons 300μL tips rack",
             labware_id='96_tiprack_300ul',
             irow=irow)
-        # 96 well rigid PCR plate
+
+        # # 96 well rigid PCR plate
+        # irow += 1
+        # self.a96_wellplate_200ul_pcr_entry = self.__make_labware_entry(
+        #     label="96 well rigid PCR plate",
+        #     labware_id='96_wellplate_200ul_pcr',
+        #     irow=irow)
+
+        # 96 well rigid PCR plate (clip and transformation steps)
         irow += 1
-        self.a96_wellplate_200ul_pcr_entry = self.__make_labware_entry(
-            label="96 well rigid PCR plate",
-            labware_id='96_wellplate_200ul_pcr',
+        self.a96_wellplate_200ul_pcr_step_14_entry = self.__make_labware_entry(
+            label="96 well rigid PCR plate (clip and transformation steps)",
+            labware_id='96_wellplate_200ul_pcr_step_14',
             irow=irow)
+
+        # 96 well rigid PCR plate (purification step)
+        irow += 1
+        self.a96_wellplate_200ul_pcr_step_2_entry = self.__make_labware_entry(
+            label="96 well rigid PCR plate (purification step)",
+            labware_id='96_wellplate_200ul_pcr_step_2',
+            irow=irow)
+
+        # 96 well rigid PCR plate (assembly step)
+        irow += 1
+        self.a96_wellplate_200ul_pcr_step_3_entry = self.__make_labware_entry(
+            label="96 well rigid PCR plate (assembly step)",
+            labware_id='96_wellplate_200ul_pcr_step_3',
+            irow=irow)
+
         # Reservoir plate 21 mL 12 channels
         irow += 1
-        self.a12_reservoir_21000ul = self.__make_labware_entry(
+        self.a12_reservoir_21000ul_entry = self.__make_labware_entry(
             label="Reservoir plate 21 mL 12 channels",
             labware_id='12_reservoir_21000ul',
             irow=irow)
         # 96 deep well plate 2 mL wells
         irow += 1
-        self.a96_deepwellplate_2ml = self.__make_labware_entry(
+        self.a96_deepwellplate_2ml_entry = self.__make_labware_entry(
             label="96 deep well plate 2 mL wells",
             labware_id='96_deepwellplate_2ml',
             irow=irow)
@@ -222,9 +245,12 @@ class GUI:
         self.user_settings['labwares']['24_tuberack_1500ul']['id'] = self.a24_tuberack_1500ul_entry.get()
         self.user_settings['labwares']['96_tiprack_10ul']['id'] = self.a96_tiprack_10ul_entry.get()
         self.user_settings['labwares']['96_tiprack_300ul']['id'] = self.a96_tiprack_300ul_entry.get()
-        self.user_settings['labwares']['96_wellplate_200ul_pcr']['id'] = self.a96_wellplate_200ul_pcr_entry.get()
-        self.user_settings['labwares']['12_reservoir_21000ul']['id'] = self.a12_reservoir_21000ul.get()
-        self.user_settings['labwares']['96_deepwellplate_2ml']['id'] = self.a96_deepwellplate_2ml.get()
+        # self.user_settings['labwares']['96_wellplate_200ul_pcr']['id'] = self.a96_wellplate_200ul_pcr_entry.get()
+        self.user_settings['labwares']['96_wellplate_200ul_pcr_step_14']['id'] = self.a96_wellplate_200ul_pcr_step_14_entry.get()
+        self.user_settings['labwares']['96_wellplate_200ul_pcr_step_2']['id'] = self.a96_wellplate_200ul_pcr_step_2_entry.get()
+        self.user_settings['labwares']['96_wellplate_200ul_pcr_step_3']['id'] = self.a96_wellplate_200ul_pcr_step_3_entry.get()
+        self.user_settings['labwares']['12_reservoir_21000ul']['id'] = self.a12_reservoir_21000ul_entry.get()
+        self.user_settings['labwares']['96_deepwellplate_2ml']['id'] = self.a96_deepwellplate_2ml_entry.get()
         # Step 3
         self.user_settings['construct_path'] = self.construct_file_selector.get()
         # Step 4
