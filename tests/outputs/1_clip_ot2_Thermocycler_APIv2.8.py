@@ -13,7 +13,12 @@ metadata = {
 # example dictionary produced by DNA-BOT for a single construct containing 5 parts, un-comment and run to test the template
 #clips_dict={"prefixes_wells": ["A8", "A7", "C5", "C7", "C10"], "prefixes_plates": ["2", "2", "2", "2", "2"], "suffixes_wells": ["B7", "C1", "C2", "C3", "B8"], "suffixes_plates": ["2", "2", "2", "2", "2"], "parts_wells": ["E2", "F2", "C2", "B2", "D2"], "parts_plates": ["5", "5", "5", "5", "5"], "parts_vols": [1, 1, 1, 1, 1], "water_vols": [7.0, 7.0, 7.0, 7.0, 7.0]}
 
+# __LABWARES is expected to be redefined by "generate_ot2_script" method
+# Test dict
+# __LABWARES={"p10_single": {"id": "p20_single_gen2"}, "p300_multi": {"id": "p300_multi_gen2"}, "mag_deck": {"id": "magdeck"}, "24_tuberack_1500ul": {"id": "e14151500starlab_24_tuberack_1500ul"}, "96_tiprack_10ul": {"id": "opentrons_96_tiprack_20ul"}, "96_tiprack_300ul": {"id": "opentrons_96_tiprack_300ul"}, "96_wellplate_200ul_pcr": {"id": "4ti0960rig_96_wellplate_200ul"}, "12_reservoir_21000ul": {"id": "4ti0131_12_reservoir_21000ul"}, "96_deepwellplate_2ml": {"id": "4ti0136_96_wellplate_2200ul"}}
+
 clips_dict={"prefixes_wells": ["B8", "B7", "C5", "C12", "C7", "B7", "C4", "C9", "C10", "B7", "C8", "C11", "C5"], "prefixes_plates": ["2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2"], "suffixes_wells": ["A7", "C1", "C3", "C2", "A8", "C1", "C2", "C3", "A8", "C2", "C3", "C1", "A8"], "suffixes_plates": ["2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2"], "parts_wells": ["A1", "A10", "A3", "A11", "A6", "A9", "A2", "A5", "A7", "A10", "A8", "A4", "A12"], "parts_plates": ["5", "5", "5", "5", "5", "5", "5", "5", "5", "5", "5", "5", "5"], "parts_vols": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], "water_vols": [7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0]}
+__LABWARES={"p10_single": {"id": "p20_single_gen2"}, "p300_multi": {"id": "p300_multi_gen2"}, "mag_deck": {"id": "magdeck"}, "24_tuberack_1500ul": {"id": "e14151500starlab_24_tuberack_1500ul"}, "96_tiprack_10ul": {"id": "opentrons_96_tiprack_20ul"}, "96_tiprack_300ul": {"id": "opentrons_96_tiprack_300ul"}, "96_wellplate_200ul_pcr": {"id": "4ti0960rig_96_wellplate_200ul"}, "12_reservoir_21000ul": {"id": "4ti0131_12_reservoir_21000ul"}, "96_deepwellplate_2ml": {"id": "4ti0136_96_wellplate_2200ul"}}
 
 
 def run(protocol: protocol_api.ProtocolContext):
@@ -22,12 +27,12 @@ def run(protocol: protocol_api.ProtocolContext):
     ### Constants - these have been moved out of the def clip() for clarity
 
     #Tiprack
-    tiprack_type="opentrons_96_tiprack_20ul"
+    tiprack_type=__LABWARES['96_tiprack_10ul']['id']
     INITIAL_TIP = 'A1'
     CANDIDATE_TIPRACK_SLOTS = ['3', '6', '9']
 
     # Pipettes - pipette instructions in a single location so redefining pipette type is simpler
-    PIPETTE_TYPE = 'p20_single_gen2'
+    PIPETTE_TYPE = __LABWARES['p10_single']['id']
     PIPETTE_MOUNT = 'right'
         ### Load Pipette
         # checks if it's a P10 Single pipette
@@ -37,16 +42,16 @@ def run(protocol: protocol_api.ProtocolContext):
 #Thermocycler Module
     tc_mod = protocol.load_module('Thermocycler Module')
 # Destination Plates
-    DESTINATION_PLATE_TYPE = '4ti0960rig_96_wellplate_200ul'
+    DESTINATION_PLATE_TYPE = __LABWARES['96_wellplate_200ul_pcr']['id']
     # Loads destination plate onto Thermocycler Module
     destination_plate = tc_mod.load_labware(DESTINATION_PLATE_TYPE)
 
     # Source Plates
-    SOURCE_PLATE_TYPE = '4ti0960rig_96_wellplate_200ul'
+    SOURCE_PLATE_TYPE = __LABWARES['96_wellplate_200ul_pcr']['id']
             # modified from custom labware as API 2 doesn't support labware.create anymore, so the old add_labware script can't be used
 
     # Tube Rack
-    TUBE_RACK_TYPE = 'e14151500starlab_24_tuberack_1500ul'
+    TUBE_RACK_TYPE = __LABWARES['24_tuberack_1500ul']['id']
             # modified from custom labware as API 2 doesn't support labware.create anymore, so the old add_labware script can't be used
     TUBE_RACK_POSITION = '4'
     MASTER_MIX_WELL = 'A1'

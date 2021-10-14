@@ -14,8 +14,13 @@ metadata = {
 #sample_number=8
 #ethanol_well='A3'
 
+# __LABWARES is expected to be redefined by "generate_ot2_script" method
+# Test dict
+# __LABWARES={"p10_single": {"id": "p20_single_gen2"}, "p300_multi": {"id": "p300_multi_gen2"}, "mag_deck": {"id": "magdeck"}, "24_tuberack_1500ul": {"id": "e14151500starlab_24_tuberack_1500ul"}, "96_tiprack_10ul": {"id": "opentrons_96_tiprack_20ul"}, "96_tiprack_300ul": {"id": "opentrons_96_tiprack_300ul"}, "96_wellplate_200ul_pcr": {"id": "4ti0960rig_96_wellplate_200ul"}, "12_reservoir_21000ul": {"id": "4ti0131_12_reservoir_21000ul"}, "96_deepwellplate_2ml": {"id": "4ti0136_96_wellplate_2200ul"}}
+
 sample_number=13
 ethanol_well='A11'
+__LABWARES={"p10_single": {"id": "p20_single_gen2"}, "p300_multi": {"id": "p300_multi_gen2"}, "mag_deck": {"id": "magdeck"}, "24_tuberack_1500ul": {"id": "e14151500starlab_24_tuberack_1500ul"}, "96_tiprack_10ul": {"id": "opentrons_96_tiprack_20ul"}, "96_tiprack_300ul": {"id": "opentrons_96_tiprack_300ul"}, "96_wellplate_200ul_pcr": {"id": "4ti0960rig_96_wellplate_200ul"}, "12_reservoir_21000ul": {"id": "4ti0131_12_reservoir_21000ul"}, "96_deepwellplate_2ml": {"id": "4ti0136_96_wellplate_2200ul"}}
 
 
 def run(protocol: protocol_api.ProtocolContext):
@@ -38,7 +43,7 @@ def run(protocol: protocol_api.ProtocolContext):
             drying_time=5,
             elution_time=2,
             sample_offset=0,
-            tiprack_type="opentrons_96_tiprack_300ul"):
+            tiprack_type=__LABWARES['96_tiprack_300ul']['id']):
 
         """
 
@@ -56,7 +61,7 @@ def run(protocol: protocol_api.ProtocolContext):
         PIPETTE_ASPIRATE_RATE = 25
         PIPETTE_DISPENSE_RATE = 150
         TIPS_PER_SAMPLE = 9
-        PIPETTE_TYPE = 'p300_multi_gen2'
+        PIPETTE_TYPE = __LABWARES['p300_multi']['id']
             # new constant for easier swapping between pipette types
 
         # Tiprack
@@ -66,17 +71,17 @@ def run(protocol: protocol_api.ProtocolContext):
         MAGDECK_POSITION = '1'
 
         # Mix Plate
-        MIX_PLATE_TYPE = '4ti0960rig_96_wellplate_200ul'
+        MIX_PLATE_TYPE = __LABWARES['96_wellplate_200ul_pcr']['id']
             # modified from custom labware as API 2 doesn't support labware.create anymore, so the old add_labware script can't be used
             # also acts as the type of plate loaded onto the magnetic module
         MIX_PLATE_POSITION = '4'
 
         # Reagents
-        REAGENT_CONTAINER_TYPE = '4ti0131_12_reservoir_21000ul'
+        REAGENT_CONTAINER_TYPE = __LABWARES['12_reservoir_21000ul']['id']
         REAGENT_CONTAINER_POSITION = '7'
 
         # Beads
-        BEAD_CONTAINER_TYPE = '4ti0136_96_wellplate_2200ul'
+        BEAD_CONTAINER_TYPE = __LABWARES['96_deepwellplate_2ml']['id']
         BEAD_CONTAINER_POSITION = '8'
 
         # Settings
@@ -121,7 +126,7 @@ def run(protocol: protocol_api.ProtocolContext):
         ### Define Labware
 
         # Magnetic Module
-        MAGDECK = protocol.load_module('magdeck', MAGDECK_POSITION)
+        MAGDECK = protocol.load_module(__LABWARES['mag_deck']['id'], MAGDECK_POSITION)
             # 'magdeck' is the gen 1 magnetic module, use 'magnetic module gen2' for the gen 2 magentic module
                 # if using gen 2 module, need to change settling time! (see comments under Constants)
         MAGDECK.disengage()

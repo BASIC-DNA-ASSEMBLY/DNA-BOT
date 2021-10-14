@@ -7,8 +7,8 @@ Promega T4 DNA Ligase,7.5
 
 SOURCE_PLATES
 Deck position,Source plate,Path
-2,linker_parts_coords.csv,/home/kenza/Bureau/DNA-BOT/tests/inputs/linker_parts_coords.csv
-5,user_parts_coords.csv,/home/kenza/Bureau/DNA-BOT/tests/inputs/user_parts_coords.csv
+2,linker_parts_coords.csv,/Users/tduigou/code/dnabot-fork/tests/inputs/linker_parts_coords.csv
+5,user_parts_coords.csv,/Users/tduigou/code/dnabot-fork/tests/inputs/user_parts_coords.csv
 
 CLIP_REACTIONS
 prefixes,parts,suffixes,number,mag_well
