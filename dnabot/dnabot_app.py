@@ -185,7 +185,13 @@ def main():
         soc_column = user_inputs['soc_column']
         labware_settings = user_inputs['labwares']  # update labware settings
         construct_path = user_inputs['construct_path']
+        if construct_path is None:
+            print('No file provided for constructs. Exit.')
+            sys.exit()
         sources_paths = user_inputs['sources_paths']
+        if sources_paths is None or len(sources_paths) == 0:
+            print('No files prodived for sources. Exit.')
+            sys.exit()
         output_dir = os.path.dirname(construct_path)
         template_dir = None
 
