@@ -47,7 +47,7 @@ test:
     - pytest
   commands:
     - python -m {{ name|lower }}.dnabot_app nogui --help
-    - pytest -v
+    - python -m pytest tests
 
 about:
   home: https://github.com/brsynth/DNA-BOT
