@@ -10,7 +10,7 @@ dnabot can be run in 2 modes:
 - with a graphical interface: see `Running the dnabot app` section in [instructions](docs/DNA_BOT_instructions_v1.0.0.pdf). dnabot was developed using Python v3.7. Refer to [requirements.txt](requirements.txt).
 - without a graphical interface: you need to specify all settings through the command line, you can see the instructions in the sections below.
 
-## Installation
+## Installation from conda
 
 ```bash
 conda create --name <myenv>
@@ -22,7 +22,15 @@ conda install -c conda-forge -c brsynth dnabot
 
 ## Usage
 
-After a git clone:
+### Using the GUI
+
+```bash
+conda activate <myenv>
+python -m dnabot.dnabot_app --help
+python -m dnabot.dnabot_app
+```
+
+### Using the CLI only
 
 ```bash
 conda activate <myenv>
@@ -32,6 +40,69 @@ python -m dnabot.dnabot_app nogui \
     --source_paths /path/to/linker_parts_coord.csv /path/to/user_parts_coord.csv \
     --output_dir /path/to/output/dir
 ```
+
+### Change default values
+
+Use the `--labware_settings_file` argument to set different default values. This option is 
+available either using the GUI or the CLI interface.
+
+```bash
+conda activate <myenv>
+python -m dnabot.dnabot_app --labware_settings_file /path/to/custom/labware_settings.yaml.
+```
+
+The labware settings file should follow the structure below (yaml file)
+where the "id“ values could be updated with the labware IDs that the user
+is planning to use.
+
+```yaml
+labwares:
+
+  # Opentrons P10 Single-Channel Electronic Pipette
+  p10_single:
+    id: p20_single_gen2
+
+  # Opentrons P300 8-Channel Electronic Pipette
+  p300_multi:
+    id: p300_multi_gen2
+
+  # Opentrons magnetic module
+  mag_deck:
+    id: magdeck
+
+  # Opentrons 4-in-1 tubes rack for 1.5 ml eppendorf tubes
+  24_tuberack_1500ul:
+    id: e14151500starlab_24_tuberack_1500ul
+
+  # Opentrons 10μL tips rack
+  96_tiprack_10ul:
+    id: opentrons_96_tiprack_20ul
+
+  # Opentrons 300μL tips rack
+  96_tiprack_300ul:
+    id: opentrons_96_tiprack_300ul
+
+  # 96 well rigid PCR plate (clip and transformation steps)
+  96_wellplate_200ul_pcr_step_14:
+    id: 4ti0960rig_96_wellplate_200ul
+
+  # 96 well rigid PCR plate (purification step)
+  96_wellplate_200ul_pcr_step_2:
+    id: 4ti0960rig_96_wellplate_200ul
+
+  # 96 well rigid PCR plate (assembly step)
+  96_wellplate_200ul_pcr_step_3:
+    id: 4ti0960rig_96_wellplate_200ul
+
+  # Reservoir plate 21 mL 12 channels
+  12_reservoir_21000ul:
+    id: 4ti0131_12_reservoir_21000ul
+
+  # 96 deep well plate 2 mL wells
+  96_deepwellplate_2ml:
+    id: 4ti0136_96_wellplate_2200ul
+```
+
 
 ## Command line arguments
 
@@ -67,7 +138,7 @@ conda develop -n <dev_env> .
 ```
 
 You may be prompted to install `conda-build` in your base environment (`conda install conda-build`).
-The default conda environment name will be `dev_dnabot` if not specified by `-n <dev_env>`.
+The default conda environment name will be `dnabot-dev` if not specified by `-n <dev-env>`.
 
 Test your installation with:
 
