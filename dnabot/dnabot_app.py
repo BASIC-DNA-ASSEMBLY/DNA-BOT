@@ -243,51 +243,65 @@ def main():
 
     print('Writing files...')
     # Write OT2 scripts
-    generate_ot2_script(CLIP_FNAME_1, os.path.join(
-        template_dir_path, CLIP_TEMP_FNAME_1), clips_dict=clips_dict)
-    generate_ot2_script(CLIP_FNAME_2, os.path.join(
-        template_dir_path, CLIP_TEMP_FNAME_2), clips_dict=clips_dict,
+    generate_ot2_script(
+        CLIP_FNAME_1,
+        os.path.join(template_dir_path, CLIP_TEMP_FNAME_1),
+        clips_dict=clips_dict)
+    generate_ot2_script(
+        CLIP_FNAME_2,
+        os.path.join(template_dir_path, CLIP_TEMP_FNAME_2),
+        clips_dict=clips_dict,
         __LABWARES=labware_settings)
-    generate_ot2_script(CLIP_FNAME_3, os.path.join(
-        template_dir_path, CLIP_TEMP_FNAME_3), clips_dict=clips_dict,
+    generate_ot2_script(
+        CLIP_FNAME_3,
+        os.path.join(template_dir_path, CLIP_TEMP_FNAME_3),
+        clips_dict=clips_dict,
         __LABWARES=labware_settings)
        
-    generate_ot2_script(MAGBEAD_FNAME_1, os.path.join(
-        template_dir_path, MAGBEAD_TEMP_FNAME_1),
+    generate_ot2_script(
+        MAGBEAD_FNAME_1,
+        os.path.join(template_dir_path, MAGBEAD_TEMP_FNAME_1),
         sample_number=magbead_sample_number,
         ethanol_well=etoh_well)
-    generate_ot2_script(MAGBEAD_FNAME_2, os.path.join(
-        template_dir_path, MAGBEAD_TEMP_FNAME_2),
+    generate_ot2_script(
+        MAGBEAD_FNAME_2,
+        os.path.join(template_dir_path, MAGBEAD_TEMP_FNAME_2),
         sample_number=magbead_sample_number,
         ethanol_well=etoh_well,
         __LABWARES=labware_settings)
     
-    generate_ot2_script(F_ASSEMBLY_FNAME_1, os.path.join(
-        template_dir_path, F_ASSEMBLY_TEMP_FNAME_1),
+    generate_ot2_script(
+        F_ASSEMBLY_FNAME_1,
+        os.path.join(template_dir_path, F_ASSEMBLY_TEMP_FNAME_1),
         final_assembly_dict=final_assembly_dict,
         tiprack_num=final_assembly_tipracks)
-    generate_ot2_script(F_ASSEMBLY_FNAME_2, os.path.join(
-        template_dir_path, F_ASSEMBLY_TEMP_FNAME_2),
+    generate_ot2_script(
+        F_ASSEMBLY_FNAME_2,
+        os.path.join(template_dir_path, F_ASSEMBLY_TEMP_FNAME_2),
         final_assembly_dict=final_assembly_dict,
         tiprack_num=final_assembly_tipracks,
         __LABWARES=labware_settings)
-    generate_ot2_script(F_ASSEMBLY_FNAME_3, os.path.join(
-        template_dir_path, F_ASSEMBLY_TEMP_FNAME_3),
+    generate_ot2_script(
+        F_ASSEMBLY_FNAME_3,
+        os.path.join(template_dir_path, F_ASSEMBLY_TEMP_FNAME_3),
         final_assembly_dict=final_assembly_dict,
         tiprack_num=final_assembly_tipracks,
         __LABWARES=labware_settings)
     
-    generate_ot2_script(TRANS_SPOT_FNAME_1, os.path.join(
-        template_dir_path, TRANS_SPOT_TEMP_FNAME_1),
+    generate_ot2_script(
+        TRANS_SPOT_FNAME_1,
+        os.path.join(template_dir_path, TRANS_SPOT_TEMP_FNAME_1),
         spotting_tuples=spotting_tuples,
         soc_well=f"A{soc_column}")
-    generate_ot2_script(TRANS_SPOT_FNAME_2, os.path.join(
-        template_dir_path, TRANS_SPOT_TEMP_FNAME_2),
+    generate_ot2_script(
+        TRANS_SPOT_FNAME_2,
+        os.path.join(template_dir_path, TRANS_SPOT_TEMP_FNAME_2),
         spotting_tuples=spotting_tuples,
         soc_well=f"A{soc_column}",
         __LABWARES=labware_settings)
-    generate_ot2_script(TRANS_SPOT_FNAME_3, os.path.join(
-        template_dir_path, TRANS_SPOT_TEMP_FNAME_3),
+    generate_ot2_script(
+        TRANS_SPOT_FNAME_3,
+        os.path.join(template_dir_path, TRANS_SPOT_TEMP_FNAME_3),
         spotting_tuples=spotting_tuples,
         soc_well=f"A{soc_column}",
         __LABWARES=labware_settings)
