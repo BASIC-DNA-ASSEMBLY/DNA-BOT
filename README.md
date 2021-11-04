@@ -43,17 +43,17 @@ python -m dnabot.dnabot_app nogui \
 
 ### Change default values
 
-Use the `--labware_settings_file` argument to set different default values. This option is 
+Use the `--default_settings_file` argument to set different default values. This option is 
 available either using the GUI or the CLI interface.
 
 ```bash
 conda activate <myenv>
-python -m dnabot.dnabot_app --labware_settings_file /path/to/custom/labware_settings.yaml.
+python -m dnabot.dnabot_app --default_settings_file /path/to/custom/default_settings.yaml.
 ```
 
-The labware settings file should follow the structure below (yaml file)
-where the "id“ values could be updated with the labware IDs that the user
-is planning to use.
+The default settings file should follow the structure below (yaml file). The 
+labware IDs to be used can be updated with the `labwares` section, while the 
+parameters for the seperation step are listed in the `parameters` section.
 
 ```yaml
 labwares:
