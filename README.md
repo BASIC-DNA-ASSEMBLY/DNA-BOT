@@ -41,7 +41,50 @@ python -m dnabot.dnabot_app nogui \
     --output_dir /path/to/output/dir
 ```
 
-### Change default values
+## Command line arguments
+
+### GUI mode
+
+```bash
+usage: dnabot_app.py [-h] [--default_settings_file DEFAULT_SETTINGS_FILE] {nogui} ...
+
+DNA assembly using BASIC on OpenTrons.
+
+positional arguments:
+  {nogui}               Optional, to define settings from the terminal instead of the graphical interface. Type
+                        "python dnabot_app.py nogui -h" for more info.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --default_settings_file DEFAULT_SETTINGS_FILE
+                        Optional, file providing labware IDs and parameter to be used. Default:
+                        /Users/tduigou/code/test/dnabot/dnabot/default_settings.yaml.
+```
+
+### No GUI mode
+```
+usage: dnabot_app.py nogui [-h] --construct_path CONSTRUCT_PATH --source_paths SOURCE_PATHS [SOURCE_PATHS ...]
+                           [--etoh_well ETOH_WELL] [--soc_column SOC_COLUMN] [--output_dir OUTPUT_DIR]
+                           [--template_dir TEMPLATE_DIR]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --construct_path CONSTRUCT_PATH
+                        Construct CSV file.
+  --source_paths SOURCE_PATHS [SOURCE_PATHS ...]
+                        Source CSV files.
+  --etoh_well ETOH_WELL
+                        Well coordinate for Ethanol. Default: A11
+  --soc_column SOC_COLUMN
+                        Column coordinate for SOC. Default: 1
+  --output_dir OUTPUT_DIR
+                        Output directory. Default: same directory than the one containing the "construct_path" file
+  --template_dir TEMPLATE_DIR
+                        Template directory. Default: "template_ot2_scripts" located next to the present script.
+```
+
+
+## Change default values
 
 Use the `--default_settings_file` argument to set different default values. This option is 
 available either using the GUI or the CLI interface.
@@ -146,28 +189,6 @@ parameters:
     # value: 5  # BRS
 ```
 
-
-## Command line arguments
-
-```
- optional arguments:
-   -h, --help            show this help message and exit
-   --construct_path CONSTRUCT_PATH
-                         Construct CSV file.
-   --source_paths SOURCE_PATHS [SOURCE_PATHS ...]
-                         Source CSV files.
-   --etoh_well ETOH_WELL
-                         Well coordinate for Ethanol. Default: A11
-   --soc_column SOC_COLUMN
-                         Column coordinate for SOC. Default: 1
-   --output_dir OUTPUT_DIR
-                         Output directory. Default: same directory than the one
-                         containing the "construct_path" file
-   --template_dir TEMPLATE_DIR
-                         Template directory. Default: "template_ot2_scripts"
-                         located next to the present script.
-```
-
 ## For developers
 
 ### Development installation
@@ -175,7 +196,6 @@ parameters:
 After a git clone:
 
 ```bash
-cd <repository>
 conda env create -f environment.yaml -n <dev_env>
 conda develop -n <dev_env> .
 ```
@@ -202,7 +222,6 @@ conda env remove -n <dev_env>
 You need to install *pytest* if it's not done yet (`conda install pytest`).
 
 ```bash
-cd <repository>
 conda install pytest
 python -m pytest tests
 ```
