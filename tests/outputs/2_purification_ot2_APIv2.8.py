@@ -14,13 +14,15 @@ metadata = {
 #sample_number=8
 #ethanol_well='A3'
 
-# __LABWARES is expected to be redefined by "generate_ot2_script" method
+# __LABWARES and __PARAMETERS are expected to be redefined by "generate_ot2_script" method
 # Test dict
-# __LABWARES={"p10_single": {"id": "p20_single_gen2"}, "p300_multi": {"id": "p300_multi_gen2"}, "mag_deck": {"id": "magdeck"}, "24_tuberack_1500ul": {"id": "e14151500starlab_24_tuberack_1500ul"}, "96_tiprack_10ul": {"id": "opentrons_96_tiprack_20ul"}, "96_tiprack_300ul": {"id": "opentrons_96_tiprack_300ul"}, "96_wellplate_200ul_pcr_step_14": {"id": "4ti0960rig_96_wellplate_200ul"}, "96_wellplate_200ul_pcr_step_2": {"id": "4ti0960rig_96_wellplate_200ul"}, "96_wellplate_200ul_pcr_step_3": {"id": "4ti0960rig_96_wellplate_200ul"}, "12_reservoir_21000ul": {"id": "4ti0131_12_reservoir_21000ul"}, "96_deepwellplate_2ml": {"id": "4ti0136_96_wellplate_2200ul"}}
+# __LABWARES={"p20_single": {"id": "p20_single_gen2"}, "p300_multi": {"id": "p300_multi_gen2"}, "mag_deck": {"id": "magdeck"}, "24_tuberack_1500ul": {"id": "e14151500starlab_24_tuberack_1500ul"}, "96_tiprack_10ul": {"id": "opentrons_96_tiprack_20ul"}, "96_tiprack_300ul": {"id": "opentrons_96_tiprack_300ul"}, "96_wellplate_200ul_pcr_step_14": {"id": "4ti0960rig_96_wellplate_200ul"}, "96_wellplate_200ul_pcr_step_2": {"id": "4ti0960rig_96_wellplate_200ul"}, "96_wellplate_200ul_pcr_step_3": {"id": "4ti0960rig_96_wellplate_200ul"}, "12_reservoir_21000ul": {"id": "4ti0131_12_reservoir_21000ul"}, "96_deepwellplate_2ml": {"id": "4ti0136_96_wellplate_2200ul"}}
+# __PARAMETERS={"magdeck_height": {"value": "20"}, "wash_time": {"value": "0.5"}, "bead_ratio": {"value": "1.8"}, "incubation_time": {"value": "5"}, "settling_time": {"value": "2"}, "drying_time": {"value": "5"}, "elution_time": {"value": "2"}}
 
 sample_number=13
 ethanol_well='A11'
-__LABWARES={"p10_single": {"id": "p20_single_gen2"}, "p300_multi": {"id": "p300_multi_gen2"}, "mag_deck": {"id": "magdeck"}, "24_tuberack_1500ul": {"id": "e14151500starlab_24_tuberack_1500ul"}, "96_tiprack_10ul": {"id": "opentrons_96_tiprack_20ul"}, "96_tiprack_300ul": {"id": "opentrons_96_tiprack_300ul"}, "96_wellplate_200ul_pcr_step_14": {"id": "4ti0960rig_96_wellplate_200ul"}, "96_wellplate_200ul_pcr_step_2": {"id": "4ti0960rig_96_wellplate_200ul"}, "96_wellplate_200ul_pcr_step_3": {"id": "4ti0960rig_96_wellplate_200ul"}, "12_reservoir_21000ul": {"id": "4ti0131_12_reservoir_21000ul"}, "96_deepwellplate_2ml": {"id": "4ti0136_96_wellplate_2200ul"}}
+__LABWARES={"p20_single": {"id": "p20_single_gen2"}, "p300_multi": {"id": "p300_multi_gen2"}, "mag_deck": {"id": "magdeck"}, "24_tuberack_1500ul": {"id": "e14151500starlab_24_tuberack_1500ul"}, "96_tiprack_10ul": {"id": "opentrons_96_tiprack_20ul"}, "96_tiprack_300ul": {"id": "opentrons_96_tiprack_300ul"}, "96_wellplate_200ul_pcr_step_14": {"id": "4ti0960rig_96_wellplate_200ul"}, "96_wellplate_200ul_pcr_step_2": {"id": "4ti0960rig_96_wellplate_200ul"}, "96_wellplate_200ul_pcr_step_3": {"id": "4ti0960rig_96_wellplate_200ul"}, "12_reservoir_21000ul": {"id": "4ti0131_12_reservoir_21000ul"}, "96_deepwellplate_2ml": {"id": "4ti0136_96_wellplate_2200ul"}}
+__PARAMETERS={"magdeck_height": {"value": 20.0}, "wash_time": {"value": 0.5}, "bead_ratio": {"value": 1.8}, "incubation_time": {"value": 5.0}, "settling_time": {"value": 2.0}, "drying_time": {"value": 5.0}, "elution_time": {"value": 2.0}}
 
 
 def run(protocol: protocol_api.ProtocolContext):
@@ -31,17 +33,17 @@ def run(protocol: protocol_api.ProtocolContext):
             ethanol_well,
             elution_buffer_well='A1',
             sample_volume=30,
-            bead_ratio=1.8,
+            bead_ratio=__PARAMETERS['bead_ratio'],
             elution_buffer_volume=40,
-            incubation_time=5,
-            settling_time=2,
+            incubation_time=__PARAMETERS['incubation_time'],
+            settling_time=__PARAMETERS['settling_time'],
                 # if using Gen 2 magentic module, need to change time! see: https://docs.opentrons.com/v2/new_modules.html
                 # "The GEN2 Magnetic Module uses smaller magnets than the GEN1 version...this means it will take longer for the GEN2 module to attract beads."
                 # Recommended Magnetic Module GEN2 bead attraction time:
                     # Total liquid volume <= 50 uL: 5 minutes
                 # this template was written with the Gen 1 magnetic module, as it is compatible with API version 2
-            drying_time=5,
-            elution_time=2,
+            drying_time=__PARAMETERS['drying_time'],
+            elution_time=__PARAMETERS['elution_time'],
             sample_offset=0,
             tiprack_type=__LABWARES['96_tiprack_300ul']['id']):
 
@@ -91,10 +93,10 @@ def run(protocol: protocol_api.ProtocolContext):
         SLOW_HEAD_SPEEDS = {'x': 600 // 4, 'y': 400 // 4, 'z': 125 // 10, 'a': 125 // 10}
         DEFAULT_HEAD_SPEEDS = {'x': 400, 'y': 400, 'z': 125, 'a': 100}
         IMMOBILISE_MIX_REPS = 10
-        MAGDECK_HEIGHT = 20
+        MAGDECK_HEIGHT = __PARAMETERS['magdeck_height']['value']
         AIR_VOL_COEFF = 0.1
         ETHANOL_VOL = 150
-        WASH_TIME = 0.5
+        WASH_TIME = __PARAMETERS['wash_time']['value']
         ETHANOL_DEAD_VOL = 50
         ELUTION_MIX_REPS = 20
         ELUTANT_SEP_TIME = 1
