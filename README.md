@@ -58,8 +58,8 @@ parameters for the seperation step are listed in the `parameters` section.
 ```yaml
 labwares:
 
-  # Opentrons P10 Single-Channel Electronic Pipette
-  p10_single:
+  # Opentrons P20 Single-Channel Electronic Pipette
+  p20_single:
     id: p20_single_gen2
 
   # Opentrons P300 8-Channel Electronic Pipette
@@ -69,38 +69,81 @@ labwares:
   # Opentrons magnetic module
   mag_deck:
     id: magdeck
+    # id: magnetic module gen2  # BRS script 2
 
   # Opentrons 4-in-1 tubes rack for 1.5 ml eppendorf tubes
   24_tuberack_1500ul:
     id: e14151500starlab_24_tuberack_1500ul
+    # id: opentrons_24_tuberack_eppendorf_1.5ml_safelock_snapcap  # BRS scripts 1, 3, 4
 
   # Opentrons 10μL tips rack
   96_tiprack_10ul:
     id: opentrons_96_tiprack_20ul
+    # id: tipone_3dprinted_96_tiprack_20ul
 
   # Opentrons 300μL tips rack
   96_tiprack_300ul:
     id: opentrons_96_tiprack_300ul
+    # id: tipone_yellow_3dprinted_96_tiprack_300ul
+
+  # # 96 well rigid PCR plate (all steps)
+  # 96_wellplate_200ul_pcr:
+  #   id: 4ti0960rig_96_wellplate_200ul
 
   # 96 well rigid PCR plate (clip and transformation steps)
   96_wellplate_200ul_pcr_step_14:
     id: 4ti0960rig_96_wellplate_200ul
+    # id: green_96_wellplate_200ul_pcr  # BRS scripts 1, 4
 
   # 96 well rigid PCR plate (purification step)
   96_wellplate_200ul_pcr_step_2:
     id: 4ti0960rig_96_wellplate_200ul
+    # id: black_96_wellplate_200ul_pcr  # BRS script 2
+    # id: clear_on_blackbase_96_wellplate_200ul_pcr  # BRS script 2
 
   # 96 well rigid PCR plate (assembly step)
   96_wellplate_200ul_pcr_step_3:
     id: 4ti0960rig_96_wellplate_200ul
+    # id: black_96_wellplate_200ul_pcr  # BRS scripts 3
+    # id: thermoomnitrayfor96spots_96_wellplate_50ul  # BRS script 4
 
   # Reservoir plate 21 mL 12 channels
   12_reservoir_21000ul:
     id: 4ti0131_12_reservoir_21000ul
+    # id: citadel_12_wellplate_22000ul  # BRS script 2
 
   # 96 deep well plate 2 mL wells
   96_deepwellplate_2ml:
     id: 4ti0136_96_wellplate_2200ul
+    # id: transparent_96_wellplate_2ml_deep  # BRS scripts 2, 4
+
+parameters:
+
+  # Magnetic module height (mm) - purification step
+  magdeck_height: 
+    value: 20.0
+    # value: 10.8  # BRS
+  # Washing time (min) - purification step
+  wash_time:
+    value: 0.5
+  # Bead ratio - purification step
+  bead_ratio:
+    value: 1.8
+  # Incubation time (min) - purification step
+  incubation_time:
+    value: 5.0
+  # Settling time (min) - purification step
+  settling_time:
+    value: 2.0
+    # value: 6  # BRS
+  # Drying time (min) - purification step
+  drying_time:
+    value: 5.0
+    # value: 15  # BRS
+  # Elution time (min) - purif step
+  elution_time:
+    value: 2.0
+    # value: 5  # BRS
 ```
 
 
