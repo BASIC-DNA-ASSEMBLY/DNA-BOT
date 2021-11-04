@@ -177,9 +177,9 @@ def main():
         soc_column = args.soc_column
         labware_settings = user_settings['labwares']
         parameter_settings = user_settings['parameters']
-        construct_path = args.construct_path
-        sources_paths = args.source_paths
-        template_dir = args.template_dir
+        construct_path = os.path.abspath(args.construct_path)
+        sources_paths = [os.path.abspath(path) for path in args.source_paths]
+        template_dir = os.path.abspath(args.template_dir) if args.template_dir else None
         if args.output_dir is not None:
             output_dir = args.output_dir
         else:
