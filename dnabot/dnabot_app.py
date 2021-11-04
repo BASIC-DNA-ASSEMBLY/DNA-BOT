@@ -4,12 +4,10 @@ Created on Thu Apr 11 14:26:07 2019
 
 @author: mh2210
 """
+from __future__ import annotations  # Enable the "hint" feature for objects
+
 import os
 import sys
-
-#add dnabot module to syspath
-abs_path = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, abs_path)
 
 import csv
 import argparse
@@ -19,6 +17,10 @@ import json
 import tkinter as tk
 import yaml
 from pathlib import Path
+
+#add dnabot module to syspath
+abs_path = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, abs_path)
 
 import dnabot_gui as gui
 import mplates
@@ -82,7 +84,7 @@ SPOTTING_VOLS_DICT = {2: 5, 3: 5, 4: 5, 5: 5, 6: 5, 7: 5}
 SOURCE_DECK_POS = ['2', '5', '8', '7', '10', '11']
 
 # Settings
-LABWARE_SETTINGS_FILE = Path(__file__).resolve().parent / 'labware_settings.yaml'
+DEFAULT_SETTINGS_FILE = Path(__file__).resolve().parent / 'default_settings.yaml'
 
 
 def __cli():
@@ -93,10 +95,10 @@ def __cli():
     """
     desc = "DNA assembly using BASIC on OpenTrons."
     parser = argparse.ArgumentParser(description=desc)
-    parser.add_argument('--labware_settings_file',
-                        help='Optional, file providing labware IDs to be used. '
-                             'Default: ' + str(LABWARE_SETTINGS_FILE) +'.',
-                        default= LABWARE_SETTINGS_FILE)
+    parser.add_argument('--default_settings_file',
+                        help='Optional, file providing labware IDs and parameter to be used. '
+                             'Default: ' + str(DEFAULT_SETTINGS_FILE) +'.',
+                        default= DEFAULT_SETTINGS_FILE)
     # Specific options for collecting settings from command line
     subparsers = parser.add_subparsers(help='Optional, to define settings from the terminal '
                                             'instead of the graphical interface. '
@@ -120,7 +122,12 @@ def __cli():
     return parser.parse_args()
 
 
-def __info_from_gui(default_labware_settings):
+def __get_settings_from_file(file_path: str) -> None:
+    with open(file_path) as ifh:
+        return yaml.safe_load(ifh)
+
+
+def __info_from_gui(user_settings):
     """Pop GUI to collect user inputs
 
     Parameters
@@ -134,7 +141,8 @@ def __info_from_gui(default_labware_settings):
         actual settings to be used
     """
     user_settings = {
-        'labwares': default_labware_settings,
+        'labwares': user_settings['labwares'],
+        'parameters': user_settings['parameters'],
         'construct_path': None,
         'sources_paths': None,
         'etoh_well': None,
@@ -156,22 +164,19 @@ def __info_from_gui(default_labware_settings):
     return user_settings
 
 
-def __get_labware_settings_from_file(file_path):
-    with open(file_path) as ifh:
-        return yaml.safe_load(ifh)['labwares']
-
 def main():
     
     # Parse args if any
     args = __cli()
 
     # Settings on labwares
-    labware_settings = __get_labware_settings_from_file(args.labware_settings_file)
+    user_settings = __get_settings_from_file(args.default_settings_file)
 
     if args.nogui:
         etoh_well = args.etoh_well
         soc_column = args.soc_column
-        # labware_settings  # already set
+        labware_settings = user_settings['labwares']
+        parameter_settings = user_settings['parameters']
         construct_path = args.construct_path
         sources_paths = args.source_paths
         template_dir = args.template_dir
@@ -180,10 +185,11 @@ def main():
         else:
             output_dir = os.path.dirname(construct_path)
     else:
-        user_inputs = __info_from_gui(labware_settings)
+        user_inputs = __info_from_gui(user_settings)
         etoh_well = user_inputs['etoh_well']
         soc_column = user_inputs['soc_column']
-        labware_settings = user_inputs['labwares']  # update labware settings
+        labware_settings = user_inputs['labwares']  # update labwares IDs
+        parameter_settings = user_inputs['parameters']  # update parameters
         construct_path = user_inputs['construct_path']
         if construct_path is None:
             print('No file provided for constructs. Exit.')
@@ -194,6 +200,9 @@ def main():
             sys.exit()
         output_dir = os.path.dirname(construct_path)
         template_dir = None
+    
+    import pprint
+    pprint.pprint(parameter_settings)
 
     # Args checking
     if len(sources_paths) > len(SOURCE_DECK_POS):
@@ -268,7 +277,8 @@ def main():
         os.path.join(template_dir_path, MAGBEAD_TEMP_FNAME_2),
         sample_number=magbead_sample_number,
         ethanol_well=etoh_well,
-        __LABWARES=labware_settings)
+        __LABWARES=labware_settings,
+        __PARAMETERS=parameter_settings)
     
     generate_ot2_script(
         F_ASSEMBLY_FNAME_1,

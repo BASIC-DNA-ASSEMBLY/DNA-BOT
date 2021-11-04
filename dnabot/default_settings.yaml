@@ -1,7 +1,7 @@
 labwares:
 
-  # Opentrons P10 Single-Channel Electronic Pipette
-  p10_single:
+  # Opentrons P20 Single-Channel Electronic Pipette
+  p20_single:
     id: p20_single_gen2
 
   # Opentrons P300 8-Channel Electronic Pipette
@@ -21,10 +21,12 @@ labwares:
   # Opentrons 10μL tips rack
   96_tiprack_10ul:
     id: opentrons_96_tiprack_20ul
+    # id: tipone_3dprinted_96_tiprack_20ul
 
   # Opentrons 300μL tips rack
   96_tiprack_300ul:
     id: opentrons_96_tiprack_300ul
+    # id: tipone_yellow_3dprinted_96_tiprack_300ul
 
   # # 96 well rigid PCR plate (all steps)
   # 96_wellplate_200ul_pcr:
@@ -56,3 +58,31 @@ labwares:
   96_deepwellplate_2ml:
     id: 4ti0136_96_wellplate_2200ul
     # id: transparent_96_wellplate_2ml_deep  # BRS scripts 2, 4
+
+parameters:
+
+  # Magnetic module height (mm) - purification step
+  magdeck_height: 
+    value: 20.0
+    # value: 10.8  # BRS
+  # Washing time (min) - purification step
+  wash_time:
+    value: 0.5
+  # Bead ratio - purification step
+  bead_ratio:
+    value: 1.8
+  # Incubation time (min) - purification step
+  incubation_time:
+    value: 5.0
+  # Settling time (min) - purification step
+  settling_time:
+    value: 2.0
+    # value: 6  # BRS
+  # Drying time (min) - purification step
+  drying_time:
+    value: 5.0
+    # value: 15  # BRS
+  # Elution time (min) - purif step
+  elution_time:
+    value: 2.0
+    # value: 5  # BRS
