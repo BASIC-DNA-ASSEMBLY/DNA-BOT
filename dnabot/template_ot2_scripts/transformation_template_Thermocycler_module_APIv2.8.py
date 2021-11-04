@@ -455,7 +455,7 @@ def run(protocol: protocol_api.ProtocolContext):
         # changed to protocol.load_labware for API version 2
     p300_tipracks = [protocol.load_labware(P300_TIPRACK_TYPE, slot) for slot in p300_slots]
         # changed to protocol.load_labware for API version 2
-    p20_pipette = protocol.load_instrument(__LABWARES['p10_single']['id'], P20_MOUNT, tip_racks=p20_tipracks)
+    p20_pipette = protocol.load_instrument(__LABWARES['p20_single']['id'], P20_MOUNT, tip_racks=p20_tipracks)
         # changed to protocol.load_instrument for API version 2
     p300_pipette = protocol.load_instrument(__LABWARES['p300_multi']['id'], P300_MOUNT, tip_racks=p300_tipracks)
         # changed to protocol.load_instrument for API version 2

@@ -27,17 +27,17 @@ def run(protocol: protocol_api.ProtocolContext):
             ethanol_well,
             elution_buffer_well='A1',
             sample_volume=30,
-            bead_ratio=__PARAMETERS['bead_ratio'],
+            bead_ratio=__PARAMETERS['bead_ratio']['value'],
             elution_buffer_volume=40,
-            incubation_time=__PARAMETERS['incubation_time'],
-            settling_time=__PARAMETERS['settling_time'],
+            incubation_time=__PARAMETERS['incubation_time']['value'],
+            settling_time=__PARAMETERS['settling_time']['value'],
                 # if using Gen 2 magentic module, need to change time! see: https://docs.opentrons.com/v2/new_modules.html
                 # "The GEN2 Magnetic Module uses smaller magnets than the GEN1 version...this means it will take longer for the GEN2 module to attract beads."
                 # Recommended Magnetic Module GEN2 bead attraction time:
                     # Total liquid volume <= 50 uL: 5 minutes
                 # this template was written with the Gen 1 magnetic module, as it is compatible with API version 2
-            drying_time=__PARAMETERS['drying_time'],
-            elution_time=__PARAMETERS['elution_time'],
+            drying_time=__PARAMETERS['drying_time']['value'],
+            elution_time=__PARAMETERS['elution_time']['value'],
             sample_offset=0,
             tiprack_type=__LABWARES['96_tiprack_300ul']['id']):
 

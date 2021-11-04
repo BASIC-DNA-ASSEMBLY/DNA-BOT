@@ -47,7 +47,7 @@ def run(protocol: protocol_api.ProtocolContext):
 
             slots = CANDIDATE_TIPRACK_SLOTS[:tiprack_num]
             tipracks = [protocol.load_labware(tiprack_type, slot) for slot in slots]
-            pipette = protocol.load_instrument(__LABWARES['p10_single']['id'], PIPETTE_MOUNT, tip_racks=tipracks)
+            pipette = protocol.load_instrument(__LABWARES['p20_single']['id'], PIPETTE_MOUNT, tip_racks=tipracks)
 
             # Define Labware and set temperature
             magbead_plate = protocol.load_labware(MAG_PLATE_TYPE, MAG_PLATE_POSITION)

@@ -28,7 +28,7 @@ def run(protocol: protocol_api.ProtocolContext):
     CANDIDATE_TIPRACK_SLOTS = ['3', '6', '9']
 
     # Pipettes - pipette instructions in a single location so redefining pipette type is simpler
-    PIPETTE_TYPE = __LABWARES['p10_single']['id']
+    PIPETTE_TYPE = __LABWARES['p20_single']['id']
     PIPETTE_MOUNT = 'right'
         ### Load Pipette
         # checks if it's a P10 Single pipette
