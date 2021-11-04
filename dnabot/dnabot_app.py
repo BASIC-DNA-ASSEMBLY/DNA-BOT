@@ -200,9 +200,6 @@ def main():
             sys.exit()
         output_dir = os.path.dirname(construct_path)
         template_dir = None
-    
-    import pprint
-    pprint.pprint(parameter_settings)
 
     # Args checking
     if len(sources_paths) > len(SOURCE_DECK_POS):
