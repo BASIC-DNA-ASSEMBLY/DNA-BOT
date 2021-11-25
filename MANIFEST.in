@@ -1,2 +1,2 @@
 graft dnabot/template_ot2_scripts
-include dnabot/labware_settings.yaml
+include dnabot/default_settings.yaml
