@@ -101,6 +101,7 @@ parameters for the seperation step are listed in the `parameters` section.
 ```yaml
 labwares:
 
+  # Pipettes #############################################
   # Opentrons P20 Single-Channel Electronic Pipette
   p20_single:
     id: p20_single_gen2
@@ -109,45 +110,42 @@ labwares:
   p300_multi:
     id: p300_multi_gen2
 
+  # Modules ###############################################
   # Opentrons magnetic module
   mag_deck:
     id: magdeck
     # id: magnetic module gen2  # BRS script 2
 
-  # Opentrons 4-in-1 tubes rack for 1.5 ml eppendorf tubes
-  24_tuberack_1500ul:
-    id: e14151500starlab_24_tuberack_1500ul
-    # id: opentrons_24_tuberack_eppendorf_1.5ml_safelock_snapcap  # BRS scripts 1, 3, 4
-
-  # Opentrons 10μL tips rack
-  96_tiprack_10ul:
+  # Tip racks #############################################
+  # Opentrons 20μL tips rack
+  96_tiprack_20ul:
     id: opentrons_96_tiprack_20ul
-    # id: tipone_3dprinted_96_tiprack_20ul
+    # id: tipone_3dprinted_96_tiprack_20ul  # BRS
 
   # Opentrons 300μL tips rack
   96_tiprack_300ul:
     id: opentrons_96_tiprack_300ul
-    # id: tipone_yellow_3dprinted_96_tiprack_300ul
+    # id: tipone_yellow_3dprinted_96_tiprack_300ul  # BRS
 
-  # # 96 well rigid PCR plate (all steps)
-  # 96_wellplate_200ul_pcr:
-  #   id: 4ti0960rig_96_wellplate_200ul
+  # Plates ################################################
+  # Opentrons 4-in-1 tubes rack for 1.5 ml eppendorf tubes
+  24_tuberack_1500ul:
+    id: e14151500starlab_24_tuberack_1500ul
+    # id: opentrons_24_tuberack_eppendorf_1.5ml_safelock_snapcap  # BRS scripts 1, 3, 4
 
   # 96 well rigid PCR plate (clip and transformation steps)
   96_wellplate_200ul_pcr_step_14:
     id: 4ti0960rig_96_wellplate_200ul
     # id: green_96_wellplate_200ul_pcr  # BRS scripts 1, 4
 
-  # 96 well rigid PCR plate (purification step)
-  96_wellplate_200ul_pcr_step_2:
+  # 96 well rigid PCR plate (purification and assembly steps)
+  96_wellplate_200ul_pcr_step_23:
     id: 4ti0960rig_96_wellplate_200ul
-    # id: black_96_wellplate_200ul_pcr  # BRS script 2
-    # id: clear_on_blackbase_96_wellplate_200ul_pcr  # BRS script 2
+    # id: black_96_wellplate_200ul_pcr  # BRS script 2, 3
 
-  # 96 well rigid PCR plate (assembly step)
-  96_wellplate_200ul_pcr_step_3:
+  # Agar plate (transformation step)
+  agar_plate_step_4:
     id: 4ti0960rig_96_wellplate_200ul
-    # id: black_96_wellplate_200ul_pcr  # BRS scripts 3
     # id: thermoomnitrayfor96spots_96_wellplate_50ul  # BRS script 4
 
   # Reservoir plate 21 mL 12 channels
@@ -162,31 +160,49 @@ labwares:
 
 parameters:
 
+  # Purification step #####################################
   # Magnetic module height (mm) - purification step
-  magdeck_height: 
+  purif_magdeck_height: 
     value: 20.0
     # value: 10.8  # BRS
+
   # Washing time (min) - purification step
-  wash_time:
+  purif_wash_time:
     value: 0.5
+
   # Bead ratio - purification step
-  bead_ratio:
+  purif_bead_ratio:
     value: 1.8
+
   # Incubation time (min) - purification step
-  incubation_time:
+  purif_incubation_time:
     value: 5.0
+
   # Settling time (min) - purification step
-  settling_time:
+  purif_settling_time:
     value: 2.0
     # value: 6  # BRS
+
   # Drying time (min) - purification step
-  drying_time:
+  purif_drying_time:
     value: 5.0
     # value: 15  # BRS
+
   # Elution time (min) - purif step
-  elution_time:
+  purif_elution_time:
     value: 2.0
     # value: 5  # BRS
+  
+  # Transformation step ###################################
+  # Incubation temperature
+  transfo_incubation_temp:
+    value: 4
+    # value: 8  # BRS
+
+  # Incubation time (min)
+  transfo_incubation_time:
+    value: 20
+    # value: 30  # BRS
 ```
 
 ## For developers
@@ -208,6 +224,7 @@ Test your installation with:
 ```bash
 conda activate <dev_env>
 python -m dnabot.dnabot_app nogui --help
+python -m pytest tests
 ```
 
 To uninstall:
