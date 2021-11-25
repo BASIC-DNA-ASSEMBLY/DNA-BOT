@@ -9,7 +9,13 @@ from __future__ import annotations  # Enable the "hint" feature for objects
 
 import tkinter as tk
 from tkinter import filedialog
-import sys
+
+
+def to_numeric_value(str_value: str):
+    if int(str_value) == float(str_value):
+        return int(str_value)
+    else:
+        return float(str_value)
 
 
 class FileSelector:
@@ -72,10 +78,10 @@ class GUI:
                            )
     __INSTRUCTION_STEP_2 = ("2. Specify the labware IDs to be used. Leave values "
                             "as they are to use the default ones.")
-    __INSTRUCTION_STEP_3 = ("3. Specify the parameter values for the purification "
-                            "procedure.")
-    __INSTRUCTION_STEP_4 = ("4. Select the CSV file describing constructs.")
-    __INSTRUCTION_STEP_5 = ("5. Select up to 6 csv files describing plates "
+    __INSTRUCTION_STEP_3 = ("3. Specify parameters for the purification step.")
+    __INSTRUCTION_STEP_4 = ("4. Specify parameters for the transformation step.")
+    __INSTRUCTION_STEP_5 = ("5. Select the CSV file describing constructs.")
+    __INSTRUCTION_STEP_6 = ("6. Select up to 6 csv files describing plates "
                             "containing BASIC parts and linkers. If all files "
                             "are not within one folder, absolute paths should "
                             "be given.")
@@ -154,9 +160,9 @@ class GUI:
             irow=irow)
         # Opentrons 10μL tips rack
         irow += 1
-        self.labware_96_tiprack_10ul_entry = self.__make_labware_entry(
-            label="Opentrons 10μL tips rack",
-            labware_id='96_tiprack_10ul',
+        self.labware_96_tiprack_20ul_entry = self.__make_labware_entry(
+            label="Opentrons 20μL tips rack",
+            labware_id='96_tiprack_20ul',
             irow=irow)
         # Opentrons 300μL tips rack
         irow += 1
@@ -174,16 +180,16 @@ class GUI:
 
         # 96 well rigid PCR plate (purification step)
         irow += 1
-        self.labware_96_wellplate_200ul_pcr_step_2_entry = self.__make_labware_entry(
-            label="96 well rigid PCR plate (purification step)",
-            labware_id='96_wellplate_200ul_pcr_step_2',
+        self.labware_96_wellplate_200ul_pcr_step_23_entry = self.__make_labware_entry(
+            label="96 well rigid PCR plate (purification and assembly steps)",
+            labware_id='96_wellplate_200ul_pcr_step_23',
             irow=irow)
 
-        # 96 well rigid PCR plate (assembly step)
+        # Agar plate (transformation step)
         irow += 1
-        self.labware_96_wellplate_200ul_pcr_step_3_entry = self.__make_labware_entry(
-            label="96 well rigid PCR plate (assembly step)",
-            labware_id='96_wellplate_200ul_pcr_step_3',
+        self.agar_plate_step_4_entry = self.__make_labware_entry(
+            label="Agar plate (transformation step)",
+            labware_id='agar_plate_step_4',
             irow=irow)
 
         # Reservoir plate 21 mL 12 channels
@@ -199,58 +205,73 @@ class GUI:
             labware_id='96_deepwellplate_2ml',
             irow=irow)
         
-        # Step 3 -- Parameter for the purification step
+        # Step 3 -- Parameters for the purification step
         irow += 1
         step_3 = tk.Message(self.root, text=GUI.__INSTRUCTION_STEP_3, width=600, anchor='w')
         step_3.grid(row=irow, columnspan=2, padx=5, pady=10, sticky='w')
         irow += 1
-        self.param_magdeck_height = self.__make_parameter_entry(
+        self.param_purif_magdeck_height = self.__make_parameter_entry(
             label="Magnetic module height (mm)",
-            parameter_id="magdeck_height",
+            parameter_id="purif_magdeck_height",
             irow=irow)
         irow += 1
-        self.param_wash_time = self.__make_parameter_entry(
+        self.param_purif_wash_time = self.__make_parameter_entry(
             label="Washing time (min)",
-            parameter_id="wash_time",
+            parameter_id="purif_wash_time",
             irow=irow)
         irow += 1
-        self.param_bead_ratio = self.__make_parameter_entry(
+        self.param_purif_bead_ratio = self.__make_parameter_entry(
             label="Bead ratio",
-            parameter_id="bead_ratio",
+            parameter_id="purif_bead_ratio",
             irow=irow)
         irow += 1
-        self.param_incubation_time = self.__make_parameter_entry(
+        self.param_purif_incubation_time = self.__make_parameter_entry(
             label="Incubation time (min)",
-            parameter_id="incubation_time",
+            parameter_id="purif_incubation_time",
             irow=irow)
         irow += 1
-        self.param_settling_time = self.__make_parameter_entry(
+        self.param_purif_settling_time = self.__make_parameter_entry(
             label="Settling time (min)",
-            parameter_id="settling_time",
+            parameter_id="purif_settling_time",
             irow=irow)
         irow += 1
-        self.param_drying_time = self.__make_parameter_entry(
+        self.param_purif_drying_time = self.__make_parameter_entry(
             label="Drying time (min)",
-            parameter_id="drying_time",
+            parameter_id="purif_drying_time",
             irow=irow)
         irow += 1
-        self.param_elution_time = self.__make_parameter_entry(
+        self.param_purif_elution_time = self.__make_parameter_entry(
             label="Elution time (min)",
-            parameter_id="elution_time",
+            parameter_id="purif_elution_time",
             irow=irow)
 
-        # Step 4 -- Construct CSV file
+        # Step 4 -- Parameters for the transformation step
         irow += 1
         step_4 = tk.Message(self.root, text=GUI.__INSTRUCTION_STEP_4, width=600, anchor='w')
         step_4.grid(row=irow, columnspan=2, padx=5, pady=10, sticky='w')
         irow += 1
-        self.construct_file_selector = FileSelector(root, irow, title='Construct CSV file', multiple_files=False)
-        irow = self.construct_file_selector.irow
+        self.param_transfo_incubation_temp = self.__make_parameter_entry(
+            label="Incubation temperature (°C)",
+            parameter_id="transfo_incubation_temp",
+            irow=irow)
+        irow += 1
+        self.param_transfo_incubation_time = self.__make_parameter_entry(
+            label="Incubation time (min)",
+            parameter_id="transfo_incubation_time",
+            irow=irow)
 
-        # Step 5 -- Source CSV files
+        # Step 5 -- Construct CSV file
         irow += 1
         step_5 = tk.Message(self.root, text=GUI.__INSTRUCTION_STEP_5, width=600, anchor='w')
         step_5.grid(row=irow, columnspan=2, padx=5, pady=10, sticky='w')
+        irow += 1
+        self.construct_file_selector = FileSelector(root, irow, title='Construct CSV file', multiple_files=False)
+        irow = self.construct_file_selector.irow
+
+        # Step 6 -- Source CSV files
+        irow += 1
+        step_6 = tk.Message(self.root, text=GUI.__INSTRUCTION_STEP_6, width=600, anchor='w')
+        step_6.grid(row=irow, columnspan=2, padx=5, pady=10, sticky='w')
         irow += 1
         self.source_files_selector = FileSelector(root, irow, title='Source CSV files', multiple_files=True)
         irow = self.source_files_selector.irow
@@ -283,24 +304,27 @@ class GUI:
         self.user_settings['labwares']['p300_multi']['id'] = self.labware_p300_multi_entry.get()
         self.user_settings['labwares']['mag_deck']['id'] = self.labware_mag_deck_entry.get()
         self.user_settings['labwares']['24_tuberack_1500ul']['id'] = self.labware_24_tuberack_1500ul_entry.get()
-        self.user_settings['labwares']['96_tiprack_10ul']['id'] = self.labware_96_tiprack_10ul_entry.get()
+        self.user_settings['labwares']['96_tiprack_20ul']['id'] = self.labware_96_tiprack_20ul_entry.get()
         self.user_settings['labwares']['96_tiprack_300ul']['id'] = self.labware_96_tiprack_300ul_entry.get()
         self.user_settings['labwares']['96_wellplate_200ul_pcr_step_14']['id'] = self.labware_96_wellplate_200ul_pcr_step_14_entry.get()
-        self.user_settings['labwares']['96_wellplate_200ul_pcr_step_2']['id'] = self.labware_96_wellplate_200ul_pcr_step_2_entry.get()
-        self.user_settings['labwares']['96_wellplate_200ul_pcr_step_3']['id'] = self.labware_96_wellplate_200ul_pcr_step_3_entry.get()
+        self.user_settings['labwares']['96_wellplate_200ul_pcr_step_23']['id'] = self.labware_96_wellplate_200ul_pcr_step_23_entry.get()
+        self.user_settings['labwares']['agar_plate_step_4']['id'] = self.agar_plate_step_4_entry.get()
         self.user_settings['labwares']['12_reservoir_21000ul']['id'] = self.labware_12_reservoir_21000ul_entry.get()
         self.user_settings['labwares']['96_deepwellplate_2ml']['id'] = self.labware_96_deepwellplate_2ml_entry.get()
         # Step 3
-        self.user_settings['parameters']['magdeck_height']['value'] = float(self.param_magdeck_height.get())
-        self.user_settings['parameters']['wash_time']['value'] = float(self.param_wash_time.get())
-        self.user_settings['parameters']['bead_ratio']['value'] = float(self.param_bead_ratio.get())
-        self.user_settings['parameters']['incubation_time']['value'] = float(self.param_incubation_time.get())
-        self.user_settings['parameters']['settling_time']['value'] = float(self.param_settling_time.get())
-        self.user_settings['parameters']['drying_time']['value'] = float(self.param_drying_time.get())
-        self.user_settings['parameters']['elution_time']['value'] = float(self.param_elution_time.get())
+        self.user_settings['parameters']['purif_magdeck_height']['value'] = to_numeric_value(self.param_purif_magdeck_height.get())
+        self.user_settings['parameters']['purif_wash_time']['value'] = to_numeric_value(self.param_purif_wash_time.get())
+        self.user_settings['parameters']['purif_bead_ratio']['value'] = to_numeric_value(self.param_purif_bead_ratio.get())
+        self.user_settings['parameters']['purif_incubation_time']['value'] = to_numeric_value(self.param_purif_incubation_time.get())
+        self.user_settings['parameters']['purif_settling_time']['value'] = to_numeric_value(self.param_purif_settling_time.get())
+        self.user_settings['parameters']['purif_drying_time']['value'] = to_numeric_value(self.param_purif_drying_time.get())
+        self.user_settings['parameters']['purif_elution_time']['value'] = to_numeric_value(self.param_purif_elution_time.get())
         # Step 4
-        self.user_settings['construct_path'] = self.construct_file_selector.get()
+        self.user_settings['parameters']['transfo_incubation_temp']['value'] = to_numeric_value(self.param_transfo_incubation_temp.get())
+        self.user_settings['parameters']['transfo_incubation_time']['value'] = to_numeric_value(self.param_transfo_incubation_time.get())
         # Step 5
+        self.user_settings['construct_path'] = self.construct_file_selector.get()
+        # Step 6
         self.user_settings['sources_paths'] = self.source_files_selector.get()
         self.root.quit()
 
@@ -321,87 +345,25 @@ class GUI:
         return parameter_entry
 
 
-# class DnabotApp:
-#     dnabot_title = "dnabot app"
-#     intro_text = "Welcome to the dnabot App! Please follow these instructions to create the 4 DNA-BOT scripts:"
-#     instruction_text1 = '1. From the dropdown menus select wells/columns for ethanol (2_purification script) and SOC media (4_transformation script).'
-#     instruction_text2 = """2. Click the 'GENERATE' button and select a csv file describing constructs. In the 2nd window select up to 6 csv files describing plates containing BASIC parts and linkers.
-#     If all files are not within one folder, absolute paths should be given."""
-#     app_font = ("Helvetica", 12)
-#     trough_wells = ['A{}'.format(x + 1) for x in range(12)]
+# def main():
+#     #    root = tk.Tk()
+#     #    construct_path = UserDefinedPaths(root, 'Construct csv file')
+#     #    root.destroy()
+#     #    constructs_list = basic_ot2_generator_v11_beta.generate_constructs_list(
+#     #            construct_path.output)
+#     #    print(constructs_list)
 
-#     def __init__(self, master):
-#         self.master = master
-#         self.master.lift()
+#     default_user_settings = {"labwares": {"p10_single": {"id": "p20_single_gen2"}, "p300_multi": {"id": "p300_multi_gen2"}, "mag_deck": {"id": "magdeck"}, "24_tuberack_1500ul": {"id": "e14151500starlab_24_tuberack_1500ul"}, "96_tiprack_20ul": {"id": "opentrons_96_tiprack_20ul"}, "96_tiprack_300ul": {"id": "opentrons_96_tiprack_300ul"}, "96_wellplate_200ul_pcr": {"id": "4ti0960rig_96_wellplate_200ul"}, "12_reservoir_21000ul": {"id": "4ti0131_12_reservoir_21000ul"}, "96_deepwellplate_2ml": {"id": "4ti0136_96_wellplate_2200ul"}}}
 
-#         # Titles and labels
-#         self.master.title(DnabotApp.dnabot_title)
-
-#         intro = tk.Label(self.master, text=DnabotApp.intro_text, font=DnabotApp.app_font)
-#         intro.grid(row=0, columnspan=2)
-
-#         instruction1 = tk.Label(self.master, text=DnabotApp.instruction_text1, font=DnabotApp.app_font)
-#         instruction1.grid(row=1, columnspan=2, sticky=tk.W)
-
-#         instruction2 = tk.Label(self.master, text=DnabotApp.instruction_text2, font=DnabotApp.app_font)
-#         instruction2.grid(row=2, columnspan=2, sticky=tk.W)
-
-#         etoh_well_label = tk.Label(self.master, text='Trough well for ethanol during purification:', font=DnabotApp.app_font)
-#         etoh_well_label.grid(row = 3, column = 0, sticky = tk.E)
-
-#         soc_column_label = tk.Label(self.master, text='Deep-well plate column for SOC media during transformation:', font=DnabotApp.app_font)
-#         soc_column_label.grid(row=4, column=0, sticky=tk.E)
-
-#         # Buttons and menus
-#         self.quit_status=False
-        
-#         quit_button=tk.Button(self.master, text='QUIT', fg='red', command=self.quitter, font=DnabotApp.app_font)
-#         quit_button.grid(row = 5, column = 0)
-
-#         generate_button=tk.Button(master, text='GENERATE', command=self.generate, font=DnabotApp.app_font)
-#         generate_button.grid(row=5, column=1)
-
-#         self.etoh_well=tk.StringVar(master)
-#         self.etoh_well.set(DnabotApp.trough_wells[10])
-#         etoh_w=tk.OptionMenu(master, self.etoh_well, *tuple(DnabotApp.trough_wells[1:11]))
-#         etoh_w.grid(row=3, column=1, sticky=tk.W)
-#         etoh_w.config(font=DnabotApp.app_font)
-
-#         self.soc_column=tk.StringVar(master)
-#         self.soc_column.set("1")
-#         soc_w=tk.OptionMenu(master, self.soc_column, *tuple(['{}'.format(x + 1) for x in range(12)]))
-#         soc_w.grid(row=4, column=1, sticky=tk.W)
-#         soc_w.config(font=DnabotApp.app_font)
-
-#     def quitter(self):
-#         self.quit_status=True
-#         self.master.quit()
-
-#     def generate(self):
-#         self.etoh_well=self.etoh_well.get()
-#         self.soc_column=self.soc_column.get()
-#         self.master.quit()
+#     root = tk.Tk()
+#     dnabotinst = GUI(root, default_user_settings)
+#     root.mainloop()
+#     root.destroy()
+#     if dnabotinst.quit_status:
+#         sys.exit("User specified 'QUIT' during app")
+#     print('Ethanol well is ', dnabotinst.etoh_well)
+#     print('SOC column is ', dnabotinst.soc_column)
 
 
-def main():
-    #    root = tk.Tk()
-    #    construct_path = UserDefinedPaths(root, 'Construct csv file')
-    #    root.destroy()
-    #    constructs_list = basic_ot2_generator_v11_beta.generate_constructs_list(
-    #            construct_path.output)
-    #    print(constructs_list)
-
-    default_user_settings = {"labwares": {"p10_single": {"id": "p20_single_gen2"}, "p300_multi": {"id": "p300_multi_gen2"}, "mag_deck": {"id": "magdeck"}, "24_tuberack_1500ul": {"id": "e14151500starlab_24_tuberack_1500ul"}, "96_tiprack_10ul": {"id": "opentrons_96_tiprack_20ul"}, "96_tiprack_300ul": {"id": "opentrons_96_tiprack_300ul"}, "96_wellplate_200ul_pcr": {"id": "4ti0960rig_96_wellplate_200ul"}, "12_reservoir_21000ul": {"id": "4ti0131_12_reservoir_21000ul"}, "96_deepwellplate_2ml": {"id": "4ti0136_96_wellplate_2200ul"}}}
-
-    root = tk.Tk()
-    dnabotinst = GUI(root, default_user_settings)
-    root.mainloop()
-    root.destroy()
-    if dnabotinst.quit_status:
-        sys.exit("User specified 'QUIT' during app")
-    print('Ethanol well is ', dnabotinst.etoh_well)
-    print('SOC column is ', dnabotinst.soc_column)
-
-
-if __name__ == '__main__':
-    main()
+# if __name__ == '__main__':
+#     main()

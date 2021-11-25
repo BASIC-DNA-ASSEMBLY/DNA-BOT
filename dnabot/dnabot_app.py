@@ -305,13 +305,15 @@ def main():
         os.path.join(template_dir_path, TRANS_SPOT_TEMP_FNAME_2),
         spotting_tuples=spotting_tuples,
         soc_well=f"A{soc_column}",
-        __LABWARES=labware_settings)
+        __LABWARES=labware_settings,
+        __PARAMETERS=parameter_settings)
     generate_ot2_script(
         TRANS_SPOT_FNAME_3,
         os.path.join(template_dir_path, TRANS_SPOT_TEMP_FNAME_3),
         spotting_tuples=spotting_tuples,
         soc_well=f"A{soc_column}",
-        __LABWARES=labware_settings)
+        __LABWARES=labware_settings,
+        __PARAMETERS=parameter_settings)
 
     # Write non-OT2 scripts
     if 'metainformation' in os.listdir():
