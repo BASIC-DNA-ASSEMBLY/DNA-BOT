@@ -246,6 +246,7 @@ python -m pytest tests
 ## Authors
 
 * **Matthew C Haines** - [hainesm6](https://github.com/hainesm6)
+* Thomas Duigou - [tduigou](https://github.com/tduigou)
 
 ## License
 
