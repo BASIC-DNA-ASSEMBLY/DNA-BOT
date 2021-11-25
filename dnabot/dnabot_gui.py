@@ -12,8 +12,8 @@ from tkinter import filedialog
 
 
 def to_numeric_value(str_value: str):
-    if int(str_value) == float(str_value):
-        return int(str_value)
+    if float(str_value).is_integer():
+        return int(float(str_value))
     else:
         return float(str_value)
 
