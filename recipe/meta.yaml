@@ -9,6 +9,7 @@ source:
   path: ..
 
 build:
+  noarch: python
   number: 0
   script: {{ PYTHON }} -m pip install --no-deps --ignore-installed -vv .
 
@@ -46,6 +47,7 @@ test:
   requires:
     - pytest
   commands:
+    - python -m {{ name|lower }}.dnabot_app --help
     - python -m {{ name|lower }}.dnabot_app nogui --help
     - python -m pytest tests
 
