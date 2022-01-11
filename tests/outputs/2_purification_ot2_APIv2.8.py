@@ -14,8 +14,15 @@ metadata = {
 #sample_number=8
 #ethanol_well='A3'
 
+# __LABWARES and __PARAMETERS are expected to be redefined by "generate_ot2_script" method
+# Test dict
+# __LABWARES={"p20_single": {"id": "p20_single_gen2"}, "p300_multi": {"id": "p300_multi_gen2"}, "mag_deck": {"id": "magdeck"}, "96_tiprack_20ul": {"id": "opentrons_96_tiprack_20ul"}, "96_tiprack_300ul": {"id": "opentrons_96_tiprack_300ul"}, "24_tuberack_1500ul": {"id": "e14151500starlab_24_tuberack_1500ul"}, "96_wellplate_200ul_pcr_step_14": {"id": "4ti0960rig_96_wellplate_200ul"}, "96_wellplate_200ul_pcr_step_23": {"id": "4ti0960rig_96_wellplate_200ul"}, "agar_plate_step_4": {"id": "4ti0960rig_96_wellplate_200ul"}, "12_reservoir_21000ul": {"id": "4ti0131_12_reservoir_21000ul"}, "96_deepwellplate_2ml": {"id": "4ti0136_96_wellplate_2200ul"}}
+# __PARAMETERS={"purif_magdeck_height": {"value": 20.0}, "purif_wash_time": {"value": 0.5}, "purif_bead_ratio": {"value": 1.8}, "purif_incubation_time": {"value": 5.0}, "purif_settling_time": {"value": 2.0}, "purif_drying_time": {"value": 5.0}, "purif_elution_time": {"value": 2.0}, "transfo_incubation_temp": {"value": 4.0}, "transfo_incubation_time": {"value": 20.0}}
+
 sample_number=13
 ethanol_well='A11'
+__LABWARES={"p20_single": {"id": "p20_single_gen2"}, "p300_multi": {"id": "p300_multi_gen2"}, "mag_deck": {"id": "magdeck"}, "96_tiprack_20ul": {"id": "opentrons_96_tiprack_20ul"}, "96_tiprack_300ul": {"id": "opentrons_96_tiprack_300ul"}, "24_tuberack_1500ul": {"id": "e14151500starlab_24_tuberack_1500ul"}, "96_wellplate_200ul_pcr_step_14": {"id": "4ti0960rig_96_wellplate_200ul"}, "96_wellplate_200ul_pcr_step_23": {"id": "4ti0960rig_96_wellplate_200ul"}, "agar_plate_step_4": {"id": "4ti0960rig_96_wellplate_200ul"}, "12_reservoir_21000ul": {"id": "4ti0131_12_reservoir_21000ul"}, "96_deepwellplate_2ml": {"id": "4ti0136_96_wellplate_2200ul"}}
+__PARAMETERS={"purif_magdeck_height": {"value": 20}, "purif_wash_time": {"value": 0}, "purif_bead_ratio": {"value": 1}, "purif_incubation_time": {"value": 5}, "purif_settling_time": {"value": 2}, "purif_drying_time": {"value": 5}, "purif_elution_time": {"value": 2}, "transfo_incubation_temp": {"value": 4}, "transfo_incubation_time": {"value": 20}}
 
 
 def run(protocol: protocol_api.ProtocolContext):
@@ -26,19 +33,19 @@ def run(protocol: protocol_api.ProtocolContext):
             ethanol_well,
             elution_buffer_well='A1',
             sample_volume=30,
-            bead_ratio=1.8,
+            bead_ratio=__PARAMETERS['purif_bead_ratio']['value'],
             elution_buffer_volume=40,
-            incubation_time=5,
-            settling_time=2,
+            incubation_time=__PARAMETERS['purif_incubation_time']['value'],
+            settling_time=__PARAMETERS['purif_settling_time']['value'],
                 # if using Gen 2 magentic module, need to change time! see: https://docs.opentrons.com/v2/new_modules.html
                 # "The GEN2 Magnetic Module uses smaller magnets than the GEN1 version...this means it will take longer for the GEN2 module to attract beads."
                 # Recommended Magnetic Module GEN2 bead attraction time:
                     # Total liquid volume <= 50 uL: 5 minutes
                 # this template was written with the Gen 1 magnetic module, as it is compatible with API version 2
-            drying_time=5,
-            elution_time=2,
+            drying_time=__PARAMETERS['purif_drying_time']['value'],
+            elution_time=__PARAMETERS['purif_elution_time']['value'],
             sample_offset=0,
-            tiprack_type="opentrons_96_tiprack_300ul"):
+            tiprack_type=__LABWARES['96_tiprack_300ul']['id']):
 
         """
 
@@ -56,7 +63,7 @@ def run(protocol: protocol_api.ProtocolContext):
         PIPETTE_ASPIRATE_RATE = 25
         PIPETTE_DISPENSE_RATE = 150
         TIPS_PER_SAMPLE = 9
-        PIPETTE_TYPE = 'p300_multi_gen2'
+        PIPETTE_TYPE = __LABWARES['p300_multi']['id']
             # new constant for easier swapping between pipette types
 
         # Tiprack
@@ -66,17 +73,17 @@ def run(protocol: protocol_api.ProtocolContext):
         MAGDECK_POSITION = '1'
 
         # Mix Plate
-        MIX_PLATE_TYPE = '4ti0960rig_96_wellplate_200ul'
+        MIX_PLATE_TYPE = __LABWARES['96_wellplate_200ul_pcr_step_23']['id']
             # modified from custom labware as API 2 doesn't support labware.create anymore, so the old add_labware script can't be used
             # also acts as the type of plate loaded onto the magnetic module
         MIX_PLATE_POSITION = '4'
 
         # Reagents
-        REAGENT_CONTAINER_TYPE = '4ti0131_12_reservoir_21000ul'
+        REAGENT_CONTAINER_TYPE = __LABWARES['12_reservoir_21000ul']['id']
         REAGENT_CONTAINER_POSITION = '7'
 
         # Beads
-        BEAD_CONTAINER_TYPE = '4ti0136_96_wellplate_2200ul'
+        BEAD_CONTAINER_TYPE = __LABWARES['96_deepwellplate_2ml']['id']
         BEAD_CONTAINER_POSITION = '8'
 
         # Settings
@@ -86,10 +93,10 @@ def run(protocol: protocol_api.ProtocolContext):
         SLOW_HEAD_SPEEDS = {'x': 600 // 4, 'y': 400 // 4, 'z': 125 // 10, 'a': 125 // 10}
         DEFAULT_HEAD_SPEEDS = {'x': 400, 'y': 400, 'z': 125, 'a': 100}
         IMMOBILISE_MIX_REPS = 10
-        MAGDECK_HEIGHT = 20
+        MAGDECK_HEIGHT = __PARAMETERS['purif_magdeck_height']['value']
         AIR_VOL_COEFF = 0.1
         ETHANOL_VOL = 150
-        WASH_TIME = 0.5
+        WASH_TIME = __PARAMETERS['purif_wash_time']['value']
         ETHANOL_DEAD_VOL = 50
         ELUTION_MIX_REPS = 20
         ELUTANT_SEP_TIME = 1
@@ -121,7 +128,7 @@ def run(protocol: protocol_api.ProtocolContext):
         ### Define Labware
 
         # Magnetic Module
-        MAGDECK = protocol.load_module('magdeck', MAGDECK_POSITION)
+        MAGDECK = protocol.load_module(__LABWARES['mag_deck']['id'], MAGDECK_POSITION)
             # 'magdeck' is the gen 1 magnetic module, use 'magnetic module gen2' for the gen 2 magentic module
                 # if using gen 2 module, need to change settling time! (see comments under Constants)
         MAGDECK.disengage()

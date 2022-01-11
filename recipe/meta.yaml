@@ -9,6 +9,7 @@ source:
   path: ..
 
 build:
+  noarch: python
   number: 0
   script: {{ PYTHON }} -m pip install --no-deps --ignore-installed -vv .
 
@@ -36,6 +37,7 @@ requirements:
     - urwid
     - yarl
     - zipp==0.6.0
+    - pyyaml
 
 test:
   source_files:
@@ -45,8 +47,9 @@ test:
   requires:
     - pytest
   commands:
+    - python -m {{ name|lower }}.dnabot_app --help
     - python -m {{ name|lower }}.dnabot_app nogui --help
-    - pytest -v
+    - python -m pytest tests
 
 about:
   home: https://github.com/brsynth/DNA-BOT

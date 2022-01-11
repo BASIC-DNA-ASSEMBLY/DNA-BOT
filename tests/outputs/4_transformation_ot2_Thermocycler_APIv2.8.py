@@ -18,31 +18,39 @@ metadata = {
 #spotting_tuples=[(('A1', 'B1', 'C1', 'D1', 'E1', 'F1', 'G1', 'H1'), ('A1', 'B1', 'C1', 'D1', 'E1', 'F1', 'G1', 'H1'), (5, 5, 5, 5, 5, 5, 5, 5)), (('A2', 'B2', 'C2', 'D2', 'E2', 'F2', 'G2', 'H2'), ('A2', 'B2', 'C2', 'D2', 'E2', 'F2', 'G2', 'H2'), (5, 5, 5, 5, 5, 5, 5, 5)), (('A3', 'B3', 'C3', 'D3', 'E3', 'F3', 'G3', 'H3'), ('A3', 'B3', 'C3', 'D3', 'E3', 'F3', 'G3', 'H3'), (5, 5, 5, 5, 5, 5, 5, 5)), (('A4', 'B4', 'C4', 'D4', 'E4', 'F4', 'G4', 'H4'), ('A4', 'B4', 'C4', 'D4', 'E4', 'F4', 'G4', 'H4'), (5, 5, 5, 5, 5, 5, 5, 5)), (('A5', 'B5', 'C5', 'D5', 'E5', 'F5', 'G5', 'H5'), ('A5', 'B5', 'C5', 'D5', 'E5', 'F5', 'G5', 'H5'), (5, 5, 5, 5, 5, 5, 5, 5)), (('A6', 'B6', 'C6', 'D6', 'E6', 'F6', 'G6', 'H6'), ('A6', 'B6', 'C6', 'D6', 'E6', 'F6', 'G6', 'H6'), (5, 5, 5, 5, 5, 5, 5, 5)), (('A7', 'B7', 'C7', 'D7', 'E7', 'F7', 'G7', 'H7'), ('A7', 'B7', 'C7', 'D7', 'E7', 'F7', 'G7', 'H7'), (5, 5, 5, 5, 5, 5, 5, 5)), (('A8', 'B8', 'C8', 'D8', 'E8', 'F8', 'G8', 'H8'), ('A8', 'B8', 'C8', 'D8', 'E8', 'F8', 'G8', 'H8'), (5, 5, 5, 5, 5, 5, 5, 5)), (('A9', 'B9', 'C9', 'D9', 'E9', 'F9', 'G9', 'H9'), ('A9', 'B9', 'C9', 'D9', 'E9', 'F9', 'G9', 'H9'), (5, 5, 5, 5, 5, 5, 5, 5)), (('A10', 'B10', 'C10', 'D10', 'E10', 'F10', 'G10', 'H10'), ('A10', 'B10', 'C10', 'D10', 'E10', 'F10', 'G10', 'H10'), (5, 5, 5, 5, 5, 5, 5, 5)), (('A11', 'B11', 'C11', 'D11', 'E11', 'F11', 'G11', 'H11'), ('A11', 'B11', 'C11', 'D11', 'E11', 'F11', 'G11', 'H11'), (5, 5, 5, 5, 5, 5, 5, 5))]
 #soc_well='A1'
 
+# __LABWARES is expected to be redefined by "generate_ot2_script" method
+# Test dict
+# __LABWARES={"p20_single": {"id": "p20_single_gen2"}, "p300_multi": {"id": "p300_multi_gen2"}, "mag_deck": {"id": "magdeck"}, "96_tiprack_20ul": {"id": "opentrons_96_tiprack_20ul"}, "96_tiprack_300ul": {"id": "opentrons_96_tiprack_300ul"}, "24_tuberack_1500ul": {"id": "e14151500starlab_24_tuberack_1500ul"}, "96_wellplate_200ul_pcr_step_14": {"id": "4ti0960rig_96_wellplate_200ul"}, "96_wellplate_200ul_pcr_step_23": {"id": "4ti0960rig_96_wellplate_200ul"}, "agar_plate_step_4": {"id": "4ti0960rig_96_wellplate_200ul"}, "12_reservoir_21000ul": {"id": "4ti0131_12_reservoir_21000ul"}, "96_deepwellplate_2ml": {"id": "4ti0136_96_wellplate_2200ul"}}
+# __PARAMETERS={"purif_magdeck_height": {"value": 20.0}, "purif_wash_time": {"value": 0.5}, "purif_bead_ratio": {"value": 1.8}, "purif_incubation_time": {"value": 5.0}, "purif_settling_time": {"value": 2.0}, "purif_drying_time": {"value": 5.0}, "purif_elution_time": {"value": 2.0}, "transfo_incubation_temp": {"value": 4.0}, "transfo_incubation_time": {"value": 20.0}}
+
 spotting_tuples=[(('A1', 'B1', 'C1'), ('A1', 'B1', 'C1'), (5, 5, 5))]
 soc_well='A1'
+__LABWARES={"p20_single": {"id": "p20_single_gen2"}, "p300_multi": {"id": "p300_multi_gen2"}, "mag_deck": {"id": "magdeck"}, "96_tiprack_20ul": {"id": "opentrons_96_tiprack_20ul"}, "96_tiprack_300ul": {"id": "opentrons_96_tiprack_300ul"}, "24_tuberack_1500ul": {"id": "e14151500starlab_24_tuberack_1500ul"}, "96_wellplate_200ul_pcr_step_14": {"id": "4ti0960rig_96_wellplate_200ul"}, "96_wellplate_200ul_pcr_step_23": {"id": "4ti0960rig_96_wellplate_200ul"}, "agar_plate_step_4": {"id": "4ti0960rig_96_wellplate_200ul"}, "12_reservoir_21000ul": {"id": "4ti0131_12_reservoir_21000ul"}, "96_deepwellplate_2ml": {"id": "4ti0136_96_wellplate_2200ul"}}
+__PARAMETERS={"purif_magdeck_height": {"value": 20}, "purif_wash_time": {"value": 0}, "purif_bead_ratio": {"value": 1}, "purif_incubation_time": {"value": 5}, "purif_settling_time": {"value": 2}, "purif_drying_time": {"value": 5}, "purif_elution_time": {"value": 2}, "transfo_incubation_temp": {"value": 4}, "transfo_incubation_time": {"value": 20}}
 
 
 def run(protocol: protocol_api.ProtocolContext):
 # added run function for API version 2
+
     # Constants
     CANDIDATE_p20_SLOTS = ['3']
     CANDIDATE_P300_SLOTS = ['6']
-    P20_TIPRACK_TYPE = 'opentrons_96_tiprack_20ul'
-    P300_TIPRACK_TYPE = 'opentrons_96_tiprack_300ul'
+    P20_TIPRACK_TYPE = __LABWARES['96_tiprack_10ul']['id']
+    P300_TIPRACK_TYPE = __LABWARES['96_tiprack_300ul']['id']
     P20_MOUNT = 'right'
     P300_MOUNT = 'left'
-    ASSEMBLY_PLATE_TYPE = '4ti0960rig_96_wellplate_200ul'
+    ASSEMBLY_PLATE_TYPE = __LABWARES['96_wellplate_200ul_pcr_step_14']['id']
     ASSEMBLY_PLATE_SLOT = '2'
 
-    TRANSFORMATION_PLATE_TYPE = '4ti0960rig_96_wellplate_200ul'
-    SOC_PLATE_TYPE = '4ti0136_96_wellplate_2200ul'
+    TRANSFORMATION_PLATE_TYPE = __LABWARES['96_wellplate_200ul_pcr_step_14']['id']
+    SOC_PLATE_TYPE = __LABWARES['96_deepwellplate_2ml']['id']
         # changed from '4ti0136_96_deep-well'
     SOC_PLATE_SLOT = '5'
-    TUBE_RACK_TYPE = 'e14151500starlab_24_tuberack_1500ul'
+    TUBE_RACK_TYPE = __LABWARES['24_tuberack_1500ul']['id']
         # changed from 'tube-rack_E1415-1500'
     TUBE_RACK_SLOT = '9'
     SPOTTING_WASTE_WELL = 'A1'
-    AGAR_PLATE_TYPE = '4ti0960rig_96_wellplate_200ul'
+    AGAR_PLATE_TYPE = __LABWARES['96_wellplate_200ul_pcr_step_14']['id']
         # changed from 'Nunc_Omnitray'
             # it is a 1 well plate filled with agar;
             # but for the Opentron to spot in the locations of a 96 wp, it is defined similar to a 96 wp
@@ -136,10 +144,10 @@ def run(protocol: protocol_api.ProtocolContext):
         """
 
         # Constants
-        TEMP = 4  # Incubation temperature.
+        TEMP = __PARAMETERS['transfo_incubation_temp']['value']  # Incubation temperature.
         ASSEMBLY_VOL = 5  # Volume of final assembly added to competent cells.
         MIX_SETTINGS = (4, 5)  # Mix after setting during final assembly transfers.
-        INCUBATION_TIME = 20  # Cells and final assembly incubation time.
+        INCUBATION_TIME = __PARAMETERS['transfo_incubation_time']['value']  # Cells and final assembly incubation time.
 
 
 
@@ -187,7 +195,7 @@ def run(protocol: protocol_api.ProtocolContext):
         #Thermocycler Module
         tc_mod = protocol.load_module('Thermocycler Module')
         # Destination Plates
-        DESTINATION_PLATE_TYPE = '4ti0960rig_96_wellplate_200ul'
+        DESTINATION_PLATE_TYPE = __LABWARES['96_wellplate_200ul_pcr_step_14']['id']
         # Loads destination plate onto Thermocycler Module
         destination_plate = tc_mod.load_labware(DESTINATION_PLATE_TYPE)
         tc_mod.set_block_temperature(42, hold_time_minutes=1, block_max_volume=180)
@@ -454,9 +462,9 @@ def run(protocol: protocol_api.ProtocolContext):
         # changed to protocol.load_labware for API version 2
     p300_tipracks = [protocol.load_labware(P300_TIPRACK_TYPE, slot) for slot in p300_slots]
         # changed to protocol.load_labware for API version 2
-    p20_pipette = protocol.load_instrument('p20_single_gen2', P20_MOUNT, tip_racks=p20_tipracks)
+    p20_pipette = protocol.load_instrument(__LABWARES['p20_single']['id'], P20_MOUNT, tip_racks=p20_tipracks)
         # changed to protocol.load_instrument for API version 2
-    p300_pipette = protocol.load_instrument('p300_multi_gen2', P300_MOUNT, tip_racks=p300_tipracks)
+    p300_pipette = protocol.load_instrument(__LABWARES['p300_multi']['id'], P300_MOUNT, tip_racks=p300_tipracks)
         # changed to protocol.load_instrument for API version 2
 
     assembly_plate = protocol.load_labware(ASSEMBLY_PLATE_TYPE, ASSEMBLY_PLATE_SLOT)

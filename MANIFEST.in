@@ -1,1 +1,2 @@
 graft dnabot/template_ot2_scripts
+include dnabot/default_settings.yaml
