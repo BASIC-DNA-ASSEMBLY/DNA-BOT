@@ -1,10 +1,12 @@
 # dnabot
+**Feb 2022 - DNA-BOT has now been updated to run on the Opentrons in APIv2.** It also incorporates options for different hardware configurations by producing multiple scripts for each of the 4 steps. The Thermocycler module can now be optionally used in the step 1 clip reactions as well as the step 4 transformations.
+In addition, different labware inputs are available through the GUI or command line interfaces.
 
 Material for [DNA assembly using BASIC on OpenTrons (DNA-BOT)](https://www.biorxiv.org/content/10.1101/832139v1).
 
 ## Getting Started
 
-Users looking to implement the DNA-BOT workflow are encouraged to consult the [instructions](docs/DNA_BOT_instructions_v1.0.0.pdf). If you are looking to contribute to this project, please raise an issue or pull request. Otherwise, feel free to reach out to [hainesm6](mailto:hainesm6@gmail.com).
+Users looking to implement the DNA-BOT workflow are encouraged to consult the [instructions](docs/DNA_BOT_instructions_v1.0.0.pdf). If you are looking to contribute to this project, please raise an issue or pull request. Otherwise, feel free to reach out to [geoffbaldwin](mailto:g.baldwin@imperial.ac.uk).
 
 dnabot can be run in 2 modes:
 - with a graphical interface: see `Running the dnabot app` section in [instructions](docs/DNA_BOT_instructions_v1.0.0.pdf). dnabot was developed using Python v3.7. Refer to [requirements.txt](requirements.txt).
