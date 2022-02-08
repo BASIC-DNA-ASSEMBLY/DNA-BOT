@@ -250,7 +250,7 @@ The update of DNABOT to APIv2 and improvements to the front end involved the wor
 * Gizem Buldum
 * Liam Hallett
 
-Initial work revising the template scripts to run in OT APIv2 was done by a team of Masters students from the 
+Initial work revising the template scripts to run in Opentrons APIv2 was done by a team of Masters students from the 
 MRes in Systems and Synthetic Biology at Imperial College London, thanks to:
 * Xin Luo
 * Ruihan Bai
