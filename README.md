@@ -10,7 +10,7 @@ dnabot can be run in 2 modes:
 - with a graphical interface: see `Running the dnabot app` section in [instructions](docs/DNA_BOT_instructions_v1.0.0.pdf). dnabot was developed using Python v3.7. Refer to [requirements.txt](requirements.txt).
 - without a graphical interface: you need to specify all settings through the command line, you can see the instructions in the sections below.
 
-## Installation
+## Installation from conda
 
 ```bash
 conda create --name <myenv>
@@ -22,7 +22,15 @@ conda install -c conda-forge -c brsynth dnabot
 
 ## Usage
 
-After a git clone:
+### Using the GUI
+
+```bash
+conda activate <myenv>
+python -m dnabot.dnabot_app --help
+python -m dnabot.dnabot_app
+```
+
+### Using the CLI only
 
 ```bash
 conda activate <myenv>
@@ -35,23 +43,166 @@ python -m dnabot.dnabot_app nogui \
 
 ## Command line arguments
 
+### GUI mode
+
+```bash
+usage: dnabot_app.py [-h] [--default_settings_file DEFAULT_SETTINGS_FILE] {nogui} ...
+
+DNA assembly using BASIC on OpenTrons.
+
+positional arguments:
+  {nogui}               Optional, to define settings from the terminal instead of the graphical interface. Type
+                        "python dnabot_app.py nogui -h" for more info.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --default_settings_file DEFAULT_SETTINGS_FILE
+                        Optional, file providing labware IDs and parameter to be used. Default:
+                        /Users/tduigou/code/test/dnabot/dnabot/default_settings.yaml.
 ```
- optional arguments:
-   -h, --help            show this help message and exit
-   --construct_path CONSTRUCT_PATH
-                         Construct CSV file.
-   --source_paths SOURCE_PATHS [SOURCE_PATHS ...]
-                         Source CSV files.
-   --etoh_well ETOH_WELL
-                         Well coordinate for Ethanol. Default: A11
-   --soc_column SOC_COLUMN
-                         Column coordinate for SOC. Default: 1
-   --output_dir OUTPUT_DIR
-                         Output directory. Default: same directory than the one
-                         containing the "construct_path" file
-   --template_dir TEMPLATE_DIR
-                         Template directory. Default: "template_ot2_scripts"
-                         located next to the present script.
+
+### No GUI mode
+```
+usage: dnabot_app.py nogui [-h] --construct_path CONSTRUCT_PATH --source_paths SOURCE_PATHS [SOURCE_PATHS ...]
+                           [--etoh_well ETOH_WELL] [--soc_column SOC_COLUMN] [--output_dir OUTPUT_DIR]
+                           [--template_dir TEMPLATE_DIR]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --construct_path CONSTRUCT_PATH
+                        Construct CSV file.
+  --source_paths SOURCE_PATHS [SOURCE_PATHS ...]
+                        Source CSV files.
+  --etoh_well ETOH_WELL
+                        Well coordinate for Ethanol. Default: A11
+  --soc_column SOC_COLUMN
+                        Column coordinate for SOC. Default: 1
+  --output_dir OUTPUT_DIR
+                        Output directory. Default: same directory than the one containing the "construct_path" file
+  --template_dir TEMPLATE_DIR
+                        Template directory. Default: "template_ot2_scripts" located next to the present script.
+```
+
+
+## Change default values
+
+Use the `--default_settings_file` argument to set different default values. This option is 
+available either using the GUI or the CLI interface.
+
+```bash
+conda activate <myenv>
+python -m dnabot.dnabot_app --default_settings_file /path/to/custom/default_settings.yaml.
+```
+
+The default settings file should follow the structure below (yaml file). The 
+labware IDs to be used can be updated with the `labwares` section, while the 
+parameters for the seperation step are listed in the `parameters` section.
+
+```yaml
+labwares:
+
+  # Pipettes #############################################
+  # Opentrons P20 Single-Channel Electronic Pipette
+  p20_single:
+    id: p20_single_gen2
+
+  # Opentrons P300 8-Channel Electronic Pipette
+  p300_multi:
+    id: p300_multi_gen2
+
+  # Modules ###############################################
+  # Opentrons magnetic module
+  mag_deck:
+    id: magdeck
+    # id: magnetic module gen2  # BRS script 2
+
+  # Tip racks #############################################
+  # Opentrons 20μL tips rack
+  96_tiprack_20ul:
+    id: opentrons_96_tiprack_20ul
+    # id: tipone_3dprinted_96_tiprack_20ul  # BRS
+
+  # Opentrons 300μL tips rack
+  96_tiprack_300ul:
+    id: opentrons_96_tiprack_300ul
+    # id: tipone_yellow_3dprinted_96_tiprack_300ul  # BRS
+
+  # Plates ################################################
+  # Opentrons 4-in-1 tubes rack for 1.5 ml eppendorf tubes
+  24_tuberack_1500ul:
+    id: e14151500starlab_24_tuberack_1500ul
+    # id: opentrons_24_tuberack_eppendorf_1.5ml_safelock_snapcap  # BRS scripts 1, 3, 4
+
+  # 96 well rigid PCR plate (clip and transformation steps)
+  96_wellplate_200ul_pcr_step_14:
+    id: 4ti0960rig_96_wellplate_200ul
+    # id: green_96_wellplate_200ul_pcr  # BRS scripts 1, 4
+
+  # 96 well rigid PCR plate (purification and assembly steps)
+  96_wellplate_200ul_pcr_step_23:
+    id: 4ti0960rig_96_wellplate_200ul
+    # id: black_96_wellplate_200ul_pcr  # BRS script 2, 3
+
+  # Agar plate (transformation step)
+  agar_plate_step_4:
+    id: 4ti0960rig_96_wellplate_200ul
+    # id: thermoomnitrayfor96spots_96_wellplate_50ul  # BRS script 4
+
+  # Reservoir plate 21 mL 12 channels
+  12_reservoir_21000ul:
+    id: 4ti0131_12_reservoir_21000ul
+    # id: citadel_12_wellplate_22000ul  # BRS script 2
+
+  # 96 deep well plate 2 mL wells
+  96_deepwellplate_2ml:
+    id: 4ti0136_96_wellplate_2200ul
+    # id: transparent_96_wellplate_2ml_deep  # BRS scripts 2, 4
+
+parameters:
+
+  # Purification step #####################################
+  # Magnetic module height (mm) - purification step
+  purif_magdeck_height: 
+    value: 20.0
+    # value: 10.8  # BRS
+
+  # Washing time (min) - purification step
+  purif_wash_time:
+    value: 0.5
+
+  # Bead ratio - purification step
+  purif_bead_ratio:
+    value: 1.8
+
+  # Incubation time (min) - purification step
+  purif_incubation_time:
+    value: 5.0
+
+  # Settling time (min) - purification step
+  purif_settling_time:
+    value: 2.0
+    # value: 6  # BRS
+
+  # Drying time (min) - purification step
+  purif_drying_time:
+    value: 5.0
+    # value: 15  # BRS
+
+  # Elution time (min) - purif step
+  purif_elution_time:
+    value: 2.0
+    # value: 5  # BRS
+  
+  # Transformation step ###################################
+  # Incubation temperature
+  transfo_incubation_temp:
+    value: 4
+    # value: 8  # BRS
+
+  # Incubation time (min)
+  transfo_incubation_time:
+    value: 20
+    # value: 30  # BRS
 ```
 
 ## For developers
@@ -61,19 +212,19 @@ python -m dnabot.dnabot_app nogui \
 After a git clone:
 
 ```bash
-cd <repository>
 conda env create -f environment.yaml -n <dev_env>
 conda develop -n <dev_env> .
 ```
 
 You may be prompted to install `conda-build` in your base environment (`conda install conda-build`).
-The default conda environment name will be `dev_dnabot` if not specified by `-n <dev_env>`.
+The default conda environment name will be `dnabot-dev` if not specified by `-n <dev-env>`.
 
 Test your installation with:
 
 ```bash
 conda activate <dev_env>
 python -m dnabot.dnabot_app nogui --help
+python -m pytest tests
 ```
 
 To uninstall:
@@ -88,14 +239,14 @@ conda env remove -n <dev_env>
 You need to install *pytest* if it's not done yet (`conda install pytest`).
 
 ```bash
-cd <repository>
 conda install pytest
-python -m pytest
+python -m pytest tests
 ```
 
 ## Authors
 
 * **Matthew C Haines** - [hainesm6](https://github.com/hainesm6)
+* Thomas Duigou - [tduigou](https://github.com/tduigou)
 
 ## License
 

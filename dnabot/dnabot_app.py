@@ -4,27 +4,59 @@ Created on Thu Apr 11 14:26:07 2019
 
 @author: mh2210
 """
+from __future__ import annotations  # Enable the "hint" feature for objects
+
 import os
+import sys
+
 import csv
 import argparse
 import pandas as pd
 import numpy as np
 import json
-import sys
 import tkinter as tk
-from dnabot import dnabot_gui as gui
-from dnabot import mplates
+import yaml
+from pathlib import Path
+
+#add dnabot module to syspath
+abs_path = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, abs_path)
+
+import dnabot_gui as gui
+import mplates
 
 # Constant str
 TEMPLATE_DIR_NAME = 'template_ot2_scripts'
-CLIP_TEMP_FNAME = 'clip_template.py'
-MAGBEAD_TEMP_FNAME = 'purification_template.py'
-F_ASSEMBLY_TEMP_FNAME = 'assembly_template.py'
-TRANS_SPOT_TEMP_FNAME = 'transformation_template.py'
-CLIP_FNAME = '1_clip.ot2.py'
-MAGBEAD_FNAME = '2_purification.ot2.py'
-F_ASSEMBLY_FNAME = '3_assembly.ot2.py'
-TRANS_SPOT_FNAME = '4_transformation.ot2.py'
+CLIP_TEMP_FNAME_1 = 'clip_template_APIv1.py'
+CLIP_TEMP_FNAME_2 = 'clip_template_APIv2.8.py'
+CLIP_TEMP_FNAME_3 = 'clip_template_Thermocycler_module_APIv2.8.py'
+
+MAGBEAD_TEMP_FNAME_1 = 'purification_template_APIv1.py'
+MAGBEAD_TEMP_FNAME_2 = 'purification_template_APIv2.8.py'
+
+F_ASSEMBLY_TEMP_FNAME_1 = 'assembly_template_APIv1.py'
+F_ASSEMBLY_TEMP_FNAME_2 = 'assembly_template_APIv2.8.py'
+F_ASSEMBLY_TEMP_FNAME_3 = 'assembly_template_Thermocycler_module_APIv2.8.py'
+
+TRANS_SPOT_TEMP_FNAME_1 = 'transformation_template_APIv1.py'
+TRANS_SPOT_TEMP_FNAME_2 = 'transformation_template_APIv2.8.py'
+TRANS_SPOT_TEMP_FNAME_3 = 'transformation_template_Thermocycler_module_APIv2.8.py'
+
+CLIP_FNAME_1 = '1_clip_ot2_APIv1.py'
+CLIP_FNAME_2 = '1_clip_ot2_APIv2.8.py'
+CLIP_FNAME_3 = '1_clip_ot2_Thermocycler_APIv2.8.py'
+
+MAGBEAD_FNAME_1 = '2_purification_ot2_APIv1.py'
+MAGBEAD_FNAME_2 = '2_purification_ot2_APIv2.8.py'
+
+F_ASSEMBLY_FNAME_1 = '3_assembly_ot2_APIv1.py'
+F_ASSEMBLY_FNAME_2 = '3_assembly_ot2_APIv2.8.py'
+F_ASSEMBLY_FNAME_3 = '3_assembly_ot2_Thermocycler_APIv2.8.py'
+
+TRANS_SPOT_FNAME_1 = '4_transformation_ot2_APIv1.py'
+TRANS_SPOT_FNAME_2 = '4_transformation_ot2_APIv2.8.py'
+TRANS_SPOT_FNAME_3 = '4_transformation_ot2_Thermocycler_APIv2.8.py'
+
 CLIPS_INFO_FNAME = 'clip_run_info.csv'
 FINAL_ASSEMBLIES_INFO_FNAME = 'final_assembly_run_info.csv'
 WELL_OUTPUT_FNAME = 'wells.txt'
@@ -51,6 +83,9 @@ SPOTTING_VOLS_DICT = {2: 5, 3: 5, 4: 5, 5: 5, 6: 5, 7: 5}
 # Constant lists
 SOURCE_DECK_POS = ['2', '5', '8', '7', '10', '11']
 
+# Settings
+DEFAULT_SETTINGS_FILE = Path(__file__).resolve().parent / 'default_settings.yaml'
+
 
 def __cli():
     """Command line interface.
@@ -60,10 +95,14 @@ def __cli():
     """
     desc = "DNA assembly using BASIC on OpenTrons."
     parser = argparse.ArgumentParser(description=desc)
-
+    parser.add_argument('--default_settings_file',
+                        help='Optional, file providing labware IDs and parameter to be used. '
+                             'Default: ' + str(DEFAULT_SETTINGS_FILE) +'.',
+                        default= DEFAULT_SETTINGS_FILE)
     # Specific options for collecting settings from command line
-    subparsers = parser.add_subparsers(help='Optional, to define settings from the terminal instead of the graphical '
-                                            'interface. Type "python dnabot_app.py nogui -h" for more info.')
+    subparsers = parser.add_subparsers(help='Optional, to define settings from the terminal '
+                                            'instead of the graphical interface. '
+                                            'Type "python dnabot_app.py nogui -h" for more info.')
     parser_nogui = subparsers.add_parser('nogui')
     parser_nogui.add_argument('--construct_path', help='Construct CSV file.', required=True)
     parser_nogui.add_argument('--source_paths', help='Source CSV files.', nargs='+', required=True)
@@ -83,13 +122,27 @@ def __cli():
     return parser.parse_args()
 
 
-def __info_from_gui():
-    """Pop GUI to collect user inputs.
+def __get_settings_from_file(file_path: str) -> None:
+    with open(file_path) as ifh:
+        return yaml.safe_load(ifh)
 
-    :returns user_inputs: info collected
-    :rtype: dict
+
+def __info_from_gui(user_settings):
+    """Pop GUI to collect user inputs
+
+    Parameters
+    ----------
+    settings : dict
+        default labware and parameter settings
+
+    Returns
+    -------
+    dict
+        actual settings to be used
     """
-    user_inputs = {
+    user_settings = {
+        'labwares': user_settings['labwares'],
+        'parameters': user_settings['parameters'],
         'construct_path': None,
         'sources_paths': None,
         'etoh_well': None,
@@ -98,44 +151,53 @@ def __info_from_gui():
 
     # Obtain user input
     print("Requesting user input, if not visible checked minimized windows.")
-    root = tk.Tk()
-    dnabotinst = gui.DnabotApp(root)
-    root.mainloop()
+    # Collect info
+    root = tk.Tk() 
+    gui_inst = gui.GUI(root, user_settings)
     root.destroy()
-    if dnabotinst.quit_status:
+    # User asked to quit?
+    if gui_inst.quit_status:
         sys.exit("User specified 'QUIT' during app.")
-    # etoh_well and soc_column are silently collected by the gui
-    user_inputs['etoh_well'] = dnabotinst.etoh_well
-    user_inputs['soc_column'] = dnabotinst.soc_column
-    # construct file path
-    root = tk.Tk()
-    user_inputs['construct_path'] = gui.UserDefinedPaths(root, 'Construct csv file').output
-    root.destroy()
+    # Collect info
+    user_settings = gui_inst.user_settings
 
-    # part & linker file paths
-    root = tk.Tk()
-    user_inputs['sources_paths'] = gui.UserDefinedPaths(root, 'Sources csv files', multiple_files=True).output
-    root.destroy()
-
-    return user_inputs
+    return user_settings
 
 
 def main():
-    # Settings
+    
+    # Parse args if any
     args = __cli()
+
+    # Settings on labwares
+    user_settings = __get_settings_from_file(args.default_settings_file)
+
     if args.nogui:
         etoh_well = args.etoh_well
         soc_column = args.soc_column
-        construct_path = args.construct_path
-        sources_paths = args.source_paths
-        output_dir = args.output_dir
-        template_dir = args.template_dir
+        labware_settings = user_settings['labwares']
+        parameter_settings = user_settings['parameters']
+        construct_path = os.path.abspath(args.construct_path)
+        sources_paths = [os.path.abspath(path) for path in args.source_paths]
+        template_dir = os.path.abspath(args.template_dir) if args.template_dir else None
+        if args.output_dir is not None:
+            output_dir = args.output_dir
+        else:
+            output_dir = os.path.dirname(construct_path)
     else:
-        user_inputs = __info_from_gui()
+        user_inputs = __info_from_gui(user_settings)
         etoh_well = user_inputs['etoh_well']
         soc_column = user_inputs['soc_column']
+        labware_settings = user_inputs['labwares']  # update labwares IDs
+        parameter_settings = user_inputs['parameters']  # update parameters
         construct_path = user_inputs['construct_path']
+        if construct_path is None:
+            print('No file provided for constructs. Exit.')
+            sys.exit()
         sources_paths = user_inputs['sources_paths']
+        if sources_paths is None or len(sources_paths) == 0:
+            print('No files prodived for sources. Exit.')
+            sys.exit()
         output_dir = os.path.dirname(construct_path)
         template_dir = None
 
@@ -145,8 +207,8 @@ def main():
 
     # Path to template directory
     if template_dir is not None:
-        # Just to comment this case: only way to fall here is that the variable has been set throught the command
-        # line arguments, nothing to do.^
+        # Just to comment this case: only way to fall here is that the variable
+        # has been set throught the command line arguments, nothing to do.
         template_dir_path = template_dir
         pass
     elif __name__ == '__main__':
@@ -187,20 +249,71 @@ def main():
 
     print('Writing files...')
     # Write OT2 scripts
-    generate_ot2_script(CLIP_FNAME, os.path.join(
-        template_dir_path, CLIP_TEMP_FNAME), clips_dict=clips_dict)
-    generate_ot2_script(MAGBEAD_FNAME, os.path.join(
-        template_dir_path, MAGBEAD_TEMP_FNAME),
+    generate_ot2_script(
+        CLIP_FNAME_1,
+        os.path.join(template_dir_path, CLIP_TEMP_FNAME_1),
+        clips_dict=clips_dict)
+    generate_ot2_script(
+        CLIP_FNAME_2,
+        os.path.join(template_dir_path, CLIP_TEMP_FNAME_2),
+        clips_dict=clips_dict,
+        __LABWARES=labware_settings)
+    generate_ot2_script(
+        CLIP_FNAME_3,
+        os.path.join(template_dir_path, CLIP_TEMP_FNAME_3),
+        clips_dict=clips_dict,
+        __LABWARES=labware_settings)
+       
+    generate_ot2_script(
+        MAGBEAD_FNAME_1,
+        os.path.join(template_dir_path, MAGBEAD_TEMP_FNAME_1),
         sample_number=magbead_sample_number,
         ethanol_well=etoh_well)
-    generate_ot2_script(F_ASSEMBLY_FNAME, os.path.join(
-        template_dir_path, F_ASSEMBLY_TEMP_FNAME),
+    generate_ot2_script(
+        MAGBEAD_FNAME_2,
+        os.path.join(template_dir_path, MAGBEAD_TEMP_FNAME_2),
+        sample_number=magbead_sample_number,
+        ethanol_well=etoh_well,
+        __LABWARES=labware_settings,
+        __PARAMETERS=parameter_settings)
+    
+    generate_ot2_script(
+        F_ASSEMBLY_FNAME_1,
+        os.path.join(template_dir_path, F_ASSEMBLY_TEMP_FNAME_1),
         final_assembly_dict=final_assembly_dict,
         tiprack_num=final_assembly_tipracks)
-    generate_ot2_script(TRANS_SPOT_FNAME, os.path.join(
-        template_dir_path, TRANS_SPOT_TEMP_FNAME),
+    generate_ot2_script(
+        F_ASSEMBLY_FNAME_2,
+        os.path.join(template_dir_path, F_ASSEMBLY_TEMP_FNAME_2),
+        final_assembly_dict=final_assembly_dict,
+        tiprack_num=final_assembly_tipracks,
+        __LABWARES=labware_settings)
+    generate_ot2_script(
+        F_ASSEMBLY_FNAME_3,
+        os.path.join(template_dir_path, F_ASSEMBLY_TEMP_FNAME_3),
+        final_assembly_dict=final_assembly_dict,
+        tiprack_num=final_assembly_tipracks,
+        __LABWARES=labware_settings)
+    
+    generate_ot2_script(
+        TRANS_SPOT_FNAME_1,
+        os.path.join(template_dir_path, TRANS_SPOT_TEMP_FNAME_1),
         spotting_tuples=spotting_tuples,
         soc_well=f"A{soc_column}")
+    generate_ot2_script(
+        TRANS_SPOT_FNAME_2,
+        os.path.join(template_dir_path, TRANS_SPOT_TEMP_FNAME_2),
+        spotting_tuples=spotting_tuples,
+        soc_well=f"A{soc_column}",
+        __LABWARES=labware_settings,
+        __PARAMETERS=parameter_settings)
+    generate_ot2_script(
+        TRANS_SPOT_FNAME_3,
+        os.path.join(template_dir_path, TRANS_SPOT_TEMP_FNAME_3),
+        spotting_tuples=spotting_tuples,
+        soc_well=f"A{soc_column}",
+        __LABWARES=labware_settings,
+        __PARAMETERS=parameter_settings)
 
     # Write non-OT2 scripts
     if 'metainformation' in os.listdir():
@@ -226,7 +339,7 @@ def main():
 
 
 def generate_constructs_list(path):
-    """Generates a list of dataframes corresponding to each construct. Each 
+    """Generates a list of dataframes corresponding to each construct. Each
     dataframe lists components of the CLIP reactions required.
 
     """
@@ -282,7 +395,7 @@ def generate_constructs_list(path):
 
 
 def generate_clips_df(constructs_list):
-    """Generates a dataframe containing information about all the unique CLIP 
+    """Generates a dataframe containing information about all the unique CLIP
     reactions required to synthesise the constructs in constructs_list.
 
     """
@@ -325,13 +438,13 @@ def generate_clips_df(constructs_list):
 
 
 def generate_sources_dict(paths):
-    """Imports csvs files containing a series of parts/linkers with 
+    """Imports csvs files containing a series of parts/linkers with
     corresponding information into a dictionary where the key corresponds with
     part/linker and the value contains a tuple of corresponding information.
 
     Args:
-        paths (list): list of strings each corresponding to a path for a 
-                      sources csv file. 
+        paths (list): list of strings each corresponding to a path for a
+                      sources csv file.
 
     """
     sources_dict = {}
@@ -347,7 +460,7 @@ def generate_sources_dict(paths):
 
 
 def generate_clips_dict(clips_df, sources_dict):
-    """Using clips_df and sources_dict, returns a clips_dict which acts as the 
+    """Using clips_df and sources_dict, returns a clips_dict which acts as the
     sole variable for the opentrons script "clip.ot2.py".
 
     """
@@ -446,7 +559,7 @@ def calculate_final_assembly_tipracks(final_assembly_dict):
 
 def generate_spotting_tuples(constructs_list, spotting_vols_dict):
     """Using constructs_list, generates a spotting tuple
-    (Refer to 'transformation_spotting_template.py') for every column of 
+    (Refer to 'transformation_spotting_template.py') for every column of
     constructs, assuming the 1st construct is located in well A1 and wells
     increase linearly. Target wells locations are equivalent to construct well
     locations and spotting volumes are defined by spotting_vols_dict.
@@ -477,10 +590,10 @@ def generate_spotting_tuples(constructs_list, spotting_vols_dict):
 
 
 def generate_ot2_script(ot2_script_path, template_path, **kwargs):
-    """Generates an ot2 script named 'ot2_script_path', where kwargs are 
-    written as global variables at the top of the script. For each kwarg, the 
-    keyword defines the variable name while the value defines the name of the 
-    variable. The remainder of template file is subsequently written below.        
+    """Generates an ot2 script named 'ot2_script_path', where kwargs are
+    written as global variables at the top of the script. For each kwarg, the
+    keyword defines the variable name while the value defines the name of the
+    variable. The remainder of template file is subsequently written below.
 
     """
     with open(ot2_script_path, 'w') as wf:
@@ -508,7 +621,7 @@ def generate_ot2_script(ot2_script_path, template_path, **kwargs):
 
 
 def generate_master_mix_df(clip_number):
-    """Generates a dataframe detailing the components required in the clip 
+    """Generates a dataframe detailing the components required in the clip
     reaction master mix.
 
     """
@@ -542,7 +655,7 @@ def generate_sources_paths_df(paths, deck_positions):
 
 
 def dfs_to_csv(path, index=True, **kw_dfs):
-    """Generates a csv file defined by path, where kw_dfs are 
+    """Generates a csv file defined by path, where kw_dfs are
     written one after another with each key acting as a title. If index=True,
     df indexes are written to the csv file.
 

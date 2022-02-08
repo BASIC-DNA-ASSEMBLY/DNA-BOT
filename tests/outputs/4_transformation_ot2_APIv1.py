@@ -2,6 +2,10 @@ from opentrons import labware, instruments, modules, robot
 import numpy as np
 
 
+spotting_tuples=[(('A1', 'B1', 'C1'), ('A1', 'B1', 'C1'), (5, 5, 5))]
+soc_well='A1'
+
+
 def generate_transformation_wells(spotting_tuples):
     """Evaluates spotting_tuples and returns transformation wells.
 
@@ -157,7 +161,7 @@ def spot_transformations(
         spotting_tuples,
         dead_vol=2,
         spotting_dispense_rate=0.025,
-        stabbing_depth=2,
+        stabbing_depth=10,
         max_spot_vol=5):
     """Spots transformation reactions.
 

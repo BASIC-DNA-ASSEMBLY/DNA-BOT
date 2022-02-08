@@ -1,4 +1,4 @@
-name: dev_dnabot
+name: dnabot-dev
 channels:
   - conda-forge
   - defaults
@@ -23,3 +23,4 @@ dependencies:
   - urwid
   - yarl
   - zipp==0.6.0
+  - pyyaml
