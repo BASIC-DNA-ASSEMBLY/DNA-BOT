@@ -1,5 +1,5 @@
 # DNA-BOT
-**Feb 2022 - DNA-BOT has now been updated to run on the Opentrons in APIv2.** It also incorporates options for different hardware configurations by producing multiple scripts for each of the 4 steps. The Thermocycler module can now be optionally used in the step 1 clip reactions as well as the step 4 transformations.
+**Feb 2022 - DNA-BOT has now been updated to produce scripts that run on the Opentrons OT2 in APIv2.** It also incorporates options for different hardware configurations by producing multiple scripts for each of the 4 steps. The Thermocycler module can now be optionally used in the step 1 clip reactions as well as the step 4 transformations.
 In addition, different labware inputs are available through the Graphical User Interface (GUI) or Command Line Interface (CLI).
 
 Material for [DNA assembly using BASIC on OpenTrons (DNA-BOT)](https://www.biorxiv.org/content/10.1101/832139v1).
@@ -261,7 +261,7 @@ MRes in Systems and Synthetic Biology at Imperial College London, thanks to:
 * Ting An Lee
 * Xiangming Xu
 
-The original code for DNABOT ran in APIv1 and was authored by:
+The original code for DNABOT produced OT2 scripts that ran in APIv1 and was authored by:
 * **Matthew C Haines** - [hainesm6](https://github.com/hainesm6)
 
 ## License
