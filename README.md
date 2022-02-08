@@ -244,9 +244,14 @@ python -m pytest tests
 ```
 
 ## Authors
-
-* **Matthew C Haines** - [hainesm6](https://github.com/hainesm6)
+The update of DNABOT to APIv2 and improvements to the front end involved the work of several people:
 * Thomas Duigou - [tduigou](https://github.com/tduigou)
+* Geoff Baldwin - [geoffbaldwin](https://github.com/geoffbaldwin)
+* Gizem Buldum
+* Liam Hallett
+
+The original code for DNABOT ran in APIv1 and was authored by:
+* **Matthew C Haines** - [hainesm6](https://github.com/hainesm6)
 
 ## License
 
