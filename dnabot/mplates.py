@@ -2,7 +2,7 @@
 """
 Created on Thu May 30 17:05:37 2019
 
-@authors: mh2210, gbuldum11
+@authors: mh2210, gbuldum11, tduigou
 """
 
 def final_well(sample_number):
