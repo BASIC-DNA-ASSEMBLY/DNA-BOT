@@ -29,7 +29,7 @@ def run(protocol: protocol_api.ProtocolContext):
     # Constants
     CANDIDATE_p20_SLOTS = ['3']
     CANDIDATE_P300_SLOTS = ['6']
-    P20_TIPRACK_TYPE = __LABWARES['96_tiprack_10ul']['id']
+    P20_TIPRACK_TYPE = __LABWARES['96_tiprack_20ul']['id']
     P300_TIPRACK_TYPE = __LABWARES['96_tiprack_300ul']['id']
     P20_MOUNT = 'right'
     P300_MOUNT = 'left'
@@ -38,10 +38,8 @@ def run(protocol: protocol_api.ProtocolContext):
 
     TRANSFORMATION_PLATE_TYPE = __LABWARES['96_wellplate_200ul_pcr_step_14']['id']
     SOC_PLATE_TYPE = __LABWARES['96_deepwellplate_2ml']['id']
-        # changed from '4ti0136_96_deep-well'
     SOC_PLATE_SLOT = '5'
     TUBE_RACK_TYPE = __LABWARES['24_tuberack_1500ul']['id']
-        # changed from 'tube-rack_E1415-1500'
     TUBE_RACK_SLOT = '9'
     SPOTTING_WASTE_WELL = 'A1'
     AGAR_PLATE_TYPE = __LABWARES['96_wellplate_200ul_pcr_step_14']['id']
@@ -115,7 +113,6 @@ def run(protocol: protocol_api.ProtocolContext):
             np.ceil(spots)
             spotting_reactions = spotting_reactions + int(np.sum(spots))
 
-        # errrr should be fine lol # REMOVE
 
         # p20 tiprack slots
         p20_tips = transformation_reactions + spotting_reactions
@@ -162,20 +159,10 @@ def run(protocol: protocol_api.ProtocolContext):
                              [transformation_plate.wells_by_name()[well_name] for well_name in transformation_wells],
                              new_tip='always',
                              mix_after=(MIX_SETTINGS))
-        # old code:
-            # p20_pipette.transfer(ASSEMBLY_VOL,
-                                 # assembly_plate.wells(transformation_wells),
-                                 # transformation_plate.wells(transformation_wells),
-                                 # new_tip='always',
-                                 # mix_after=(MIX_SETTINGS))
-         # .wells() doesn't take lists as arguements, newer wells_by_name() returns a dictionary
 
 
-        # Incubate for 20 minutes and remove competent cells for heat shock
+        # Incubate for INCUBATION_TIME minutes and remove competent cells for heat shock
         protocol.delay(minutes=INCUBATION_TIME)
-        # old code:
-            # p20_pipette.delay(minutes=INCUBATION_TIME)
-        # API version 2 no longer has .delay() for pipettes, it uses protocol.delay() to pause the entire protocol
 
         protocol.pause('Get ready for heat shock when thermocycler reaches to 42 C.')
         # old code:
@@ -205,12 +192,6 @@ def run(protocol: protocol_api.ProtocolContext):
 
         """
         protocol.pause('Return the transformants to heat block. Remove final assembly plate. Introduce agar tray and deep well plate containing SOC media. Resume run.')
-        # old code:
-            # def phase_switch(comment='Remove final assembly plate. Introduce agar tray and deep well plate containing SOC media. Resume run.'):
-                # robot.pause()
-                # robot.comment(comment)
-        # API version 2 uses 'protocol.' instead of 'robot.' and combines '.pause' and '.comment'
-
 
     def outgrowth(
             cols,
@@ -234,40 +215,19 @@ def run(protocol: protocol_api.ProtocolContext):
 
         # Define wells
         transformation_cols = [transformation_plate.columns_by_name()[column] for column in cols]
-        # old code:
-            # transformation_cols = transformation_plate.cols(cols)
-        # API version 2 labware use .columns attribute, not .cols
-        # but .columns() doesn't take lists as arguements, newer columns_by_name() returns a dictionary
 
         soc = soc_plate.wells(soc_well)
 
         # Add SOC to transformed cells
         p300_pipette.flow_rate.aspirate = SOC_ASPIRATION_RATE
-        # old code:
-            # p300_pipette.set_flow_rate(aspirate=SOC_ASPIRATION_RATE)
-            # flow rates are set directly in API version 2, brackets not required
         p300_pipette.transfer(SOC_VOL, soc, transformation_cols,
                               new_tip='always', mix_after=SOC_MIX_SETTINGS)
         p300_pipette.flow_rate.aspirate = P300_DEFAULT_ASPIRATION_RATE
-        # old code:
-            # p300_pipette.set_flow_rate(aspirate=P300_DEFAULT_ASPIRATION_RATE)
-            # API version 2 labware use .columns attribute, not .cols
 
         # Incubate for 1 hour at 37 °C
         tempdeck.set_temperature(TEMP)
-        # removed: tempdeck.wait_for_temp()
-            # API version2 automatically pauses execution until the set temperature is reached
-            # thus it no longer uses .wait_for_temp()
-
         protocol.delay(minutes=OUTGROWTH_TIME)
-        # old code:
-            # p300_pipette.delay(minutes=OUTGROWTH_TIME)
-        # API version 2 no longer has .delay() for pipettes, it uses protocol.delay() to pause the entire protocol
-
         tempdeck.deactivate()
-
-
-
 
 
     def spotting_cols(spotting_tuples):
@@ -444,9 +404,7 @@ def run(protocol: protocol_api.ProtocolContext):
                 p300_pipette.drop_tip()
             spot_tuple(spotting_tuple)
 
-
     # Tiprack slots
-
     p20_p300_tiprack_slots = tiprack_slots(spotting_tuples)
     p20_slots = CANDIDATE_p20_SLOTS[:p20_p300_tiprack_slots[0]]
     p300_slots = CANDIDATE_P300_SLOTS[:p20_p300_tiprack_slots[1]]
@@ -482,8 +440,8 @@ def run(protocol: protocol_api.ProtocolContext):
 
 
 
-
     # Run functions
+    
     transformation_setup(generate_transformation_wells(spotting_tuples))
     heat_shock()
     phase_switch()
@@ -491,4 +449,5 @@ def run(protocol: protocol_api.ProtocolContext):
     unique_cols = [col for i, col in enumerate(spotting_tuples_cols) if spotting_tuples_cols.index(col) == i]
     outgrowth(cols=unique_cols, soc_well=soc_well)
     spot_transformations(spotting_tuples)
+    
     print(unique_cols)
