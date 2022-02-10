@@ -253,7 +253,7 @@ python -m pytest tests
 The update of DNABOT to APIv2 and improvements to the front end involved the work of several people:
 * Thomas Duigou - [tduigou](https://github.com/tduigou)
 * Geoff Baldwin - [geoffbaldwin](https://github.com/geoffbaldwin)
-* Gizem Buldum  - [gbuldum11](https://github.com/gbuldum11)
+* Gizem Buldum  - [gbuldum11](https://github.com/gizembuldum)
 * Liam Hallett
 
 Initial work revising the template scripts to run in Opentrons APIv2 was done by a team of Masters students from the 
