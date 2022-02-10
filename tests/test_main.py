@@ -10,7 +10,7 @@ in_file_construct = Path(__file__).resolve().parent / 'inputs' / 'constructs.csv
 in_file_linker = Path(__file__).resolve().parent / 'inputs' / 'linker_parts_coords.csv'
 in_file_user = Path(__file__).resolve().parent / 'inputs' / 'user_parts_coords.csv'
 
-files_to_tests=[
+files_to_tests = [
     '1_clip_ot2_APIv1.py',
     '1_clip_ot2_APIv2.8.py',
     '1_clip_ot2_Thermocycler_APIv2.8.py',
@@ -22,6 +22,7 @@ files_to_tests=[
     '4_transformation_ot2_APIv1.py',
     '4_transformation_ot2_APIv2.8.py',
     '4_transformation_ot2_Thermocycler_APIv2.8.py',
+    '4_transformation_ot2_Thermocycler_12wellplate_APIv2.8.py',
     join('metainformation','constructs_wells.txt'),
     join('metainformation','constructs_final_assembly_run_info.csv')
     ]

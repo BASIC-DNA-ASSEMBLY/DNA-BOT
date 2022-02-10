@@ -2,7 +2,7 @@
 """
 Created on Thu Apr 11 14:26:07 2019
 
-@author: mh2210
+@authors: mh2210, gbuldum11, tduigou
 """
 from __future__ import annotations  # Enable the "hint" feature for objects
 
@@ -41,6 +41,7 @@ F_ASSEMBLY_TEMP_FNAME_3 = 'assembly_template_Thermocycler_module_APIv2.8.py'
 TRANS_SPOT_TEMP_FNAME_1 = 'transformation_template_APIv1.py'
 TRANS_SPOT_TEMP_FNAME_2 = 'transformation_template_APIv2.8.py'
 TRANS_SPOT_TEMP_FNAME_3 = 'transformation_template_Thermocycler_module_APIv2.8.py'
+TRANS_SPOT_TEMP_FNAME_4 = 'transformation_template_Thermocycler_module_12wellplate_APIv2.8.py'
 
 CLIP_FNAME_1 = '1_clip_ot2_APIv1.py'
 CLIP_FNAME_2 = '1_clip_ot2_APIv2.8.py'
@@ -56,6 +57,7 @@ F_ASSEMBLY_FNAME_3 = '3_assembly_ot2_Thermocycler_APIv2.8.py'
 TRANS_SPOT_FNAME_1 = '4_transformation_ot2_APIv1.py'
 TRANS_SPOT_FNAME_2 = '4_transformation_ot2_APIv2.8.py'
 TRANS_SPOT_FNAME_3 = '4_transformation_ot2_Thermocycler_APIv2.8.py'
+TRANS_SPOT_FNAME_4 = '4_transformation_ot2_Thermocycler_12wellplate_APIv2.8.py'
 
 CLIPS_INFO_FNAME = 'clip_run_info.csv'
 FINAL_ASSEMBLIES_INFO_FNAME = 'final_assembly_run_info.csv'
@@ -77,8 +79,9 @@ DEFAULT_PART_VOL = 1
 MAX_SOURCE_PLATES = 6
 MAX_FINAL_ASSEMBLY_TIPRACKS = 7
 
-# Constant dicts
+# Constant dicts for 96 and 12 well plate formats
 SPOTTING_VOLS_DICT = {2: 5, 3: 5, 4: 5, 5: 5, 6: 5, 7: 5}
+SPOTTING_VOLS_DICT_12 = {2: 40, 3: 40, 4: 40, 5: 40, 6: 40, 7: 40}
 
 # Constant lists
 SOURCE_DECK_POS = ['2', '5', '8', '7', '10', '11']
@@ -247,6 +250,9 @@ def main():
     spotting_tuples = generate_spotting_tuples(constructs_list,
                                                SPOTTING_VOLS_DICT)
 
+    spotting_tuples_12 = generate_spotting_tuples_12(constructs_list,
+                                               SPOTTING_VOLS_DICT_12)
+
     print('Writing files...')
     # Write OT2 scripts
     generate_ot2_script(
@@ -311,6 +317,14 @@ def main():
         TRANS_SPOT_FNAME_3,
         os.path.join(template_dir_path, TRANS_SPOT_TEMP_FNAME_3),
         spotting_tuples=spotting_tuples,
+        soc_well=f"A{soc_column}",
+        __LABWARES=labware_settings,
+        __PARAMETERS=parameter_settings)
+
+    generate_ot2_script(
+        TRANS_SPOT_FNAME_4,
+        os.path.join(template_dir_path, TRANS_SPOT_TEMP_FNAME_4),
+        spotting_tuples=spotting_tuples_12,
         soc_well=f"A{soc_column}",
         __LABWARES=labware_settings,
         __PARAMETERS=parameter_settings)
@@ -587,6 +601,43 @@ def generate_spotting_tuples(constructs_list, spotting_vols_dict):
             tuple_vols = tuple(vols[8*x:8*x + 8])
         spotting_tuples.append((tuple_wells, tuple_wells, tuple_vols))
     return spotting_tuples
+
+# Introduced 12 well plate format for spotting
+def generate_spotting_tuples_12(constructs_list, spotting_vols_dict):
+    """Using constructs_list, generates a spotting tuple
+    (Refer to 'transformation_spotting_template.py') for every column of
+    constructs, assuming the 1st construct is located in well A1 and wells
+    increase linearly. Target wells locations are equivalent to construct well
+    locations and spotting volumes are defined by spotting_vols_dict.
+
+    Args:
+        spotting_vols_dict (dict): Part number defined by keys, spottting
+            volumes defined by corresponding value.
+
+    """
+    # Calculate wells and volumes
+    wells = [mplates.final_well(x + 1) for x in range(len(constructs_list))]
+    vols = [SPOTTING_VOLS_DICT_12[len(construct_df.index)]
+            for construct_df in constructs_list]
+
+    spot_wells = [mplates.final_12wellplate(x + 1) for x in range(len(constructs_list))]
+
+    # Package spotting tuples
+    spotting_tuple_num = len(constructs_list)//12 + (1
+                                                    if len(constructs_list) % 12 > 0 else 0)
+    spotting_tuples_12 = []
+
+    for x in range(spotting_tuple_num): 
+        if x == spotting_tuple_num - 1:
+            tuple_wells = tuple(wells[12*x:])
+            tuple_vols = tuple(vols[12*x:])
+            tuple_spot_wells = tuple(spot_wells[12*x:])
+        else:
+            tuple_wells = tuple(wells[12*x:12*x + 12])
+            tuple_vols = tuple(vols[12*x:12*x + 12])
+            tuple_spot_wells = tuple(spot_wells[12*x:12*x + 12])
+        spotting_tuples_12.append((tuple_wells, tuple_spot_wells, tuple_vols))
+    return spotting_tuples_12
 
 
 def generate_ot2_script(ot2_script_path, template_path, **kwargs):
