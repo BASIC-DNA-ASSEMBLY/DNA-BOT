@@ -254,7 +254,6 @@ The update of DNABOT to APIv2 and improvements to the front end involved the wor
 * Thomas Duigou - [tduigou](https://github.com/tduigou)
 * Geoff Baldwin - [geoffbaldwin](https://github.com/geoffbaldwin)
 * Gizem Buldum  - [gizembuldum](https://github.com/gizembuldum)
-* Liam Hallett
 
 Initial work revising the template scripts to run in Opentrons APIv2 was done by a team of Masters students from the 
 MRes in Systems and Synthetic Biology at Imperial College London, thanks to:
