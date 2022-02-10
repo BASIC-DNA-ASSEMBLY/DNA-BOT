@@ -56,6 +56,10 @@ labwares:
   96_deepwellplate_2ml:
     id: 4ti0136_96_wellplate_2200ul
     # id: transparent_96_wellplate_2ml_deep  # BRS scripts 2, 4
+  
+  # Corning 12 Well Plate 6.9 mL Flat
+  12_corning_wellplate:
+    id: corning_12_wellplate_6.9ml_flat
 
 parameters:
 

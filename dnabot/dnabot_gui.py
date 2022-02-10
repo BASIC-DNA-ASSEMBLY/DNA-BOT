@@ -2,7 +2,7 @@
 """
 Created on Thu May 30 14:35:26 2019
 
-@author: mh2210
+@author: mh2210, tduigou
 """
 
 from __future__ import annotations  # Enable the "hint" feature for objects
@@ -198,11 +198,19 @@ class GUI:
             label="Reservoir plate 21 mL 12 channels",
             labware_id='12_reservoir_21000ul',
             irow=irow)
+
         # 96 deep well plate 2 mL wells
         irow += 1
         self.labware_96_deepwellplate_2ml_entry = self.__make_labware_entry(
             label="96 deep well plate 2 mL wells",
             labware_id='96_deepwellplate_2ml',
+            irow=irow)
+
+        # Corning 12 Well Plate 6.9 mL Flat
+        irow += 1
+        self.labware_12_corning_wellplate_entry = self.__make_labware_entry(
+            label="Corning 12 Well Plate 6.9 mL Flat",
+            labware_id="12_corning_wellplate",
             irow=irow)
         
         # Step 3 -- Parameters for the purification step
@@ -311,6 +319,7 @@ class GUI:
         self.user_settings['labwares']['agar_plate_step_4']['id'] = self.agar_plate_step_4_entry.get()
         self.user_settings['labwares']['12_reservoir_21000ul']['id'] = self.labware_12_reservoir_21000ul_entry.get()
         self.user_settings['labwares']['96_deepwellplate_2ml']['id'] = self.labware_96_deepwellplate_2ml_entry.get()
+        self.user_settings['labwares']['12_corning_wellplate']['id'] = self.labware_12_corning_wellplate_entry.get()
         # Step 3
         self.user_settings['parameters']['purif_magdeck_height']['value'] = to_numeric_value(self.param_purif_magdeck_height.get())
         self.user_settings['parameters']['purif_wash_time']['value'] = to_numeric_value(self.param_purif_wash_time.get())
@@ -343,27 +352,3 @@ class GUI:
         parameter_entry.insert(0, self.user_settings['parameters'][parameter_id]['value'])
         parameter_entry.grid(row=irow, column=1, sticky='w')
         return parameter_entry
-
-
-# def main():
-#     #    root = tk.Tk()
-#     #    construct_path = UserDefinedPaths(root, 'Construct csv file')
-#     #    root.destroy()
-#     #    constructs_list = basic_ot2_generator_v11_beta.generate_constructs_list(
-#     #            construct_path.output)
-#     #    print(constructs_list)
-
-#     default_user_settings = {"labwares": {"p10_single": {"id": "p20_single_gen2"}, "p300_multi": {"id": "p300_multi_gen2"}, "mag_deck": {"id": "magdeck"}, "24_tuberack_1500ul": {"id": "e14151500starlab_24_tuberack_1500ul"}, "96_tiprack_20ul": {"id": "opentrons_96_tiprack_20ul"}, "96_tiprack_300ul": {"id": "opentrons_96_tiprack_300ul"}, "96_wellplate_200ul_pcr": {"id": "4ti0960rig_96_wellplate_200ul"}, "12_reservoir_21000ul": {"id": "4ti0131_12_reservoir_21000ul"}, "96_deepwellplate_2ml": {"id": "4ti0136_96_wellplate_2200ul"}}}
-
-#     root = tk.Tk()
-#     dnabotinst = GUI(root, default_user_settings)
-#     root.mainloop()
-#     root.destroy()
-#     if dnabotinst.quit_status:
-#         sys.exit("User specified 'QUIT' during app")
-#     print('Ethanol well is ', dnabotinst.etoh_well)
-#     print('SOC column is ', dnabotinst.soc_column)
-
-
-# if __name__ == '__main__':
-#     main()
