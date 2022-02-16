@@ -71,11 +71,11 @@ parameters:
 
   # Washing time (min) - purification step
   purif_wash_time:
-    value: 0
+    value: 0.5
 
   # Bead ratio - purification step
   purif_bead_ratio:
-    value: 1
+    value: 1.8
 
   # Incubation time (min) - purification step
   purif_incubation_time:
