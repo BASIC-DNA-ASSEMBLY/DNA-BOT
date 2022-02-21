@@ -94,44 +94,53 @@ class GUI:
         root: tk.Tk,
         user_settings = dict
         ) -> GUI:
-     
+    
+        # The set up the GUI backbone
         self.root = root
-        self.root.lift()
+        self.canvas = tk.Canvas(self.root, width=600, height=800)
+        self.frame = tk.Frame(self.canvas)
+        self.vsb = tk.Scrollbar(self.root, orient="vertical", command=self.canvas.yview, width=20)
+        self.vsb.pack(side="right", fill="y")
+        self.canvas.configure(yscrollcommand=self.vsb.set)
+        self.canvas.pack(side="left", fill="both", expand=False)
+        self.canvas.create_window((0,0), window=self.frame, anchor="nw", tags="self.frame")
+
+        # 
         self.root.title(GUI.__APP_TITLE)
         self.user_settings = user_settings
         self.quit_status = False
 
         # Intro
         irow = 0
-        intro = tk.Message(self.root, text=GUI.__INTRO_TEXT, width=600)
+        intro = tk.Message(self.frame, text=GUI.__INTRO_TEXT, width=600)
         intro.grid(row=irow, columnspan=2, padx=5, pady=15)
 
         # Step 1 -- Ethanol & SOC media
         irow += 1
-        step_1 = tk.Message(self.root, text=GUI.__INSTRUCTION_STEP_1, width=600, anchor='w')
+        step_1 = tk.Message(self.frame, text=GUI.__INSTRUCTION_STEP_1, width=600, anchor='w')
         step_1.grid(row=irow, columnspan=2, padx=5, pady=10, sticky='w')
 
         irow += 1
-        etoh_well_label = tk.Label(self.root, text='Trough well for ethanol during purification:', font=GUI.__APP_FONT)
+        etoh_well_label = tk.Label(self.frame, text='Trough well for ethanol during purification:', font=GUI.__APP_FONT)
         etoh_well_label.grid(row=irow, column=0, sticky='e')
-        self.etoh_well = tk.StringVar(root)
+        self.etoh_well = tk.StringVar(self.frame)
         self.etoh_well.set(GUI.__TROUGH_WELLS[10])
-        etoh_w=tk.OptionMenu(root, self.etoh_well, *tuple(GUI.__TROUGH_WELLS[1:11]))
+        etoh_w=tk.OptionMenu(self.frame, self.etoh_well, *tuple(GUI.__TROUGH_WELLS[1:11]))
         etoh_w.grid(row=irow, column=1, sticky=tk.W)
         etoh_w.config(font=GUI.__APP_FONT)
 
         irow += 1
-        soc_column_label = tk.Label(self.root, text='Deep-well plate column for SOC media during transformation:', font=GUI.__APP_FONT)
+        soc_column_label = tk.Label(self.frame, text='Deep-well plate column for SOC media during transformation:', font=GUI.__APP_FONT)
         soc_column_label.grid(row=irow, column=0, sticky='e')
-        self.soc_column=tk.StringVar(root)
+        self.soc_column=tk.StringVar(self.frame)
         self.soc_column.set("1")
-        soc_w=tk.OptionMenu(root, self.soc_column, *tuple(['{}'.format(x + 1) for x in range(12)]))
+        soc_w=tk.OptionMenu(self.frame, self.soc_column, *tuple(['{}'.format(x + 1) for x in range(12)]))
         soc_w.grid(row=irow, column=1, sticky='w')
         soc_w.config(font=GUI.__APP_FONT)
 
         # Step 2 -- Labware IDs
         irow += 1
-        step_2 = tk.Message(self.root, text=GUI.__INSTRUCTION_STEP_2, width=600, anchor='w')
+        step_2 = tk.Message(self.frame, text=GUI.__INSTRUCTION_STEP_2, width=600, anchor='w')
         step_2.grid(row=irow, columnspan=2, padx=5, pady=10, sticky='w')
 
         # Opentrons P20 Single-Channel Electronic Pipette
@@ -215,7 +224,7 @@ class GUI:
         
         # Step 3 -- Parameters for the purification step
         irow += 1
-        step_3 = tk.Message(self.root, text=GUI.__INSTRUCTION_STEP_3, width=600, anchor='w')
+        step_3 = tk.Message(self.frame, text=GUI.__INSTRUCTION_STEP_3, width=600, anchor='w')
         step_3.grid(row=irow, columnspan=2, padx=5, pady=10, sticky='w')
         irow += 1
         self.param_purif_magdeck_height = self.__make_parameter_entry(
@@ -255,7 +264,7 @@ class GUI:
 
         # Step 4 -- Parameters for the transformation step
         irow += 1
-        step_4 = tk.Message(self.root, text=GUI.__INSTRUCTION_STEP_4, width=600, anchor='w')
+        step_4 = tk.Message(self.frame, text=GUI.__INSTRUCTION_STEP_4, width=600, anchor='w')
         step_4.grid(row=irow, columnspan=2, padx=5, pady=10, sticky='w')
         irow += 1
         self.param_transfo_incubation_temp = self.__make_parameter_entry(
@@ -270,33 +279,38 @@ class GUI:
 
         # Step 5 -- Construct CSV file
         irow += 1
-        step_5 = tk.Message(self.root, text=GUI.__INSTRUCTION_STEP_5, width=600, anchor='w')
+        step_5 = tk.Message(self.frame, text=GUI.__INSTRUCTION_STEP_5, width=600, anchor='w')
         step_5.grid(row=irow, columnspan=2, padx=5, pady=10, sticky='w')
         irow += 1
-        self.construct_file_selector = FileSelector(root, irow, title='Construct CSV file', multiple_files=False)
+        self.construct_file_selector = FileSelector(self.frame, irow, title='Construct CSV file', multiple_files=False)
         irow = self.construct_file_selector.irow
 
         # Step 6 -- Source CSV files
         irow += 1
-        step_6 = tk.Message(self.root, text=GUI.__INSTRUCTION_STEP_6, width=600, anchor='w')
+        step_6 = tk.Message(self.frame, text=GUI.__INSTRUCTION_STEP_6, width=600, anchor='w')
         step_6.grid(row=irow, columnspan=2, padx=5, pady=10, sticky='w')
         irow += 1
-        self.source_files_selector = FileSelector(root, irow, title='Source CSV files', multiple_files=True)
+        self.source_files_selector = FileSelector(self.frame, irow, title='Source CSV files', multiple_files=True)
         irow = self.source_files_selector.irow
 
         # White space
         irow += 1
-        spacer = tk.Label(root, text="", font=GUI.__APP_FONT)
+        spacer = tk.Label(self.frame, text="", font=GUI.__APP_FONT)
         spacer.grid(row=irow, columnspan=2, padx=5, pady=10)
 
         # Quit and generate buttons
         irow += 1
-        quit_button = tk.Button(self.root, text='QUIT', fg='red', command=self.quit, font=GUI.__APP_FONT)
+        quit_button = tk.Button(self.frame, text='QUIT', fg='red', command=self.quit, font=GUI.__APP_FONT)
         quit_button.grid(row=irow, column=0, pady=10)
-        generate_button=tk.Button(root, text='GENERATE', command=self.generate, font=GUI.__APP_FONT)
+        generate_button=tk.Button(self.frame, text='GENERATE', command=self.generate, font=GUI.__APP_FONT)
         generate_button.grid(row=irow, column=1, pady=10)
 
-        root.mainloop()
+        # Upate scroll region info
+        self.root.update()  # Required to refresh canvas scrollreion
+        self.canvas.configure(scrollregion = self.canvas.bbox("all"))
+
+        # 
+        self.frame.mainloop()
 
 
     def quit(self):
@@ -338,17 +352,17 @@ class GUI:
         self.root.quit()
 
     def __make_labware_entry(self, label, labware_id, irow):
-        labware_label = tk.Label(self.root, text=label, font=GUI.__APP_FONT)
+        labware_label = tk.Label(self.frame, text=label, font=GUI.__APP_FONT)
         labware_label.grid(row=irow, column=0, sticky='e')
-        labware_entry = tk.Entry(self.root, width=30)
+        labware_entry = tk.Entry(self.frame, width=30)
         labware_entry.insert(0, self.user_settings['labwares'][labware_id]['id'])
         labware_entry.grid(row=irow, column=1, sticky='w')
         return labware_entry
 
     def __make_parameter_entry(self, label, parameter_id, irow):
-        parameter_label = tk.Label(self.root, text=label, font=GUI.__APP_FONT)
+        parameter_label = tk.Label(self.frame, text=label, font=GUI.__APP_FONT)
         parameter_label.grid(row=irow, column=0, sticky='e')
-        parameter_entry = tk.Entry(self.root, width=30)
+        parameter_entry = tk.Entry(self.frame, width=30)
         parameter_entry.insert(0, self.user_settings['parameters'][parameter_id]['value'])
         parameter_entry.grid(row=irow, column=1, sticky='w')
         return parameter_entry
