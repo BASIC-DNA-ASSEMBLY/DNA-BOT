@@ -33,21 +33,22 @@ def run(protocol: protocol_api.ProtocolContext):
 # added run function for API version 2
 
     # Constants
-    CANDIDATE_p20_SLOTS = ['3']
-    CANDIDATE_P300_SLOTS = ['6']
+    CANDIDATE_p20_SLOTS = ['2','9']
+    CANDIDATE_P300_SLOTS = ['3','6']
     P20_TIPRACK_TYPE = __LABWARES['96_tiprack_20ul']['id']
     P300_TIPRACK_TYPE = __LABWARES['96_tiprack_300ul']['id']
     P20_MOUNT = 'right'
     P300_MOUNT = 'left'
     ASSEMBLY_PLATE_TYPE = __LABWARES['96_wellplate_200ul_pcr_step_14']['id']
-    ASSEMBLY_PLATE_SLOT = '2'
+    ASSEMBLY_PLATE_SLOT = '5'
 
     TRANSFORMATION_PLATE_TYPE = __LABWARES['96_wellplate_200ul_pcr_step_14']['id']
     SOC_PLATE_TYPE = __LABWARES['96_deepwellplate_2ml']['id']
-    SOC_PLATE_SLOT = '5'
-    TUBE_RACK_TYPE = __LABWARES['24_tuberack_1500ul']['id']
-    TUBE_RACK_SLOT = '9'
-    SPOTTING_WASTE_WELL = 'A1'
+    SOC_PLATE_SLOT = '4'
+    #Removed the tuberack for waste to have space for more tipracts for 88 assemblies
+    #TUBE_RACK_TYPE = __LABWARES['24_tuberack_1500ul']['id']
+    #TUBE_RACK_SLOT = '9'
+    #SPOTTING_WASTE_WELL = 'A1'
     AGAR_PLATE_TYPE = __LABWARES['96_wellplate_200ul_pcr_step_14']['id']
         # changed from 'Nunc_Omnitray'
             # it is a 1 well plate filled with agar;
@@ -80,7 +81,7 @@ def run(protocol: protocol_api.ProtocolContext):
 
     AGAR_PLATE_SLOT = '1'
 
-    TEMPDECK_SLOT = '4'
+    
 
     
     def generate_transformation_wells(spotting_tuples):
@@ -147,17 +148,9 @@ def run(protocol: protocol_api.ProtocolContext):
         INCUBATION_TIME = __PARAMETERS['transfo_incubation_time']['value']  # Cells and final assembly incubation time.
 
 
-
-        # Set temperature deck to 4 °C and load competent cells
-        tempdeck.set_temperature(TEMP)
-        # removed: tempdeck.wait_for_temp()
-            # API version2 automatically pauses execution until the set temperature is reached
-            # thus it no longer uses .wait_for_temp()
-        protocol.pause('Load competent cells, uncap and resume run')
-        # old code:
-            # robot.pause()
-            # robot.comment('Load competent cells, uncap and resume run')
-        # API version 2 uses 'protocol.' instead of 'robot.' and combines '.pause' and '.comment'
+        # Set temperature deck to TEMP °C and load competent cells
+        tc_mod.set_block_temperature(TEMP, block_max_volume=50)
+        protocol.pause('Place the competent cells on thermocycler when target temperature is reached and resume run'
 
         # Transfer final assemblies
         p20_pipette.transfer(ASSEMBLY_VOL,
@@ -166,28 +159,13 @@ def run(protocol: protocol_api.ProtocolContext):
                              new_tip='always',
                              mix_after=(MIX_SETTINGS))
 
-
-        # Incubate for INCUBATION_TIME minutes and remove competent cells for heat shock
+        # Incubate for INCUBATION_TIME minutes
         protocol.delay(minutes=INCUBATION_TIME)
-
-        protocol.pause('Get ready for heat shock when thermocycler reaches to 42 C.')
-        # old code:
-            # robot.pause()
-            # robot.comment('Remove transformation reactions, conduct heatshock in the next heat block and and return the plate.')
-        # API version 2 uses 'protocol.' instead of 'robot.' and combines '.pause' and '.comment'
-
+        
     def heat_shock():
-
-
-        #Thermocycler Module
-        tc_mod = protocol.load_module('Thermocycler Module')
-        # Destination Plates
-        DESTINATION_PLATE_TYPE = __LABWARES['96_wellplate_200ul_pcr_step_14']['id']
-        # Loads destination plate onto Thermocycler Module
-        destination_plate = tc_mod.load_labware(DESTINATION_PLATE_TYPE)
-        tc_mod.set_block_temperature(42, hold_time_minutes=1, block_max_volume=180)
-        protocol.pause('Place the competent cells on thermocycler and resume run to conduct heat shock.')
-        protocol.delay(seconds=45)
+        
+        tc_mod.set_block_temperature(42, hold_time_seconds=30, block_max_volume=50)
+        tc_mod.set_block_temperature(4, hold_time_minutes=2, block_max_volume=50)
 
 
 
@@ -197,7 +175,8 @@ def run(protocol: protocol_api.ProtocolContext):
         Function pauses run enabling addition/removal of labware.
 
         """
-        protocol.pause('Return the transformants to heat block. Remove final assembly plate. Introduce agar tray and deep well plate containing SOC media. Resume run.')
+        protocol.pause('Remove final assembly plate. Introduce deep well plate containing SOC media. Resume run.')
+        
 
     def outgrowth(
             cols,
@@ -212,7 +191,7 @@ def run(protocol: protocol_api.ProtocolContext):
         """
 
         # Constants
-        SOC_VOL = 125
+        SOC_VOL = 100
         SOC_MIX_SETTINGS = (4, 50)
         TEMP = 37
         OUTGROWTH_TIME = 60
@@ -221,20 +200,21 @@ def run(protocol: protocol_api.ProtocolContext):
 
         # Define wells
         transformation_cols = [transformation_plate.columns_by_name()[column] for column in cols]
-
+       
         soc = soc_plate.wells(soc_well)
+
+        tc_mod.set_block_temperature(20, block_max_volume=150)
 
         # Add SOC to transformed cells
         p300_pipette.flow_rate.aspirate = SOC_ASPIRATION_RATE
+        
         p300_pipette.transfer(SOC_VOL, soc, transformation_cols,
                               new_tip='always', mix_after=SOC_MIX_SETTINGS)
         p300_pipette.flow_rate.aspirate = P300_DEFAULT_ASPIRATION_RATE
 
         # Incubate for 1 hour at 37 °C
-        tempdeck.set_temperature(TEMP)
-        protocol.delay(minutes=OUTGROWTH_TIME)
-        tempdeck.deactivate()
-
+        tc_mod.set_block_temperature(37, hold_time_minutes=60, block_max_volume=150)
+        protocol.pause('Introduce the agar plate. Resume run')
 
     def spotting_cols(spotting_tuples):
         """
@@ -287,10 +267,11 @@ def run(protocol: protocol_api.ProtocolContext):
             # Constants
             DEFAULT_HEAD_SPEED = {'x': 400, 'y': 400,'z': 125, 'a': 125}
             SPOT_HEAD_SPEED = {'x': 400, 'y': 400, 'z': 125,'a': 125 // 4}
-            DISPENSING_HEIGHT = 5
+            DISPENSING_HEIGHT = -5
             SAFE_HEIGHT = 7  # height avoids collision with agar tray.
 
             # Spot
+            
             p20_pipette.pick_up_tip()
             p20_pipette.aspirate(spot_vol + dead_vol, source[0])
             # old code:
@@ -350,21 +331,7 @@ def run(protocol: protocol_api.ProtocolContext):
                 # p20_pipette.move_to(target[0].top(SAFE_HEIGHT))
                 # returns attribute error because 'target' was a list containing one item (the well location)
 
-
-            # the code below makes sure that the transformend cells are efficiently reaching to the agar surface
-
-
-
-            # Dispose of dead volume and tip
-            p20_pipette.dispense(dead_vol, spotting_waste[0])
-            # old code:
-                # p20_pipette.dispense(dead_vol, spotting_waste)
-                # returns type error because 'target' was a list containing one item (the well location)
-
-            p20_pipette.blow_out()
-                # the simple .blow_out command blows out at current position (spotting waste) by defualt
-                # unlike blowout=true in complex commands, which by default will blow out in waste
-
+            
             p20_pipette.drop_tip()
 
         def spot_tuple(spotting_tuple):
@@ -410,7 +377,9 @@ def run(protocol: protocol_api.ProtocolContext):
                 p300_pipette.drop_tip()
             spot_tuple(spotting_tuple)
 
+
     # Tiprack slots
+
     p20_p300_tiprack_slots = tiprack_slots(spotting_tuples)
     p20_slots = CANDIDATE_p20_SLOTS[:p20_p300_tiprack_slots[0]]
     p300_slots = CANDIDATE_P300_SLOTS[:p20_p300_tiprack_slots[1]]
@@ -427,27 +396,28 @@ def run(protocol: protocol_api.ProtocolContext):
 
     assembly_plate = protocol.load_labware(ASSEMBLY_PLATE_TYPE, ASSEMBLY_PLATE_SLOT)
         # changed to protocol.load_labware for API version 2
-    tempdeck = protocol.load_module('tempdeck', TEMPDECK_SLOT)
-    transformation_plate = tempdeck.load_labware(TRANSFORMATION_PLATE_TYPE, TEMPDECK_SLOT)
+    
+    #Thermocycler Module
+    tc_mod = protocol.load_module('Thermocycler Module')
+
+    transformation_plate = tc_mod.load_labware(TRANSFORMATION_PLATE_TYPE)
         # changed to protocol.load_labware for API version 2
         # removed share=True, not required in API version 2
         # removed TEMPDECK_SLOT as it is loaded directly onto temperature module
     soc_plate = protocol.load_labware(SOC_PLATE_TYPE, SOC_PLATE_SLOT)
         # changed to protocol.load_labware for API version 2
-    tube_rack = protocol.load_labware(TUBE_RACK_TYPE, TUBE_RACK_SLOT)
+    #tube_rack = protocol.load_labware(TUBE_RACK_TYPE, TUBE_RACK_SLOT)
         # changed to protocol.load_labware for API version 2
-    spotting_waste = tube_rack.wells(SPOTTING_WASTE_WELL)
+    #spotting_waste = tube_rack.wells(SPOTTING_WASTE_WELL)
     agar_plate = protocol.load_labware(AGAR_PLATE_TYPE, AGAR_PLATE_SLOT)
         # changed to protocol.load_labware for API version 2
 
 
-    ### Run protocol
-
-
+    # Register agar_plate for calibration
+    p20_pipette.transfer(1, agar_plate.wells('A1'), agar_plate.wells('C4'), trash=False)
 
 
     # Run functions
-    
     transformation_setup(generate_transformation_wells(spotting_tuples))
     heat_shock()
     phase_switch()
@@ -455,5 +425,4 @@ def run(protocol: protocol_api.ProtocolContext):
     unique_cols = [col for i, col in enumerate(spotting_tuples_cols) if spotting_tuples_cols.index(col) == i]
     outgrowth(cols=unique_cols, soc_well=soc_well)
     spot_transformations(spotting_tuples)
-    
     print(unique_cols)
