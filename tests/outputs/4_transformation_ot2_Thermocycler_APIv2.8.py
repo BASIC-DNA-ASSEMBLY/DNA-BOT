@@ -150,7 +150,7 @@ def run(protocol: protocol_api.ProtocolContext):
 
         # Set temperature deck to TEMP °C and load competent cells
         tc_mod.set_block_temperature(TEMP, block_max_volume=50)
-        protocol.pause('Place the competent cells on thermocycler when target temperature is reached and resume run'
+        protocol.pause('Place the competent cells on thermocycler when target temperature is reached and resume run')
 
         # Transfer final assemblies
         p20_pipette.transfer(ASSEMBLY_VOL,
