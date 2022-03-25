@@ -53,14 +53,14 @@ usage: dnabot_app.py [-h] [--default_settings_file DEFAULT_SETTINGS_FILE] {nogui
 DNA assembly using BASIC on OpenTrons.
 
 positional arguments:
-  {nogui}               Optional, to define settings from the terminal instead of the graphical interface. Type
-                        "python dnabot_app.py nogui -h" for more info.
+  {nogui}               Optional, switch to define settings from the terminal instead of the graphical interface. Type "python dnabot_app.py
+                        nogui -h" for more info.
 
 optional arguments:
   -h, --help            show this help message and exit
   --default_settings_file DEFAULT_SETTINGS_FILE
                         Optional, file providing labware IDs and parameter to be used. Default:
-                        /Users/tduigou/code/test/dnabot/dnabot/default_settings.yaml.
+                        /Users/tduigou/code/dnabot/dnabot/default_settings.yaml.
 ```
 
 ### No GUI mode
@@ -72,17 +72,17 @@ usage: dnabot_app.py nogui [-h] --construct_path CONSTRUCT_PATH --source_paths S
 optional arguments:
   -h, --help            show this help message and exit
   --construct_path CONSTRUCT_PATH
-                        Construct CSV file.
+                        File listing constructs to be implemented.
   --source_paths SOURCE_PATHS [SOURCE_PATHS ...]
-                        Source CSV files.
+                        File(s) listing parts to be used in constructs.
   --etoh_well ETOH_WELL
-                        Well coordinate for Ethanol. Default: A11
+                        Coordinates of the well plate providing ethanol for the purification step. Default: A11
   --soc_column SOC_COLUMN
-                        Column coordinate for SOC. Default: 1
+                        Coordinate of the column plate providing SOC media for the transformation step. Default: 1
   --output_dir OUTPUT_DIR
-                        Output directory. Default: same directory than the one containing the "construct_path" file
+                        Output directory. Default: same directory than the one containing the 'construct_path' file
   --template_dir TEMPLATE_DIR
-                        Template directory. Default: "template_ot2_scripts" located next to the present script.
+                        Template directory. Default: 'template_ot2_scripts' located next to the present script.
 ```
 
 

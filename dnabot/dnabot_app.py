@@ -103,21 +103,31 @@ def __cli():
                              'Default: ' + str(DEFAULT_SETTINGS_FILE) +'.',
                         default= DEFAULT_SETTINGS_FILE)
     # Specific options for collecting settings from command line
-    subparsers = parser.add_subparsers(help='Optional, to define settings from the terminal '
+    subparsers = parser.add_subparsers(help='Optional, switch to define settings from the terminal '
                                             'instead of the graphical interface. '
                                             'Type "python dnabot_app.py nogui -h" for more info.')
     parser_nogui = subparsers.add_parser('nogui')
-    parser_nogui.add_argument('--construct_path', help='Construct CSV file.', required=True)
-    parser_nogui.add_argument('--source_paths', help='Source CSV files.', nargs='+', required=True)
-    parser_nogui.add_argument('--etoh_well', help='Well coordinate for Ethanol. Default: A11', default='A11', type=str)
-    parser_nogui.add_argument('--soc_column', help='Column coordinate for SOC. Default: 1', default=1, type=int)
+    parser_nogui.add_argument('--construct_path',
+                              help='File listing constructs to be implemented.',
+                              required=True)
+    parser_nogui.add_argument('--source_paths',
+                              help='File(s) listing parts to be used in constructs.',
+                              nargs='+', required=True)
+    parser_nogui.add_argument('--etoh_well',
+                              help="Coordinates of the well plate providing ethanol "
+                                   "for the purification step. Default: A11",
+                              default='A11', type=str)
+    parser_nogui.add_argument('--soc_column',
+                              help="Coordinate of the column plate providing SOC media "
+                                   "for the transformation step. Default: 1",
+                              default=1, type=int)
     parser_nogui.add_argument('--output_dir',
-                              help='Output directory. Default: same directory than the one containing the '
-                                   '"construct_path" file',
+                              help="Output directory. Default: same directory than the "
+                                   "one containing the 'construct_path' file",
                               default=None, type=str or None)
     parser_nogui.add_argument('--template_dir',
-                              help='Template directory. Default: "template_ot2_scripts" located next to the present '
-                                   'script.',
+                              help="Template directory. Default: 'template_ot2_scripts' "
+                                   "located next to the present script.",
                               default=None, type=str or None)
     # Makes life easier to decide if we should switch to GUI or not
     parser.set_defaults(nogui=False)
