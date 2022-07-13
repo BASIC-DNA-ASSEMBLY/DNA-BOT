@@ -7,7 +7,7 @@ importlib-metadata==0.23
 jsonschema==3.1.1
 more-itertools==7.2.0
 multidict==4.5.2
-numpy==1.17.2
+numpy==1.22.0
 opentrons==3.13.2
 pandas==0.25.1
 pyrsistent==0.15.4
