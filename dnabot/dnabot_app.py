@@ -350,22 +350,22 @@ def main():
         __PARAMETERS=parameter_settings)
 
     # Write non-OT2 scripts
-    if 'metainformation' in os.listdir():
-        pass
-    else:
-        os.makedirs('metainformation')
-    os.chdir('metainformation')
+    metainfo_dir = Path().resolve() / "metainformation"
+    metainfo_dir.mkdir(exist_ok=True)
     master_mix_df = generate_master_mix_df(clips_df['number'].sum())
     sources_paths_df = generate_sources_paths_df(sources_paths, SOURCE_DECK_POS)
-    dfs_to_csv(construct_base + '_' + CLIPS_INFO_FNAME, index=False,
-               MASTER_MIX=master_mix_df, SOURCE_PLATES=sources_paths_df,
-               CLIP_REACTIONS=clips_df)
-    with open(construct_base + '_' + FINAL_ASSEMBLIES_INFO_FNAME,
-              'w', newline='') as csvfile:
+    dfs_to_csv(
+        metainfo_dir / f"{construct_base}_{CLIPS_INFO_FNAME}",
+        index=False,
+        MASTER_MIX=master_mix_df,
+        SOURCE_PLATES=sources_paths_df,
+        CLIP_REACTIONS=clips_df
+        )
+    with open(metainfo_dir / f"{construct_base}_{FINAL_ASSEMBLIES_INFO_FNAME}", "w", newline='') as csvfile:
         csvwriter = csv.writer(csvfile)
         for final_assembly_well, construct_clips in final_assembly_dict.items():
             csvwriter.writerow([final_assembly_well, construct_clips])
-    with open(construct_base + '_' + WELL_OUTPUT_FNAME, 'w') as f:
+    with open(metainfo_dir / f"{construct_base}_{WELL_OUTPUT_FNAME}", "w") as f:
         f.write('Magbead ethanol well: {}'.format(etoh_well))
         f.write('\n')
         f.write('SOC column: {}'.format(soc_column))
