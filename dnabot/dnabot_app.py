@@ -140,7 +140,7 @@ def __get_settings_from_file(file_path: str) -> None:
         return yaml.safe_load(ifh)
 
 
-def __info_from_gui(user_settings):
+def __info_from_gui(user_settings: dict) -> dict:
     """Pop GUI to collect user inputs
 
     Parameters
