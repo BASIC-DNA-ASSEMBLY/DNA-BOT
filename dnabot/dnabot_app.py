@@ -17,7 +17,6 @@ import json
 import tkinter as tk
 import yaml
 from pathlib import Path
-import slots
 
 #add dnabot module to syspath
 abs_path = os.path.dirname(os.path.abspath(__file__))
@@ -25,6 +24,7 @@ sys.path.insert(0, abs_path)
 
 import dnabot_gui as gui
 import mplates
+import slots
 
 # Constant str
 TEMPLATE_DIR_NAME = 'template_ot2_scripts'
