@@ -4,7 +4,7 @@ from opentrons import protocol_api
 
 metadata = {
      'apiLevel': '2.8',
-     'protocolName': 'purification_template',
+     'protocolName': 'DNABOT Step 2: Purification',
      'description': 'Implements magbead purification reactions for BASIC assembly using an opentrons OT-2'}
 
 

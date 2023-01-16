@@ -2,8 +2,8 @@ from opentrons import protocol_api
 import numpy as np
 # metadata
 metadata = {
-'protocolName': 'DNABOT Assembly Thermocycler',
-'description': 'DNABOT Assembly Step3 with Thermocycler',
+'protocolName': 'DNABOT Step 3: Assembly with thermocycler',
+'description': 'DNABOT Step 3: Assembly with thermocycler',
 'apiLevel': '2.8'
 }
 

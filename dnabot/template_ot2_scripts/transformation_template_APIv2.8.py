@@ -7,7 +7,7 @@ import numpy as np
 
 metadata = {
      'apiLevel': '2.8',
-     'protocolName': 'Transformation',
+     'protocolName': 'DNABOT Step 4: Transformation',
      'description': 'Transformation reactions using an opentrons OT-2 for BASIC assembly.'}
 
 # Example output produced by DNA-BOT for a single construct, uncomment and run to test the template

@@ -14,7 +14,7 @@ import numpy as np
 
 metadata = {
      'apiLevel': '2.8',
-     'protocolName': 'Transformation',
+     'protocolName': 'DNABOT Step 4: Transformation with thermocycler and 12 wellplate',
      'description': 'Transformation reactions using an opentrons OT-2 for BASIC assembly.'}
 
 

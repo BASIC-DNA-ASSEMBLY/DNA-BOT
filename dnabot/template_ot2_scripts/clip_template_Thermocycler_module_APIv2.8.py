@@ -5,7 +5,7 @@ from opentrons import protocol_api
 #metadata
 metadata = {
      'apiLevel': '2.8',
-     'protocolName': 'CLIP_With_Thermocycler',
+     'protocolName': 'DNABOT Step 1: Clip Reaction with thermocycler',
      'description': 'Implements linker ligation reactions using an opentrons OT-2, including the thermocycler module.'}
 
 
