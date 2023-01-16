@@ -251,19 +251,28 @@ def main():
     clips_df = generate_clips_df(constructs_list)
     sources_dict = generate_sources_dict(sources_paths)
 
-    # calculate OT2 script variables
+    # Calculate OT2 script variables
     print('Calculating OT-2 variables...')
-    clips_dict = generate_clips_dict(clips_df, sources_dict)
+    clips_dict = generate_clips_dict(
+        clips_df,
+        sources_dict
+        )
     magbead_sample_number = clips_df['number'].sum()
-    final_assembly_dict = generate_final_assembly_dict(constructs_list,
-                                                       clips_df)
+    final_assembly_dict = generate_final_assembly_dict(
+        constructs_list,
+        clips_df
+        )
     final_assembly_tipracks = calculate_final_assembly_tipracks(
-        final_assembly_dict)
-    spotting_tuples = generate_spotting_tuples(constructs_list,
-                                               SPOTTING_VOLS_DICT)
-
-    spotting_tuples_12 = generate_spotting_tuples_12(constructs_list,
-                                               SPOTTING_VOLS_DICT_12)
+        final_assembly_dict
+        )
+    spotting_tuples = generate_spotting_tuples(
+        constructs_list,
+        SPOTTING_VOLS_DICT
+        )
+    spotting_tuples_12 = generate_spotting_tuples_12(
+        constructs_list,
+        SPOTTING_VOLS_DICT_12
+        )
 
     print('Writing files...')
     # Write OT2 scripts
@@ -332,7 +341,6 @@ def main():
         soc_well=f"A{soc_column}",
         __LABWARES=labware_settings,
         __PARAMETERS=parameter_settings)
-
     generate_ot2_script(
         TRANS_SPOT_FNAME_4,
         os.path.join(template_dir_path, TRANS_SPOT_TEMP_FNAME_4),
@@ -405,8 +413,11 @@ def generate_constructs_list(path):
             else:
                 return linker + "-S"
 
-        clips_info = {'prefixes': [], 'parts': [],
-                      'suffixes': []}
+        clips_info = {
+            'prefixes': [],
+            'parts': [],
+            'suffixes': []
+            }
         for i, sequence in enumerate(construct):
             if i % 2 != 0:
                 clips_info['parts'].append(sequence)
