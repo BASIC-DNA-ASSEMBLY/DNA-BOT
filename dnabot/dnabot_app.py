@@ -17,6 +17,7 @@ import json
 import tkinter as tk
 import yaml
 from pathlib import Path
+import slots
 
 #add dnabot module to syspath
 abs_path = os.path.dirname(os.path.abspath(__file__))
@@ -62,6 +63,7 @@ TRANS_SPOT_FNAME_4 = '4_transformation_ot2_Thermocycler_12wellplate_APIv2.8.py'
 CLIPS_INFO_FNAME = 'clip_run_info.csv'
 FINAL_ASSEMBLIES_INFO_FNAME = 'final_assembly_run_info.csv'
 WELL_OUTPUT_FNAME = 'wells.txt'
+DECK_OUTPUT_FNAME = "deck.md"
 
 # Constant floats/ints
 CLIP_DEAD_VOL = 60
@@ -359,6 +361,25 @@ def main():
         f.write('Magbead ethanol well: {}'.format(etoh_well))
         f.write('\n')
         f.write('SOC column: {}'.format(soc_column))
+
+    # Write deck position info
+    with open(metainfo_dir / f"{construct_base}_{DECK_OUTPUT_FNAME}", "w") as ofh:
+        for fname in (CLIP_FNAME_2, CLIP_FNAME_3):
+            deck = slots.get_positions_from_clip(fname)
+            s = slots.format_deck_info(deck, section = f"Clip reaction script: {fname}")
+            ofh.write(s)
+        for fname in (MAGBEAD_FNAME_2,):
+            deck = slots.get_positions_from_purif(fname)
+            s = slots.format_deck_info(deck, section = f"Purification script: {fname}")
+            ofh.write(s)
+        for fname in (F_ASSEMBLY_FNAME_2, F_ASSEMBLY_FNAME_3):
+            deck = slots.get_positions_from_assembly(fname)
+            s = slots.format_deck_info(deck, section = f"Assembly script: {fname}")
+            ofh.write(s)
+        for fname in (TRANS_SPOT_FNAME_2, TRANS_SPOT_FNAME_3, TRANS_SPOT_FNAME_4):
+            deck = slots.get_positions_from_transfo(fname)
+            s = slots.format_deck_info(deck, section = f"Transformation script: {fname}")
+            ofh.write(s)
     print('BOT-2 generator successfully completed!')
 
 
