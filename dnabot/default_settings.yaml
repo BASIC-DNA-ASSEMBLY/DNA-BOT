@@ -63,6 +63,11 @@ labwares:
 
 parameters:
 
+  # Clip reaction step ####################################
+  # Should the thermocycker lid should be open after execution?
+  clip_open_thermocycler_lid:
+    value: false
+
   # Purification step #####################################
   # Magnetic module height (mm) - purification step
   purif_magdeck_height: 

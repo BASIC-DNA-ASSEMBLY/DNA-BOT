@@ -289,7 +289,8 @@ def main():
         CLIP_FNAME_3,
         os.path.join(template_dir_path, CLIP_TEMP_FNAME_3),
         clips_dict=clips_dict,
-        __LABWARES=labware_settings)
+        __LABWARES=labware_settings,
+        __PARAMETERS=parameter_settings)
        
     generate_ot2_script(
         MAGBEAD_FNAME_1,
