@@ -1,7 +1,12 @@
 import ast
+import tabulate
 import pandas as pd
 from pathlib import Path
 
+# Preserve white space for markdown output
+#   used within to_markdown method from pandas df
+tabulate.PRESERVE_WHITESPACE = True
+MAXLEN_PLATE_NAME = 25
 
 def get_positions_from_clip(fpath: Path) -> dict:
     """Get labware slots from a clip reaction script
@@ -317,22 +322,47 @@ def format_deck_info(deck: dict, section="Deck info") -> str:
     str
         Formated string
     """
-    slots = {"Plate": [], "Positions": []}
-    for key, value in deck.items():
-        if isinstance(value, list):
-            slots["Plate"].append(key.replace("_", " "))
-            slots["Positions"].append(",".join(value))
-        elif isinstance(value, str):
-            slots["Plate"].append(key.replace("_", " "))
-            slots["Positions"].append(value)
+    # Table of position per plate type
+    data = {"Plate": [], "Positions": []}
+    for plate, position in deck.items():
+        if isinstance(position, list):
+            data["Plate"].append(plate.replace("_", " "))
+            data["Positions"].append(",".join(position))
+        elif isinstance(position, str):
+            data["Plate"].append(plate.replace("_", " "))
+            data["Positions"].append(position)
         else:
             raise NotImplementedError()
-    df = pd.DataFrame(data=slots)
+    df = pd.DataFrame(data=data)
     df = df.sort_values(by="Positions")
-    deck_table = df.to_markdown(tablefmt="grid", index=False)
-    s =f"""# {section}
+    plate_table = df.to_markdown(tablefmt="grid", index=False)
+
+    # Deck representation
+    data = ["-" for i in range(11)] + ["bin"]
+    for plate, position in deck.items():
+        if isinstance(position, str):
+            data[int(position)-1] = plate
+        elif isinstance(position, list):
+            for pos in position:
+                data[int(pos)-1] = plate
+        else:
+            raise NotImplementedError
+    for i in range(len(data)):  # Prettify
+        data[i] = data[i].replace("_", " ")
+        data[i] = f"{i+1:2d} | {data[i]:^{MAXLEN_PLATE_NAME}}"
+    df = pd.DataFrame([data[i:i+3] for i in range(0, len(data), 3)])
+    df = df.iloc[::-1]
+    deck_table = df.to_markdown(index=False, headers="", tablefmt="grid", stralign="center")
+
+    sout = f"""## {section}
+
+### Plate table
+
+{plate_table}
+
+### Deck representation
 
 {deck_table}
 
 """
-    return s
+    return sout
