@@ -6,8 +6,8 @@ from opentrons import protocol_api
 metadata = {
      'apiLevel': '2.8',
      'protocolName': 'DNABOT Step 1: Clip Reaction with thermocycler',
-     'description': 'Implements linker ligation reactions using an opentrons OT-2, including the thermocycler module.'}
-
+     'description': 'Implements linker ligation reactions using an opentrons OT-2, including the thermocycler module.'
+}
 
 
 # example dictionary produced by DNA-BOT for a single construct containing 5 parts, un-comment and run to test the template
@@ -35,9 +35,9 @@ def run(protocol: protocol_api.ProtocolContext):
     if PIPETTE_TYPE != 'p20_single_gen2':
         print('Define labware must be changed to use', PIPETTE_TYPE)
         exit()
-#Thermocycler Module
+    #Thermocycler Module
     tc_mod = protocol.load_module('Thermocycler Module')
-# Destination Plates
+    # Destination Plates
     DESTINATION_PLATE_TYPE = __LABWARES['96_wellplate_200ul_pcr_step_14']['id']
     # Loads destination plate onto Thermocycler Module
     destination_plate = tc_mod.load_labware(DESTINATION_PLATE_TYPE)
@@ -72,7 +72,9 @@ def run(protocol: protocol_api.ProtocolContext):
         # Calculates whether one, two, or three tipracks are needed, which are in slots 3, 6, and 9 respectively
         total_tips = 4 * len(parts_wells)
         letter_dict = {'A': 0, 'B': 1, 'C': 2,
-                       'D': 3, 'E': 4, 'F': 5, 'G': 6, 'H': 7}
+                       'D': 3, 'E': 4, 'F': 5,
+                       'G': 6, 'H': 7
+                       }
         tiprack_1_tips = (
             13 - int(INITIAL_TIP[1:])) * 8 - letter_dict[INITIAL_TIP[0]]
         if total_tips > tiprack_1_tips:
@@ -145,4 +147,6 @@ def run(protocol: protocol_api.ProtocolContext):
     tc_mod.set_block_temperature(4, hold_time_minutes=2, block_max_volume=30)
     #Q Does block_max_volume define total volume in block or individual wells?
     tc_mod.set_lid_temperature(37)
-    tc_mod.open_lid()
+    if "clip_open_thermocycler_lid" in __PARAMETERS and \
+            __PARAMETERS["clip_open_thermocycler_lid"]["value"].lower() in ["true", "yes", "1"]:
+        tc_mod.open_lid()
