@@ -28,7 +28,7 @@ def get_positions_from_clip(fpath: Path) -> dict:
     e
         parsing error
     """
-    DEFAULT_DESTINATION_PLATE_SLOT = "7"
+    DEFAULT_CLIP_PLATE_SLOT = "7"
     deck = {}
 
     with open(fpath) as ifh:
@@ -64,16 +64,16 @@ def get_positions_from_clip(fpath: Path) -> dict:
     #   no thermocycler script, but not in the with thermo
     #   script. The thermocycler is always at position
     #   position 7
-    if "destination_plate" not in deck:
+    if "clip_plate" not in deck:
         used_slots = []
         for item in deck:
             if isinstance(item, list):
                 used_slots += item
             if isinstance(item, str):
                 used_slots.append(item)
-        if DEFAULT_DESTINATION_PLATE_SLOT in used_slots:
-            raise AssertionError(f"Destination slot {DEFAULT_DESTINATION_PLATE_SLOT} already used.")
-        deck["destination_plate"] = DEFAULT_DESTINATION_PLATE_SLOT
+        if DEFAULT_CLIP_PLATE_SLOT in used_slots:
+            raise AssertionError(f"Slot {DEFAULT_CLIP_PLATE_SLOT} already used for clip plate.")
+        deck["clip_plate"] = DEFAULT_CLIP_PLATE_SLOT
 
     return deck
 
@@ -117,7 +117,7 @@ def get_positions_from_purif(fpath: Path) -> dict:
                 if name == "MAGDECK_POSITION":
                     literal_value = ast.unparse(node.value)
                     value = ast.literal_eval(literal_value)
-                    deck["magdeck_plate"] = value
+                    deck["clip_plate"] = value
                 elif name == "MIX_PLATE_POSITION":
                     literal_value = ast.unparse(node.value)
                     value = ast.literal_eval(literal_value)
@@ -125,11 +125,11 @@ def get_positions_from_purif(fpath: Path) -> dict:
                 elif name == "REAGENT_CONTAINER_POSITION":
                     literal_value = ast.unparse(node.value)
                     value = ast.literal_eval(literal_value)
-                    deck["reagant_container_plate"] = value
+                    deck["reagant_plate"] = value
                 elif name == "BEAD_CONTAINER_POSITION":
                     literal_value = ast.unparse(node.value)
                     value = ast.literal_eval(literal_value)
-                    deck["bead_container_plate"] = value
+                    deck["bead_plate"] = value
                 else:
                     pass
             except Exception as e:
@@ -185,15 +185,15 @@ def get_positions_from_assembly(fpath: Path) -> dict:
                 elif name == "REAGENT_CONTAINER_POSITION":
                     literal_value = ast.unparse(node.value)
                     value = ast.literal_eval(literal_value)
-                    deck["reagant_container_plate"] = value
+                    deck["reagant_plate"] = value
                 elif name == "BEAD_CONTAINER_POSITION":
                     literal_value = ast.unparse(node.value)
                     value = ast.literal_eval(literal_value)
-                    deck["bead_container_plate"] = value
+                    deck["bead_plate"] = value
                 elif name == "TEMPDECK_SLOT":
                     literal_value = ast.unparse(node.value)
                     value = ast.literal_eval(literal_value)
-                    deck["destination_plate"] = value
+                    deck["assembly_plate"] = value
                 else:
                     pass
             except Exception as e:
@@ -272,7 +272,7 @@ def get_positions_from_transfo(fpath: Path) -> dict:
                 elif name == "SOC_PLATE_SLOT":
                     literal_value = ast.unparse(node.value)
                     value = ast.literal_eval(literal_value)
-                    deck["soc_plate"] = value
+                    deck["SOC_plate"] = value
                 elif name == "AGAR_PLATE_SLOT":
                     literal_value = ast.unparse(node.value)
                     value = ast.literal_eval(literal_value)
