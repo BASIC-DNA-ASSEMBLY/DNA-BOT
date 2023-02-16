@@ -146,7 +146,14 @@ def run(protocol: protocol_api.ProtocolContext):
     tc_mod.set_block_temperature(60, hold_time_minutes=10, block_max_volume=30)
     tc_mod.set_block_temperature(4, hold_time_minutes=2, block_max_volume=30)
     #Q Does block_max_volume define total volume in block or individual wells?
+    if (
+            "clip_keep_sample_overnight" in __PARAMETERS and
+        __PARAMETERS["clip_keep_sample_overnight"]["keep"] in ["true", "yes", "1"]
+    ):
+        tc_mod.deactivate_lid()
+        tc_mod.set_block_temperature(
+            temperature=4,
+            hold_time_minutes=__PARAMETERS["clip_keep_sample_overnight"]["duration"],
+            block_max_volume=30)
     tc_mod.set_lid_temperature(37)
-    if "clip_open_thermocycler_lid" in __PARAMETERS and \
-            __PARAMETERS["clip_open_thermocycler_lid"]["value"].lower() in ["true", "yes", "1"]:
-        tc_mod.open_lid()
+    tc_mod.open_lid()
