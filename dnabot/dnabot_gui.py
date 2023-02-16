@@ -82,7 +82,7 @@ class GUI:
     
         # The set up the GUI backbone
         self.root = root
-        self.canvas = tk.Canvas(self.root, width=600, height=800)
+        self.canvas = tk.Canvas(self.root, width=650, height=840)
         self.frame = tk.Frame(self.canvas)
         self.vsb = tk.Scrollbar(self.root, orient="vertical", command=self.canvas.yview, width=20)
         self.vsb.pack(side="right", fill="y")
@@ -247,16 +247,9 @@ class GUI:
         message_3.grid(row=irow, columnspan=2, padx=5, pady=10, sticky='w')
         irow += 1
         self.param_clip_thermo_lid_closed = self.__make_parameter_entry(
-            label="Should the sample be kept cool (4°C) overnight?",
+            label="How long to keep at 4°C samples at the end of the execution? (in minutes)",
             parameter_id="clip_keep_sample_overnight",
-            irow=irow,
-            parameter_value="keep")
-        irow += 1
-        self.param_clip_thermo_lid_closed_duration = self.__make_parameter_entry(
-            label="How long should the lid stay cool and closed?",
-            parameter_id="clip_keep_sample_overnight",
-            irow=irow,
-            parameter_value="duration")
+            irow=irow)
 
         # Sep =================================================================
         irow += 1
@@ -430,7 +423,7 @@ class GUI:
     def __make_labware_entry(self, label, labware_id, irow):
         labware_label = tk.Label(self.frame, text=label, font=GUI.__APP_FONT)
         labware_label.grid(row=irow, column=0, sticky='e')
-        labware_entry = tk.Entry(self.frame, width=30)
+        labware_entry = tk.Entry(self.frame, width=28)
         labware_entry.insert(0, self.user_settings["labwares"][labware_id]['id'])
         labware_entry.grid(row=irow, column=1, sticky='w')
         return labware_entry
@@ -438,7 +431,7 @@ class GUI:
     def __make_parameter_entry(self, label, parameter_id, irow, parameter_value="value"):
         parameter_label = tk.Label(self.frame, text=label, font=GUI.__APP_FONT)
         parameter_label.grid(row=irow, column=0, sticky='e')
-        parameter_entry = tk.Entry(self.frame, width=30)
+        parameter_entry = tk.Entry(self.frame, width=28)
         parameter_entry.insert(0, self.user_settings["parameters"][parameter_id][parameter_value])
         parameter_entry.grid(row=irow, column=1, sticky='w')
         return parameter_entry

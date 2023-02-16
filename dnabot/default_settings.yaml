@@ -64,10 +64,9 @@ labwares:
 parameters:
 
   # Clip reaction step ####################################
-  # Keep at 4°C samples at the end of the execution?
+  # How long to keep at 4°C samples at the end of the execution?
   clip_keep_sample_overnight:
-    keep: false
-    duration: 600  # in minutes
+    value: 0  # in minutes
 
   # Purification step #####################################
   # Magnetic module height (mm) - purification step
