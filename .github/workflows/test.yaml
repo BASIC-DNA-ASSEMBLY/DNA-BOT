@@ -35,5 +35,5 @@ jobs:
           micromamba-version: latest
       - name: Building & Testing conda package
         run: |
-          micromamba install -y python pytest pytest-mock
-          python -m pytest test
+          micromamba install -y python pytest
+          python -m pytest tests
