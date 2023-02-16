@@ -8,6 +8,7 @@ Created on Thu May 30 14:35:26 2019
 from __future__ import annotations  # Enable the "hint" feature for objects
 
 import tkinter as tk
+from tkinter import ttk
 from tkinter import filedialog
 
 
@@ -68,23 +69,7 @@ class FileSelector:
 
 class GUI:
 
-    __APP_TITLE = "dnabot app"
-    __INTRO_TEXT = ("Welcome to the dnabot App! Please follow these "
-                    "instructions to create the 4 DNA-BOT scripts:"
-                   )
-    __INSTRUCTION_STEP_1 = ("1. From the dropdown menus select wells/columns "
-                            "for ethanol (2_purification script) and SOC media "
-                            "(4_transformation script)."
-                           )
-    __INSTRUCTION_STEP_2 = ("2. Specify the labware IDs to be used. Leave values "
-                            "as they are to use the default ones.")
-    __INSTRUCTION_STEP_3 = ("3. Specify parameters for the purification step.")
-    __INSTRUCTION_STEP_4 = ("4. Specify parameters for the transformation step.")
-    __INSTRUCTION_STEP_5 = ("5. Select the CSV file describing constructs.")
-    __INSTRUCTION_STEP_6 = ("6. Select up to 6 csv files describing plates "
-                            "containing BASIC parts and linkers. If all files "
-                            "are not within one folder, absolute paths should "
-                            "be given.")
+    __APP_TITLE = "DNABot App"
     __APP_FONT = ("Helvetica", 12)
     __TROUGH_WELLS = ['A{}'.format(x + 1) for x in range(12)]
 
@@ -110,15 +95,31 @@ class GUI:
         self.user_settings = user_settings
         self.quit_status = False
 
-        # Intro
+        # Intro ===============================================================
         irow = 0
-        intro = tk.Message(self.frame, text=GUI.__INTRO_TEXT, width=600)
+        intro = tk.Message(
+            self.frame,
+            text=(
+                "Welcome to the dnabot App! Please follow these "
+                "instructions to create the 4 DNA-BOT scripts:"),
+            width=600)
         intro.grid(row=irow, columnspan=2, padx=5, pady=15)
 
-        # Step 1 -- Ethanol & SOC media
+        # Sep =================================================================
         irow += 1
-        step_1 = tk.Message(self.frame, text=GUI.__INSTRUCTION_STEP_1, width=600, anchor='w')
-        step_1.grid(row=irow, columnspan=2, padx=5, pady=10, sticky='w')
+        self.__add_separator(irow)
+
+        # Ethanol & SOC media =================================================
+        irow += 1
+        message_1 = tk.Message(
+            self.frame,
+            text=(
+                "1. From the dropdown menus select wells/columns "
+                "for ethanol (2_purification script) and SOC media "
+                "(4_transformation script)."),
+            width=600,
+            anchor='w')
+        message_1.grid(row=irow, columnspan=2, padx=5, pady=10, sticky='w')
 
         irow += 1
         etoh_well_label = tk.Label(self.frame, text='Trough well for ethanol during purification:', font=GUI.__APP_FONT)
@@ -138,10 +139,20 @@ class GUI:
         soc_w.grid(row=irow, column=1, sticky='w')
         soc_w.config(font=GUI.__APP_FONT)
 
-        # Step 2 -- Labware IDs
+        # Sep =================================================================
         irow += 1
-        step_2 = tk.Message(self.frame, text=GUI.__INSTRUCTION_STEP_2, width=600, anchor='w')
-        step_2.grid(row=irow, columnspan=2, padx=5, pady=10, sticky='w')
+        self.__add_separator(irow)
+
+        # Labware IDs =========================================================
+        irow += 1
+        message_2 = tk.Message(
+            self.frame,
+            text=(
+                "2. Specify the labware IDs to be used. Leave values "
+                "as they are to use the default ones."),
+            width=600,
+            anchor='w')
+        message_2.grid(row=irow, columnspan=2, padx=5, pady=10, sticky='w')
 
         # Opentrons P20 Single-Channel Electronic Pipette
         irow += 1
@@ -222,10 +233,43 @@ class GUI:
             labware_id="12_corning_wellplate",
             irow=irow)
         
-        # Step 3 -- Parameters for the purification step
+        # Sep =================================================================
         irow += 1
-        step_3 = tk.Message(self.frame, text=GUI.__INSTRUCTION_STEP_3, width=600, anchor='w')
-        step_3.grid(row=irow, columnspan=2, padx=5, pady=10, sticky='w')
+        self.__add_separator(irow)
+
+        # Parameters for the clip reaction step ===============================
+        irow += 1
+        message_3 = tk.Message(
+            self.frame,
+            text="3. Specify parameters for the clip reaction step.",
+            width=600,
+            anchor='w')
+        message_3.grid(row=irow, columnspan=2, padx=5, pady=10, sticky='w')
+        irow += 1
+        self.param_clip_thermo_lid_closed = self.__make_parameter_entry(
+            label="Should the sample be kept cool (4°C) overnight?",
+            parameter_id="clip_keep_sample_overnight",
+            irow=irow,
+            parameter_value="keep")
+        irow += 1
+        self.param_clip_thermo_lid_closed_duration = self.__make_parameter_entry(
+            label="How long should the lid stay cool and closed?",
+            parameter_id="clip_keep_sample_overnight",
+            irow=irow,
+            parameter_value="duration")
+
+        # Sep =================================================================
+        irow += 1
+        self.__add_separator(irow)
+
+        # Parameters for the purification step ================================
+        irow += 1
+        message_4 = tk.Message(
+            self.frame,
+            text="3. Specify parameters for the purification step.",
+            width=600,
+            anchor='w')
+        message_4.grid(row=irow, columnspan=2, padx=5, pady=10, sticky='w')
         irow += 1
         self.param_purif_magdeck_height = self.__make_parameter_entry(
             label="Magnetic module height (mm)",
@@ -262,10 +306,18 @@ class GUI:
             parameter_id="purif_elution_time",
             irow=irow)
 
-        # Step 4 -- Parameters for the transformation step
+        # Sep =================================================================
         irow += 1
-        step_4 = tk.Message(self.frame, text=GUI.__INSTRUCTION_STEP_4, width=600, anchor='w')
-        step_4.grid(row=irow, columnspan=2, padx=5, pady=10, sticky='w')
+        self.__add_separator(irow)
+
+        # Parameters for the transformation step ==============================
+        irow += 1
+        message_5 = tk.Message(
+            self.frame,
+            text="4. Specify parameters for the transformation step.",
+            width=600,
+            anchor='w')
+        message_5.grid(row=irow, columnspan=2, padx=5, pady=10, sticky='w')
         irow += 1
         self.param_transfo_incubation_temp = self.__make_parameter_entry(
             label="Incubation temperature (°C)",
@@ -277,26 +329,50 @@ class GUI:
             parameter_id="transfo_incubation_time",
             irow=irow)
 
-        # Step 5 -- Construct CSV file
+        # Sep =================================================================
         irow += 1
-        step_5 = tk.Message(self.frame, text=GUI.__INSTRUCTION_STEP_5, width=600, anchor='w')
-        step_5.grid(row=irow, columnspan=2, padx=5, pady=10, sticky='w')
+        self.__add_separator(irow)
+
+        # Construct CSV file ==================================================
+        irow += 1
+        message_6 = tk.Message(
+            self.frame,
+            text="5. Select the CSV file describing constructs.",
+            width=600,
+            anchor='w')
+        message_6.grid(row=irow, columnspan=2, padx=5, pady=10, sticky='w')
         irow += 1
         self.construct_file_selector = FileSelector(self.frame, irow, title='Construct CSV file', multiple_files=False)
         irow = self.construct_file_selector.irow
 
-        # Step 6 -- Source CSV files
+        # Sep =================================================================
         irow += 1
-        step_6 = tk.Message(self.frame, text=GUI.__INSTRUCTION_STEP_6, width=600, anchor='w')
-        step_6.grid(row=irow, columnspan=2, padx=5, pady=10, sticky='w')
+        self.__add_separator(irow)
+
+        # Source CSV files ====================================================
+        irow += 1
+        message_7 = tk.Message(
+            self.frame,
+            text=(
+                "6. Select up to 6 csv files describing plates "
+                "containing BASIC parts and linkers. If all files "
+                "are not within one folder, absolute paths should "
+                "be given."),
+            width=600,
+            anchor='w')
+        message_7.grid(row=irow, columnspan=2, padx=5, pady=10, sticky='w')
         irow += 1
         self.source_files_selector = FileSelector(self.frame, irow, title='Source CSV files', multiple_files=True)
         irow = self.source_files_selector.irow
 
-        # White space
+        # Sep =================================================================
         irow += 1
-        spacer = tk.Label(self.frame, text="", font=GUI.__APP_FONT)
-        spacer.grid(row=irow, columnspan=2, padx=5, pady=10)
+        self.__add_separator(irow)
+
+        # # White space
+        # irow += 1
+        # spacer = tk.Label(self.frame, text="", font=GUI.__APP_FONT)
+        # spacer.grid(row=irow, columnspan=2, padx=5, pady=10)
 
         # Quit and generate buttons
         irow += 1
@@ -355,14 +431,24 @@ class GUI:
         labware_label = tk.Label(self.frame, text=label, font=GUI.__APP_FONT)
         labware_label.grid(row=irow, column=0, sticky='e')
         labware_entry = tk.Entry(self.frame, width=30)
-        labware_entry.insert(0, self.user_settings['labwares'][labware_id]['id'])
+        labware_entry.insert(0, self.user_settings["labwares"][labware_id]['id'])
         labware_entry.grid(row=irow, column=1, sticky='w')
         return labware_entry
 
-    def __make_parameter_entry(self, label, parameter_id, irow):
+    def __make_parameter_entry(self, label, parameter_id, irow, parameter_value="value"):
         parameter_label = tk.Label(self.frame, text=label, font=GUI.__APP_FONT)
         parameter_label.grid(row=irow, column=0, sticky='e')
         parameter_entry = tk.Entry(self.frame, width=30)
-        parameter_entry.insert(0, self.user_settings['parameters'][parameter_id]['value'])
+        parameter_entry.insert(0, self.user_settings["parameters"][parameter_id][parameter_value])
         parameter_entry.grid(row=irow, column=1, sticky='w')
         return parameter_entry
+
+    def __add_separator(self, irow):
+        ttk.Separator(
+            self.frame,
+            orient=tk.HORIZONTAL
+        ).grid(
+            row=irow,
+            columnspan=2,
+            sticky="ew"
+        )
