@@ -14,7 +14,7 @@ import numpy as np
 
 metadata = {
      'apiLevel': '2.8',
-     'protocolName': 'Transformation',
+     'protocolName': 'DNABOT Step 4: Transformation with thermocycler and 12 wellplate',
      'description': 'Transformation reactions using an opentrons OT-2 for BASIC assembly.'}
 
 
@@ -26,7 +26,7 @@ metadata = {
 spotting_tuples=[(('A1', 'B1', 'C1'), ('A1', 'B1', 'C1'), (40, 40, 40))]
 soc_well='A1'
 __LABWARES={"p20_single": {"id": "p20_single_gen2"}, "p300_multi": {"id": "p300_multi_gen2"}, "mag_deck": {"id": "magdeck"}, "96_tiprack_20ul": {"id": "opentrons_96_tiprack_20ul"}, "96_tiprack_300ul": {"id": "opentrons_96_tiprack_300ul"}, "24_tuberack_1500ul": {"id": "e14151500starlab_24_tuberack_1500ul"}, "96_wellplate_200ul_pcr_step_14": {"id": "4ti0960rig_96_wellplate_200ul"}, "96_wellplate_200ul_pcr_step_23": {"id": "4ti0960rig_96_wellplate_200ul"}, "agar_plate_step_4": {"id": "4ti0960rig_96_wellplate_200ul"}, "12_reservoir_21000ul": {"id": "4ti0131_12_reservoir_21000ul"}, "96_deepwellplate_2ml": {"id": "4ti0136_96_wellplate_2200ul"}, "12_corning_wellplate": {"id": "corning_12_wellplate_6.9ml_flat"}}
-__PARAMETERS={"purif_magdeck_height": {"value": 20}, "purif_wash_time": {"value": 0.5}, "purif_bead_ratio": {"value": 1.8}, "purif_incubation_time": {"value": 5}, "purif_settling_time": {"value": 2}, "purif_drying_time": {"value": 5}, "purif_elution_time": {"value": 2}, "transfo_incubation_temp": {"value": 4}, "transfo_incubation_time": {"value": 20}}
+__PARAMETERS={"clip_keep_sample_overnight": {"value": 0}, "purif_magdeck_height": {"value": 20}, "purif_wash_time": {"value": 0.5}, "purif_bead_ratio": {"value": 1.8}, "purif_incubation_time": {"value": 5}, "purif_settling_time": {"value": 2}, "purif_drying_time": {"value": 5}, "purif_elution_time": {"value": 2}, "transfo_incubation_temp": {"value": 4}, "transfo_incubation_time": {"value": 20}}
 
 
 def run(protocol: protocol_api.ProtocolContext):

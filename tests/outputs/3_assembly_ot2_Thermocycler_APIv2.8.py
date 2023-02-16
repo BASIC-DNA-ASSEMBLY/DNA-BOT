@@ -2,9 +2,9 @@ from opentrons import protocol_api
 import numpy as np
 # metadata
 metadata = {
-'protocolName': 'DNABOT Assembly Thermocycler',
-'description': 'DNABOT Assembly Step3 with Thermocycler',
-'apiLevel': '2.8'
+    'protocolName': 'DNABOT Step 3: Assembly with thermocycler',
+    'description': 'DNABOT Step 3: Assembly with thermocycler',
+    'apiLevel': '2.8'
 }
 
 # It is possible to run 88 assemblies with this new module. The heat block module is removed. 
@@ -28,7 +28,9 @@ __LABWARES={"p20_single": {"id": "p20_single_gen2"}, "p300_multi": {"id": "p300_
 
 
 def run(protocol: protocol_api.ProtocolContext):
+
     def final_assembly(final_assembly_dict, tiprack_num, tiprack_type=__LABWARES['96_tiprack_20ul']['id']):
+        
             # Constants, we update all the labware name in version 2
             #Tiprack
             CANDIDATE_TIPRACK_SLOTS = ['2', '3', '5', '6', '9']
