@@ -86,9 +86,10 @@ labwares:
 parameters:
 
   # Clip reaction step ####################################
-  # How long to keep at 4°C samples at the end of the execution?
-  clip_keep_sample_overnight:
-    value: 0  # in minutes
+  # Keep the thermocycler lid closed at 4°C at the end of execution?
+  # 1 for yes, 0 for no
+  clip_keep_thermo_lid_closed:
+    value: 0
 
   # Purification step #####################################
   # Magnetic module height (mm) - purification step

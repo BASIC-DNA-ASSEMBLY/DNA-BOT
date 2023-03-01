@@ -190,70 +190,60 @@ class GUI:
             label="Opentrons 300μL tips rack",
             labware_id='96_tiprack_300ul',
             irow=irow)
-
         # Clip reaction source plate (steps: clip)
         irow += 1
         self.labware_clip_source_plate_entry = self.__make_labware_entry(
             label="Clip reaction source plate (steps: clip)",
             labware_id='clip_source_plate',
             irow=irow)
-
         # Clip reaction plate (steps: clip, purif, assembly)
         irow += 1
         self.labware_clip_plate_entry = self.__make_labware_entry(
             label="Clip reaction plate (steps: clip, purification, assembly)",
             labware_id='clip_plate',
             irow=irow)
-
         # Mix plate (step: purification)
         irow += 1
         self.labware_mix_plate_entry = self.__make_labware_entry(
             label="Mix plate (step purification)",
             labware_id='mix_plate',
             irow=irow)
-
         # Final assembly plate (steps: assembly, transformation)
         irow += 1
         self.labware_final_assembly_plate_entry = self.__make_labware_entry(
             label="Final assembly plate (steps: assembly, transformation)",
             labware_id='final_assembly_plate',
             irow=irow)
-
         # Transformation plate (step: transformation)
         irow += 1
         self.labware_transfo_plate_entry = self.__make_labware_entry(
             label="Transformation plate (step: transformation)",
             labware_id='transfo_plate',
             irow=irow)
-
         # Transformation plate without thermocycler (step: transformation)
         irow += 1
         self.labware_transfo_plate_wo_thermo_entry = self.__make_labware_entry(
             label="Transformation plate without thermocycler (step: transformation)",
             labware_id='transfo_plate_wo_thermo',
             irow=irow)
-
         # Agar plate (transformation step)
         irow += 1
         self.agar_plate_entry = self.__make_labware_entry(
             label="Agar plate (transformation step)",
             labware_id='agar_plate',
             irow=irow)
-
         # Reservoir plate 21 mL 12 channels
         irow += 1
         self.labware_12_reservoir_21000ul_entry = self.__make_labware_entry(
             label="Reservoir plate 21 mL 12 channels",
             labware_id='12_reservoir_21000ul',
             irow=irow)
-
         # 96 deep well plate 2 mL wells
         irow += 1
         self.labware_96_deepwellplate_2ml_entry = self.__make_labware_entry(
             label="96 deep well plate 2 mL wells",
             labware_id='96_deepwellplate_2ml',
             irow=irow)
-
         # Corning 12 Well Plate 6.9 mL Flat
         irow += 1
         self.labware_12_corning_wellplate_entry = self.__make_labware_entry(
@@ -275,8 +265,8 @@ class GUI:
         message_3.grid(row=irow, columnspan=2, padx=5, pady=10, sticky='w')
         irow += 1
         self.param_clip_thermo_lid_closed = self.__make_parameter_entry(
-            label="How long to keep at 4°C samples at the end of the execution? (in minutes)",
-            parameter_id="clip_keep_sample_overnight",
+            label="Keep the thermocycler lid closed at 4°C at the end of execution? \n (1 for yes, 0 for no)",
+            parameter_id="clip_keep_thermo_lid_closed",
             irow=irow)
 
         # Sep =================================================================
@@ -418,26 +408,27 @@ class GUI:
         # Step 1
         self.user_settings['etoh_well'] = self.etoh_well.get()
         self.user_settings['soc_column'] = self.soc_column.get()
-        # Step 2
+
+        # Labware IDs
         self.user_settings['labwares']['p20_single']['id'] = self.labware_p10_single_entry.get()
         self.user_settings['labwares']['p300_multi']['id'] = self.labware_p300_multi_entry.get()
         self.user_settings['labwares']['mag_deck']['id'] = self.labware_mag_deck_entry.get()
         self.user_settings['labwares']['24_tuberack_1500ul']['id'] = self.labware_24_tuberack_1500ul_entry.get()
         self.user_settings['labwares']['96_tiprack_20ul']['id'] = self.labware_96_tiprack_20ul_entry.get()
         self.user_settings['labwares']['96_tiprack_300ul']['id'] = self.labware_96_tiprack_300ul_entry.get()
-
         self.user_settings['labwares']['clip_source_plate']['id'] = self.labware_clip_source_plate_entry.get()
         self.user_settings['labwares']['clip_plate']['id'] = self.labware_clip_plate_entry.get()
         self.user_settings['labwares']['mix_plate']['id'] = self.labware_mix_plate_entry.get()
         self.user_settings['labwares']['final_assembly_plate']['id'] = self.labware_final_assembly_plate_entry.get()
         self.user_settings['labwares']['transfo_plate']['id'] = self.labware_transfo_plate_entry.get()
         self.user_settings['labwares']['transfo_plate_wo_thermo']['id'] = self.labware_transfo_plate_wo_thermo_entry.get()
-
         self.user_settings['labwares']['agar_plate']['id'] = self.agar_plate_entry.get()
         self.user_settings['labwares']['12_reservoir_21000ul']['id'] = self.labware_12_reservoir_21000ul_entry.get()
         self.user_settings['labwares']['96_deepwellplate_2ml']['id'] = self.labware_96_deepwellplate_2ml_entry.get()
         self.user_settings['labwares']['12_corning_wellplate']['id'] = self.labware_12_corning_wellplate_entry.get()
-        # Step 3
+        # Parameters for the clip reaction step
+        self.user_settings["parameters"]["clip_keep_thermo_lid_closed"]["value"] = to_numeric_value(self.param_clip_thermo_lid_closed.get())
+        # Parameters for the purification step
         self.user_settings['parameters']['purif_magdeck_height']['value'] = to_numeric_value(self.param_purif_magdeck_height.get())
         self.user_settings['parameters']['purif_wash_time']['value'] = to_numeric_value(self.param_purif_wash_time.get())
         self.user_settings['parameters']['purif_bead_ratio']['value'] = to_numeric_value(self.param_purif_bead_ratio.get())
@@ -445,19 +436,19 @@ class GUI:
         self.user_settings['parameters']['purif_settling_time']['value'] = to_numeric_value(self.param_purif_settling_time.get())
         self.user_settings['parameters']['purif_drying_time']['value'] = to_numeric_value(self.param_purif_drying_time.get())
         self.user_settings['parameters']['purif_elution_time']['value'] = to_numeric_value(self.param_purif_elution_time.get())
-        # Step 4
+        # Parameters for the transformation step
         self.user_settings['parameters']['transfo_incubation_temp']['value'] = to_numeric_value(self.param_transfo_incubation_temp.get())
         self.user_settings['parameters']['transfo_incubation_time']['value'] = to_numeric_value(self.param_transfo_incubation_time.get())
-        # Step 5
+        # Construct CSV file
         self.user_settings['construct_path'] = self.construct_file_selector.get()
-        # Step 6
+        # Source CSV files
         self.user_settings['sources_paths'] = self.source_files_selector.get()
         self.root.quit()
 
     def __make_labware_entry(self, label, labware_id, irow):
         labware_label = tk.Label(self.frame, text=label, font=GUI.__APP_FONT)
         labware_label.grid(row=irow, column=0, sticky='e')
-        labware_entry = tk.Entry(self.frame, width=28)
+        labware_entry = tk.Entry(self.frame, width=30)
         labware_entry.insert(0, self.user_settings["labwares"][labware_id]['id'])
         labware_entry.grid(row=irow, column=1, sticky='w')
         return labware_entry
@@ -465,7 +456,7 @@ class GUI:
     def __make_parameter_entry(self, label, parameter_id, irow, parameter_value="value"):
         parameter_label = tk.Label(self.frame, text=label, font=GUI.__APP_FONT)
         parameter_label.grid(row=irow, column=0, sticky='e')
-        parameter_entry = tk.Entry(self.frame, width=28)
+        parameter_entry = tk.Entry(self.frame, width=30)
         parameter_entry.insert(0, self.user_settings["parameters"][parameter_id][parameter_value])
         parameter_entry.grid(row=irow, column=1, sticky='w')
         return parameter_entry
