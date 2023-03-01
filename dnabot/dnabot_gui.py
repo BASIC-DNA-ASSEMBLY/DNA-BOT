@@ -114,7 +114,7 @@ class GUI:
         message_1 = tk.Message(
             self.frame,
             text=(
-                "1. From the dropdown menus select wells/columns "
+                "1 - From the dropdown menus select wells/columns "
                 "for ethanol (2_purification script) and SOC media "
                 "(4_transformation script)."),
             width=600,
@@ -148,7 +148,7 @@ class GUI:
         message_2 = tk.Message(
             self.frame,
             text=(
-                "2. Specify the labware IDs to be used. Leave values "
+                "2 - Specify the labware IDs to be used. Leave values "
                 "as they are to use the default ones."),
             width=600,
             anchor='w')
@@ -259,7 +259,7 @@ class GUI:
         irow += 1
         message_3 = tk.Message(
             self.frame,
-            text="3. Specify parameters for the clip reaction step.",
+            text="3 - Specify parameters for the clip reaction step.",
             width=600,
             anchor='w')
         message_3.grid(row=irow, columnspan=2, padx=5, pady=10, sticky='w')
@@ -277,7 +277,7 @@ class GUI:
         irow += 1
         message_4 = tk.Message(
             self.frame,
-            text="3. Specify parameters for the purification step.",
+            text="4 - Specify parameters for the purification step.",
             width=600,
             anchor='w')
         message_4.grid(row=irow, columnspan=2, padx=5, pady=10, sticky='w')
@@ -325,7 +325,7 @@ class GUI:
         irow += 1
         message_5 = tk.Message(
             self.frame,
-            text="4. Specify parameters for the transformation step.",
+            text="5 - Specify parameters for the transformation step.",
             width=600,
             anchor='w')
         message_5.grid(row=irow, columnspan=2, padx=5, pady=10, sticky='w')
@@ -348,7 +348,7 @@ class GUI:
         irow += 1
         message_6 = tk.Message(
             self.frame,
-            text="5. Select the CSV file describing constructs.",
+            text="6 - Select the CSV file describing constructs.",
             width=600,
             anchor='w')
         message_6.grid(row=irow, columnspan=2, padx=5, pady=10, sticky='w')
@@ -365,7 +365,7 @@ class GUI:
         message_7 = tk.Message(
             self.frame,
             text=(
-                "6. Select up to 6 csv files describing plates "
+                "7 - Select up to 6 csv files describing plates "
                 "containing BASIC parts and linkers. If all files "
                 "are not within one folder, absolute paths should "
                 "be given."),
