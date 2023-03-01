@@ -18,8 +18,8 @@ metadata = {
 # __LABWARES={"p20_single": {"id": "p20_single_gen2"}, "p300_multi": {"id": "p300_multi_gen2"}, "mag_deck": {"id": "magdeck"}, "96_tiprack_20ul": {"id": "opentrons_96_tiprack_20ul"}, "96_tiprack_300ul": {"id": "opentrons_96_tiprack_300ul"}, "24_tuberack_1500ul": {"id": "e14151500starlab_24_tuberack_1500ul"}, "96_wellplate_200ul_pcr_step_14": {"id": "4ti0960rig_96_wellplate_200ul"}, "96_wellplate_200ul_pcr_step_23": {"id": "4ti0960rig_96_wellplate_200ul"}, "agar_plate_step_4": {"id": "4ti0960rig_96_wellplate_200ul"}, "12_reservoir_21000ul": {"id": "4ti0131_12_reservoir_21000ul"}, "96_deepwellplate_2ml": {"id": "4ti0136_96_wellplate_2200ul"}}
 
 clips_dict={"prefixes_wells": ["B8", "B7", "C5", "C12", "C7", "B7", "C4", "C9", "C10", "B7", "C8", "C11", "C5"], "prefixes_plates": ["2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2"], "suffixes_wells": ["A7", "C1", "C3", "C2", "A8", "C1", "C2", "C3", "A8", "C2", "C3", "C1", "A8"], "suffixes_plates": ["2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2"], "parts_wells": ["A1", "A10", "A3", "A11", "A6", "A9", "A2", "A5", "A7", "A10", "A8", "A4", "A12"], "parts_plates": ["5", "5", "5", "5", "5", "5", "5", "5", "5", "5", "5", "5", "5"], "parts_vols": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], "water_vols": [7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0]}
-__LABWARES={"p20_single": {"id": "p20_single_gen2"}, "p300_multi": {"id": "p300_multi_gen2"}, "mag_deck": {"id": "magdeck"}, "96_tiprack_20ul": {"id": "opentrons_96_tiprack_20ul"}, "96_tiprack_300ul": {"id": "opentrons_96_tiprack_300ul"}, "24_tuberack_1500ul": {"id": "e14151500starlab_24_tuberack_1500ul"}, "96_wellplate_200ul_pcr_step_14": {"id": "4ti0960rig_96_wellplate_200ul"}, "96_wellplate_200ul_pcr_step_23": {"id": "4ti0960rig_96_wellplate_200ul"}, "agar_plate_step_4": {"id": "4ti0960rig_96_wellplate_200ul"}, "12_reservoir_21000ul": {"id": "4ti0131_12_reservoir_21000ul"}, "96_deepwellplate_2ml": {"id": "4ti0136_96_wellplate_2200ul"}, "12_corning_wellplate": {"id": "corning_12_wellplate_6.9ml_flat"}}
-__PARAMETERS={"clip_keep_sample_overnight": {"value": 0}, "purif_magdeck_height": {"value": 20}, "purif_wash_time": {"value": 0.5}, "purif_bead_ratio": {"value": 1.8}, "purif_incubation_time": {"value": 5}, "purif_settling_time": {"value": 2}, "purif_drying_time": {"value": 5}, "purif_elution_time": {"value": 2}, "transfo_incubation_temp": {"value": 4}, "transfo_incubation_time": {"value": 20}}
+__LABWARES={"p20_single": {"id": "p20_single_gen2"}, "p300_multi": {"id": "p300_multi_gen2"}, "mag_deck": {"id": "magdeck"}, "96_tiprack_20ul": {"id": "opentrons_96_tiprack_20ul"}, "96_tiprack_300ul": {"id": "opentrons_96_tiprack_300ul"}, "24_tuberack_1500ul": {"id": "e14151500starlab_24_tuberack_1500ul"}, "clip_source_plate": {"id": "4ti0960rig_96_wellplate_200ul"}, "clip_plate": {"id": "4ti0960rig_96_wellplate_200ul"}, "mix_plate": {"id": "4ti0960rig_96_wellplate_200ul"}, "final_assembly_plate": {"id": "4ti0960rig_96_wellplate_200ul"}, "transfo_plate": {"id": "4ti0960rig_96_wellplate_200ul"}, "transfo_plate_wo_thermo": {"id": "4ti0960rig_96_wellplate_200ul"}, "agar_plate": {"id": "4ti0960rig_96_wellplate_200ul"}, "12_reservoir_21000ul": {"id": "4ti0131_12_reservoir_21000ul"}, "96_deepwellplate_2ml": {"id": "4ti0136_96_wellplate_2200ul"}, "12_corning_wellplate": {"id": "corning_12_wellplate_6.9ml_flat"}}
+__PARAMETERS={"clip_keep_thermo_lid_closed": {"value": 0}, "purif_magdeck_height": {"value": 20}, "purif_wash_time": {"value": 0.5}, "purif_bead_ratio": {"value": 1.8}, "purif_incubation_time": {"value": 5}, "purif_settling_time": {"value": 2}, "purif_drying_time": {"value": 5}, "purif_elution_time": {"value": 2}, "transfo_incubation_temp": {"value": 4}, "transfo_incubation_time": {"value": 20}}
 
 
 def run(protocol: protocol_api.ProtocolContext):
@@ -43,12 +43,12 @@ def run(protocol: protocol_api.ProtocolContext):
     #Thermocycler Module
     tc_mod = protocol.load_module('Thermocycler Module')
     # Destination Plates
-    DESTINATION_PLATE_TYPE = __LABWARES['96_wellplate_200ul_pcr_step_14']['id']
+    DESTINATION_PLATE_TYPE = __LABWARES['clip_plate']['id']
     # Loads destination plate onto Thermocycler Module
     destination_plate = tc_mod.load_labware(DESTINATION_PLATE_TYPE)
 
     # Source Plates
-    SOURCE_PLATE_TYPE = __LABWARES['96_wellplate_200ul_pcr_step_14']['id']
+    SOURCE_PLATE_TYPE = __LABWARES['clip_source_plate']['id']
             # modified from custom labware as API 2 doesn't support labware.create anymore, so the old add_labware script can't be used
 
     # Tube Rack
@@ -151,11 +151,13 @@ def run(protocol: protocol_api.ProtocolContext):
     tc_mod.set_block_temperature(60, hold_time_minutes=10, block_max_volume=30)
     tc_mod.set_block_temperature(4, hold_time_minutes=2, block_max_volume=30)
     #Q Does block_max_volume define total volume in block or individual wells?
-    if "clip_keep_sample_overnight" > 0:
+    if __PARAMETERS["clip_keep_thermo_lid_closed"] == 1:
+        protocol.comment("The execution is over. The thermocycler lid will stay closed at 4°C until you stop the script.")
         tc_mod.deactivate_lid()
         tc_mod.set_block_temperature(
             temperature=4,
-            hold_time_minutes=__PARAMETERS["clip_keep_sample_overnight"],
-            block_max_volume=30)
-    tc_mod.set_lid_temperature(37)
-    tc_mod.open_lid()
+            hold_time_minutes=10080
+        )
+    else:
+        tc_mod.set_lid_temperature(37)
+        tc_mod.open_lid()

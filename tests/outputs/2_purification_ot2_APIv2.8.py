@@ -21,8 +21,8 @@ metadata = {
 
 sample_number=13
 ethanol_well='A11'
-__LABWARES={"p20_single": {"id": "p20_single_gen2"}, "p300_multi": {"id": "p300_multi_gen2"}, "mag_deck": {"id": "magdeck"}, "96_tiprack_20ul": {"id": "opentrons_96_tiprack_20ul"}, "96_tiprack_300ul": {"id": "opentrons_96_tiprack_300ul"}, "24_tuberack_1500ul": {"id": "e14151500starlab_24_tuberack_1500ul"}, "96_wellplate_200ul_pcr_step_14": {"id": "4ti0960rig_96_wellplate_200ul"}, "96_wellplate_200ul_pcr_step_23": {"id": "4ti0960rig_96_wellplate_200ul"}, "agar_plate_step_4": {"id": "4ti0960rig_96_wellplate_200ul"}, "12_reservoir_21000ul": {"id": "4ti0131_12_reservoir_21000ul"}, "96_deepwellplate_2ml": {"id": "4ti0136_96_wellplate_2200ul"}, "12_corning_wellplate": {"id": "corning_12_wellplate_6.9ml_flat"}}
-__PARAMETERS={"clip_keep_sample_overnight": {"value": 0}, "purif_magdeck_height": {"value": 20}, "purif_wash_time": {"value": 0.5}, "purif_bead_ratio": {"value": 1.8}, "purif_incubation_time": {"value": 5}, "purif_settling_time": {"value": 2}, "purif_drying_time": {"value": 5}, "purif_elution_time": {"value": 2}, "transfo_incubation_temp": {"value": 4}, "transfo_incubation_time": {"value": 20}}
+__LABWARES={"p20_single": {"id": "p20_single_gen2"}, "p300_multi": {"id": "p300_multi_gen2"}, "mag_deck": {"id": "magdeck"}, "96_tiprack_20ul": {"id": "opentrons_96_tiprack_20ul"}, "96_tiprack_300ul": {"id": "opentrons_96_tiprack_300ul"}, "24_tuberack_1500ul": {"id": "e14151500starlab_24_tuberack_1500ul"}, "clip_source_plate": {"id": "4ti0960rig_96_wellplate_200ul"}, "clip_plate": {"id": "4ti0960rig_96_wellplate_200ul"}, "mix_plate": {"id": "4ti0960rig_96_wellplate_200ul"}, "final_assembly_plate": {"id": "4ti0960rig_96_wellplate_200ul"}, "transfo_plate": {"id": "4ti0960rig_96_wellplate_200ul"}, "transfo_plate_wo_thermo": {"id": "4ti0960rig_96_wellplate_200ul"}, "agar_plate": {"id": "4ti0960rig_96_wellplate_200ul"}, "12_reservoir_21000ul": {"id": "4ti0131_12_reservoir_21000ul"}, "96_deepwellplate_2ml": {"id": "4ti0136_96_wellplate_2200ul"}, "12_corning_wellplate": {"id": "corning_12_wellplate_6.9ml_flat"}}
+__PARAMETERS={"clip_keep_thermo_lid_closed": {"value": 0}, "purif_magdeck_height": {"value": 20}, "purif_wash_time": {"value": 0.5}, "purif_bead_ratio": {"value": 1.8}, "purif_incubation_time": {"value": 5}, "purif_settling_time": {"value": 2}, "purif_drying_time": {"value": 5}, "purif_elution_time": {"value": 2}, "transfo_incubation_temp": {"value": 4}, "transfo_incubation_time": {"value": 20}}
 
 
 def run(protocol: protocol_api.ProtocolContext):
@@ -73,7 +73,7 @@ def run(protocol: protocol_api.ProtocolContext):
         MAGDECK_POSITION = '1'
 
         # Mix Plate
-        MIX_PLATE_TYPE = __LABWARES['96_wellplate_200ul_pcr_step_23']['id']
+        MIX_PLATE_TYPE = __LABWARES['mix_plate']['id']
             # modified from custom labware as API 2 doesn't support labware.create anymore, so the old add_labware script can't be used
             # also acts as the type of plate loaded onto the magnetic module
         MIX_PLATE_POSITION = '4'

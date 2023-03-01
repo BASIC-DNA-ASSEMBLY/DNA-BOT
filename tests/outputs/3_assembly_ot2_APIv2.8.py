@@ -20,7 +20,7 @@ metadata = {
 
 final_assembly_dict={"A1": ["A7", "B7", "C7", "D7", "E7"], "B1": ["A7", "F7", "G7", "H7", "A8"], "C1": ["A7", "B8", "C8", "D8", "E8"]}
 tiprack_num=1
-__LABWARES={"p20_single": {"id": "p20_single_gen2"}, "p300_multi": {"id": "p300_multi_gen2"}, "mag_deck": {"id": "magdeck"}, "96_tiprack_20ul": {"id": "opentrons_96_tiprack_20ul"}, "96_tiprack_300ul": {"id": "opentrons_96_tiprack_300ul"}, "24_tuberack_1500ul": {"id": "e14151500starlab_24_tuberack_1500ul"}, "96_wellplate_200ul_pcr_step_14": {"id": "4ti0960rig_96_wellplate_200ul"}, "96_wellplate_200ul_pcr_step_23": {"id": "4ti0960rig_96_wellplate_200ul"}, "agar_plate_step_4": {"id": "4ti0960rig_96_wellplate_200ul"}, "12_reservoir_21000ul": {"id": "4ti0131_12_reservoir_21000ul"}, "96_deepwellplate_2ml": {"id": "4ti0136_96_wellplate_2200ul"}, "12_corning_wellplate": {"id": "corning_12_wellplate_6.9ml_flat"}}
+__LABWARES={"p20_single": {"id": "p20_single_gen2"}, "p300_multi": {"id": "p300_multi_gen2"}, "mag_deck": {"id": "magdeck"}, "96_tiprack_20ul": {"id": "opentrons_96_tiprack_20ul"}, "96_tiprack_300ul": {"id": "opentrons_96_tiprack_300ul"}, "24_tuberack_1500ul": {"id": "e14151500starlab_24_tuberack_1500ul"}, "clip_source_plate": {"id": "4ti0960rig_96_wellplate_200ul"}, "clip_plate": {"id": "4ti0960rig_96_wellplate_200ul"}, "mix_plate": {"id": "4ti0960rig_96_wellplate_200ul"}, "final_assembly_plate": {"id": "4ti0960rig_96_wellplate_200ul"}, "transfo_plate": {"id": "4ti0960rig_96_wellplate_200ul"}, "transfo_plate_wo_thermo": {"id": "4ti0960rig_96_wellplate_200ul"}, "agar_plate": {"id": "4ti0960rig_96_wellplate_200ul"}, "12_reservoir_21000ul": {"id": "4ti0131_12_reservoir_21000ul"}, "96_deepwellplate_2ml": {"id": "4ti0136_96_wellplate_2200ul"}, "12_corning_wellplate": {"id": "corning_12_wellplate_6.9ml_flat"}}
 
 
 def run(protocol: protocol_api.ProtocolContext):
@@ -30,13 +30,13 @@ def run(protocol: protocol_api.ProtocolContext):
             CANDIDATE_TIPRACK_SLOTS = ['3', '6', '9', '2', '5', '8', '11']
             PIPETTE_MOUNT = 'right'
             #Plate of sample after  purification
-            MAG_PLATE_TYPE = __LABWARES['96_wellplate_200ul_pcr_step_23']['id']
+            MAG_PLATE_TYPE = __LABWARES['clip_plate']['id']
             MAG_PLATE_POSITION = '1'
             #Tuberack
             TUBE_RACK_TYPE = __LABWARES['24_tuberack_1500ul']['id']
             TUBE_RACK_POSITION = '7'
             #Destination plate
-            DESTINATION_PLATE_TYPE = __LABWARES['96_wellplate_200ul_pcr_step_23']['id']
+            DESTINATION_PLATE_TYPE = __LABWARES['final_assembly_plate']['id']
             #Temperature control plate
             TEMPDECK_SLOT = '4'
             TEMP = 20
