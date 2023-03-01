@@ -191,25 +191,53 @@ class GUI:
             labware_id='96_tiprack_300ul',
             irow=irow)
 
-        # 96 well rigid PCR plate (clip and transformation steps)
+        # Clip reaction source plate (steps: clip)
         irow += 1
-        self.labware_96_wellplate_200ul_pcr_step_14_entry = self.__make_labware_entry(
-            label="96 well rigid PCR plate (clip and transformation steps)",
-            labware_id='96_wellplate_200ul_pcr_step_14',
+        self.labware_clip_source_plate_entry = self.__make_labware_entry(
+            label="Clip reaction source plate (steps: clip)",
+            labware_id='clip_source_plate',
             irow=irow)
 
-        # 96 well rigid PCR plate (purification step)
+        # Clip reaction plate (steps: clip, purif, assembly)
         irow += 1
-        self.labware_96_wellplate_200ul_pcr_step_23_entry = self.__make_labware_entry(
-            label="96 well rigid PCR plate (purification and assembly steps)",
-            labware_id='96_wellplate_200ul_pcr_step_23',
+        self.labware_clip_plate_entry = self.__make_labware_entry(
+            label="Clip reaction plate (steps: clip, purification, assembly)",
+            labware_id='clip_plate',
+            irow=irow)
+
+        # Mix plate (step: purification)
+        irow += 1
+        self.labware_mix_plate_entry = self.__make_labware_entry(
+            label="Mix plate (step purification)",
+            labware_id='mix_plate',
+            irow=irow)
+
+        # Final assembly plate (steps: assembly, transformation)
+        irow += 1
+        self.labware_final_assembly_plate_entry = self.__make_labware_entry(
+            label="Final assembly plate (steps: assembly, transformation)",
+            labware_id='final_assembly_plate',
+            irow=irow)
+
+        # Transformation plate (step: transformation)
+        irow += 1
+        self.labware_transfo_plate_entry = self.__make_labware_entry(
+            label="Transformation plate (step: transformation)",
+            labware_id='transfo_plate',
+            irow=irow)
+
+        # Transformation plate without thermocycler (step: transformation)
+        irow += 1
+        self.labware_transfo_plate_wo_thermo_entry = self.__make_labware_entry(
+            label="Transformation plate without thermocycler (step: transformation)",
+            labware_id='transfo_plate_wo_thermo',
             irow=irow)
 
         # Agar plate (transformation step)
         irow += 1
-        self.agar_plate_step_4_entry = self.__make_labware_entry(
+        self.agar_plate_entry = self.__make_labware_entry(
             label="Agar plate (transformation step)",
-            labware_id='agar_plate_step_4',
+            labware_id='agar_plate',
             irow=irow)
 
         # Reservoir plate 21 mL 12 channels
@@ -397,9 +425,15 @@ class GUI:
         self.user_settings['labwares']['24_tuberack_1500ul']['id'] = self.labware_24_tuberack_1500ul_entry.get()
         self.user_settings['labwares']['96_tiprack_20ul']['id'] = self.labware_96_tiprack_20ul_entry.get()
         self.user_settings['labwares']['96_tiprack_300ul']['id'] = self.labware_96_tiprack_300ul_entry.get()
-        self.user_settings['labwares']['96_wellplate_200ul_pcr_step_14']['id'] = self.labware_96_wellplate_200ul_pcr_step_14_entry.get()
-        self.user_settings['labwares']['96_wellplate_200ul_pcr_step_23']['id'] = self.labware_96_wellplate_200ul_pcr_step_23_entry.get()
-        self.user_settings['labwares']['agar_plate_step_4']['id'] = self.agar_plate_step_4_entry.get()
+
+        self.user_settings['labwares']['clip_source_plate']['id'] = self.labware_clip_source_plate_entry.get()
+        self.user_settings['labwares']['clip_plate']['id'] = self.labware_clip_plate_entry.get()
+        self.user_settings['labwares']['mix_plate']['id'] = self.labware_mix_plate_entry.get()
+        self.user_settings['labwares']['final_assembly_plate']['id'] = self.labware_final_assembly_plate_entry.get()
+        self.user_settings['labwares']['transfo_plate']['id'] = self.labware_transfo_plate_entry.get()
+        self.user_settings['labwares']['transfo_plate_wo_thermo']['id'] = self.labware_transfo_plate_wo_thermo_entry.get()
+
+        self.user_settings['labwares']['agar_plate']['id'] = self.agar_plate_entry.get()
         self.user_settings['labwares']['12_reservoir_21000ul']['id'] = self.labware_12_reservoir_21000ul_entry.get()
         self.user_settings['labwares']['96_deepwellplate_2ml']['id'] = self.labware_96_deepwellplate_2ml_entry.get()
         self.user_settings['labwares']['12_corning_wellplate']['id'] = self.labware_12_corning_wellplate_entry.get()

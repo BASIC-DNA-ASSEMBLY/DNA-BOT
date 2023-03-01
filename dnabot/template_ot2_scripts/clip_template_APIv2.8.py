@@ -37,11 +37,11 @@ def run(protocol: protocol_api.ProtocolContext):
         exit()
 
     # Source Plates
-    SOURCE_PLATE_TYPE = __LABWARES['96_wellplate_200ul_pcr_step_14']['id']
+    SOURCE_PLATE_TYPE = __LABWARES['clip_source_plate']['id']
             # modified from custom labware as API 2 doesn't support labware.create anymore, so the old add_labware script can't be used
 
     # Destination Plates
-    DESTINATION_PLATE_TYPE = __LABWARES['96_wellplate_200ul_pcr_step_14']['id']
+    DESTINATION_PLATE_TYPE = __LABWARES['clip_plate']['id']
     DESTINATION_PLATE_POSITION = "7"
             # INITIAL_DESTINATION_WELL constant removed, as destination_plate.wells() automatically starts from A1
 

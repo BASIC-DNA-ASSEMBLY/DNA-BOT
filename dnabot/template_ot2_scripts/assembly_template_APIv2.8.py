@@ -25,13 +25,13 @@ def run(protocol: protocol_api.ProtocolContext):
             CANDIDATE_TIPRACK_SLOTS = ['3', '6', '9', '2', '5', '8', '11']
             PIPETTE_MOUNT = 'right'
             #Plate of sample after  purification
-            MAG_PLATE_TYPE = __LABWARES['96_wellplate_200ul_pcr_step_23']['id']
+            MAG_PLATE_TYPE = __LABWARES['clip_plate']['id']
             MAG_PLATE_POSITION = '1'
             #Tuberack
             TUBE_RACK_TYPE = __LABWARES['24_tuberack_1500ul']['id']
             TUBE_RACK_POSITION = '7'
             #Destination plate
-            DESTINATION_PLATE_TYPE = __LABWARES['96_wellplate_200ul_pcr_step_23']['id']
+            DESTINATION_PLATE_TYPE = __LABWARES['final_assembly_plate']['id']
             #Temperature control plate
             TEMPDECK_SLOT = '4'
             TEMP = 20

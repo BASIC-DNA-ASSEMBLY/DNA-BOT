@@ -38,12 +38,12 @@ def run(protocol: protocol_api.ProtocolContext):
     #Thermocycler Module
     tc_mod = protocol.load_module('Thermocycler Module')
     # Destination Plates
-    DESTINATION_PLATE_TYPE = __LABWARES['96_wellplate_200ul_pcr_step_14']['id']
+    DESTINATION_PLATE_TYPE = __LABWARES['clip_plate']['id']
     # Loads destination plate onto Thermocycler Module
     destination_plate = tc_mod.load_labware(DESTINATION_PLATE_TYPE)
 
     # Source Plates
-    SOURCE_PLATE_TYPE = __LABWARES['96_wellplate_200ul_pcr_step_14']['id']
+    SOURCE_PLATE_TYPE = __LABWARES['clip_source_plate']['id']
             # modified from custom labware as API 2 doesn't support labware.create anymore, so the old add_labware script can't be used
 
     # Tube Rack
