@@ -151,7 +151,7 @@ def run(protocol: protocol_api.ProtocolContext):
     tc_mod.set_block_temperature(60, hold_time_minutes=10, block_max_volume=30)
     tc_mod.set_block_temperature(4, hold_time_minutes=2, block_max_volume=30)
     #Q Does block_max_volume define total volume in block or individual wells?
-    if __PARAMETERS["clip_keep_thermo_lid_closed"] == 1:
+    if __PARAMETERS["clip_keep_thermo_lid_closed"]["value"] == 1:
         protocol.comment("The execution is over. The thermocycler lid will stay closed at 4°C until you stop the script.")
         tc_mod.deactivate_lid()
         tc_mod.set_block_temperature(
