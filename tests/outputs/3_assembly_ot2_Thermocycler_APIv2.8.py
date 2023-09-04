@@ -2,9 +2,9 @@ from opentrons import protocol_api
 import numpy as np
 # metadata
 metadata = {
-'protocolName': 'DNABOT Assembly Thermocycler',
-'description': 'DNABOT Assembly Step3 with Thermocycler',
-'apiLevel': '2.8'
+    'protocolName': 'DNABOT Step 3: Assembly with thermocycler',
+    'description': 'DNABOT Step 3: Assembly with thermocycler',
+    'apiLevel': '2.8'
 }
 
 # It is possible to run 88 assemblies with this new module. The heat block module is removed. 
@@ -24,23 +24,25 @@ metadata = {
 
 final_assembly_dict={"A1": ["A7", "B7", "C7", "D7", "E7"], "B1": ["A7", "F7", "G7", "H7", "A8"], "C1": ["A7", "B8", "C8", "D8", "E8"]}
 tiprack_num=1
-__LABWARES={"p20_single": {"id": "p20_single_gen2"}, "p300_multi": {"id": "p300_multi_gen2"}, "mag_deck": {"id": "magdeck"}, "96_tiprack_20ul": {"id": "opentrons_96_tiprack_20ul"}, "96_tiprack_300ul": {"id": "opentrons_96_tiprack_300ul"}, "24_tuberack_1500ul": {"id": "e14151500starlab_24_tuberack_1500ul"}, "96_wellplate_200ul_pcr_step_14": {"id": "4ti0960rig_96_wellplate_200ul"}, "96_wellplate_200ul_pcr_step_23": {"id": "4ti0960rig_96_wellplate_200ul"}, "agar_plate_step_4": {"id": "4ti0960rig_96_wellplate_200ul"}, "12_reservoir_21000ul": {"id": "4ti0131_12_reservoir_21000ul"}, "96_deepwellplate_2ml": {"id": "4ti0136_96_wellplate_2200ul"}, "12_corning_wellplate": {"id": "corning_12_wellplate_6.9ml_flat"}}
+__LABWARES={"p20_single": {"id": "p20_single_gen2"}, "p300_multi": {"id": "p300_multi_gen2"}, "mag_deck": {"id": "magdeck"}, "96_tiprack_20ul": {"id": "opentrons_96_tiprack_20ul"}, "96_tiprack_300ul": {"id": "opentrons_96_tiprack_300ul"}, "24_tuberack_1500ul": {"id": "e14151500starlab_24_tuberack_1500ul"}, "clip_source_plate": {"id": "4ti0960rig_96_wellplate_200ul"}, "clip_plate": {"id": "4ti0960rig_96_wellplate_200ul"}, "mix_plate": {"id": "4ti0960rig_96_wellplate_200ul"}, "final_assembly_plate": {"id": "4ti0960rig_96_wellplate_200ul"}, "transfo_plate": {"id": "4ti0960rig_96_wellplate_200ul"}, "transfo_plate_wo_thermo": {"id": "4ti0960rig_96_wellplate_200ul"}, "agar_plate": {"id": "4ti0960rig_96_wellplate_200ul"}, "12_reservoir_21000ul": {"id": "4ti0131_12_reservoir_21000ul"}, "96_deepwellplate_2ml": {"id": "4ti0136_96_wellplate_2200ul"}, "12_corning_wellplate": {"id": "corning_12_wellplate_6.9ml_flat"}}
 
 
 def run(protocol: protocol_api.ProtocolContext):
+
     def final_assembly(final_assembly_dict, tiprack_num, tiprack_type=__LABWARES['96_tiprack_20ul']['id']):
+        
             # Constants, we update all the labware name in version 2
             #Tiprack
             CANDIDATE_TIPRACK_SLOTS = ['2', '3', '5', '6', '9']
             PIPETTE_MOUNT = 'right'
             #Plate of sample after  purification
-            MAG_PLATE_TYPE = __LABWARES['96_wellplate_200ul_pcr_step_23']['id']
+            MAG_PLATE_TYPE = __LABWARES['clip_plate']['id']
             MAG_PLATE_POSITION = '1'
             #Tuberack
             TUBE_RACK_TYPE = __LABWARES['24_tuberack_1500ul']['id']
             TUBE_RACK_POSITION = '4'
             #Destination plate
-            DESTINATION_PLATE_TYPE = __LABWARES['96_wellplate_200ul_pcr_step_23']['id']
+            DESTINATION_PLATE_TYPE = __LABWARES['final_assembly_plate']['id']
             TOTAL_VOL = 15
             PART_VOL = 1.5
             MIX_SETTINGS = (1, 3)

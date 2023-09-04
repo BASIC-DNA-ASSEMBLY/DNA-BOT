@@ -1,4 +1,5 @@
 # DNA-BOT
+
 **Feb 2022 - DNA-BOT has now been updated to produce scripts that run on the Opentrons OT2 in APIv2.** It also incorporates options for different hardware configurations by producing multiple scripts for each of the 4 steps. The Thermocycler module can now be optionally used in the step 1 clip reactions as well as the step 4 transformations.
 In addition, different labware inputs are available through the Graphical User Interface (GUI) or Command Line Interface (CLI).
 
@@ -9,6 +10,7 @@ This work was originally published in [OUP Synthetic Biology](https://academic.o
 Users looking to implement the DNA-BOT workflow are encouraged to consult the [instructions](docs/DNA_BOT_instructions_v1.0.0.pdf). If you are looking to contribute to this project, please raise an issue or pull request. Otherwise, feel free to reach out to [geoffbaldwin](mailto:g.baldwin@imperial.ac.uk).
 
 dnabot can be run in 2 modes:
+
 - with a graphical interface: see `Running the dnabot app` section in [instructions](docs/DNA_BOT_instructions_v1.0.0.pdf). dnabot was developed using Python v3.7. Refer to [requirements.txt](requirements.txt).
 - without a graphical interface: you need to specify all settings through the command line, you can see the instructions in the sections below.
 
@@ -64,7 +66,8 @@ optional arguments:
 ```
 
 ### No GUI mode
-```
+
+```bash
 usage: dnabot_app.py nogui [-h] --construct_path CONSTRUCT_PATH --source_paths SOURCE_PATHS [SOURCE_PATHS ...]
                            [--etoh_well ETOH_WELL] [--soc_column SOC_COLUMN] [--output_dir OUTPUT_DIR]
                            [--template_dir TEMPLATE_DIR]
@@ -84,7 +87,6 @@ optional arguments:
   --template_dir TEMPLATE_DIR
                         Template directory. Default: 'template_ot2_scripts' located next to the present script.
 ```
-
 
 ## Change default values
 
@@ -250,22 +252,26 @@ python -m pytest tests
 ```
 
 ## Authors
+
 The update of DNABOT to APIv2 and improvements to the front end involved the work of several people:
-* Thomas Duigou - [tduigou](https://github.com/tduigou)
-* Geoff Baldwin - [geoffbaldwin](https://github.com/geoffbaldwin)
-* Gizem Buldum  - [gizembuldum](https://github.com/gizembuldum)
+
+- Thomas Duigou - [tduigou](https://github.com/tduigou)
+- Geoff Baldwin - [geoffbaldwin](https://github.com/geoffbaldwin)
+- Gizem Buldum  - [gizembuldum](https://github.com/gizembuldum)
 
 Initial work revising the template scripts to run in Opentrons APIv2 was done by a team of Masters students from the 
 MRes in Systems and Synthetic Biology at Imperial College London, thanks to:
-* Xin Luo
-* Ruihan Bai
-* Zhenhua Wu
-* Lianne Wu
-* Ting An Lee
-* Xiangming Xu
+
+- Xin Luo
+- Ruihan Bai
+- Zhenhua Wu
+- Lianne Wu
+- Ting An Lee
+- Xiangming Xu
 
 The original code for DNABOT produced OT2 scripts that ran in APIv1 and was authored by:
-* **Matthew C Haines** - [hainesm6](https://github.com/hainesm6)
+
+- **Matthew C Haines** - [hainesm6](https://github.com/hainesm6)
 
 ## License
 
@@ -273,5 +279,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Acknowledgments
 
-* Marko Storch for all his help with [instructions](docs/DNA_BOT_instructions_v1.0.0.pdf) and DNA-BOT manuscript.
-* Geoff Baldwin for all his help with the DNA-BOT manuscript.
+- Marko Storch for all his help with [instructions](docs/DNA_BOT_instructions_v1.0.0.pdf) and DNA-BOT manuscript.
+- Geoff Baldwin for all his help with the DNA-BOT manuscript.

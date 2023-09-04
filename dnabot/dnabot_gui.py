@@ -8,6 +8,7 @@ Created on Thu May 30 14:35:26 2019
 from __future__ import annotations  # Enable the "hint" feature for objects
 
 import tkinter as tk
+from tkinter import ttk
 from tkinter import filedialog
 
 
@@ -68,23 +69,7 @@ class FileSelector:
 
 class GUI:
 
-    __APP_TITLE = "dnabot app"
-    __INTRO_TEXT = ("Welcome to the dnabot App! Please follow these "
-                    "instructions to create the 4 DNA-BOT scripts:"
-                   )
-    __INSTRUCTION_STEP_1 = ("1. From the dropdown menus select wells/columns "
-                            "for ethanol (2_purification script) and SOC media "
-                            "(4_transformation script)."
-                           )
-    __INSTRUCTION_STEP_2 = ("2. Specify the labware IDs to be used. Leave values "
-                            "as they are to use the default ones.")
-    __INSTRUCTION_STEP_3 = ("3. Specify parameters for the purification step.")
-    __INSTRUCTION_STEP_4 = ("4. Specify parameters for the transformation step.")
-    __INSTRUCTION_STEP_5 = ("5. Select the CSV file describing constructs.")
-    __INSTRUCTION_STEP_6 = ("6. Select up to 6 csv files describing plates "
-                            "containing BASIC parts and linkers. If all files "
-                            "are not within one folder, absolute paths should "
-                            "be given.")
+    __APP_TITLE = "DNABot App"
     __APP_FONT = ("Helvetica", 12)
     __TROUGH_WELLS = ['A{}'.format(x + 1) for x in range(12)]
 
@@ -97,7 +82,7 @@ class GUI:
     
         # The set up the GUI backbone
         self.root = root
-        self.canvas = tk.Canvas(self.root, width=600, height=800)
+        self.canvas = tk.Canvas(self.root, width=650, height=840)
         self.frame = tk.Frame(self.canvas)
         self.vsb = tk.Scrollbar(self.root, orient="vertical", command=self.canvas.yview, width=20)
         self.vsb.pack(side="right", fill="y")
@@ -110,15 +95,31 @@ class GUI:
         self.user_settings = user_settings
         self.quit_status = False
 
-        # Intro
+        # Intro ===============================================================
         irow = 0
-        intro = tk.Message(self.frame, text=GUI.__INTRO_TEXT, width=600)
+        intro = tk.Message(
+            self.frame,
+            text=(
+                "Welcome to the dnabot App! Please follow these "
+                "instructions to create the 4 DNA-BOT scripts:"),
+            width=600)
         intro.grid(row=irow, columnspan=2, padx=5, pady=15)
 
-        # Step 1 -- Ethanol & SOC media
+        # Sep =================================================================
         irow += 1
-        step_1 = tk.Message(self.frame, text=GUI.__INSTRUCTION_STEP_1, width=600, anchor='w')
-        step_1.grid(row=irow, columnspan=2, padx=5, pady=10, sticky='w')
+        self.__add_separator(irow)
+
+        # Ethanol & SOC media =================================================
+        irow += 1
+        message_1 = tk.Message(
+            self.frame,
+            text=(
+                "1 - From the dropdown menus select wells/columns "
+                "for ethanol (2_purification script) and SOC media "
+                "(4_transformation script)."),
+            width=600,
+            anchor='w')
+        message_1.grid(row=irow, columnspan=2, padx=5, pady=10, sticky='w')
 
         irow += 1
         etoh_well_label = tk.Label(self.frame, text='Trough well for ethanol during purification:', font=GUI.__APP_FONT)
@@ -138,10 +139,20 @@ class GUI:
         soc_w.grid(row=irow, column=1, sticky='w')
         soc_w.config(font=GUI.__APP_FONT)
 
-        # Step 2 -- Labware IDs
+        # Sep =================================================================
         irow += 1
-        step_2 = tk.Message(self.frame, text=GUI.__INSTRUCTION_STEP_2, width=600, anchor='w')
-        step_2.grid(row=irow, columnspan=2, padx=5, pady=10, sticky='w')
+        self.__add_separator(irow)
+
+        # Labware IDs =========================================================
+        irow += 1
+        message_2 = tk.Message(
+            self.frame,
+            text=(
+                "2 - Specify the labware IDs to be used. Leave values "
+                "as they are to use the default ones."),
+            width=600,
+            anchor='w')
+        message_2.grid(row=irow, columnspan=2, padx=5, pady=10, sticky='w')
 
         # Opentrons P20 Single-Channel Electronic Pipette
         irow += 1
@@ -179,42 +190,60 @@ class GUI:
             label="Opentrons 300μL tips rack",
             labware_id='96_tiprack_300ul',
             irow=irow)
-
-        # 96 well rigid PCR plate (clip and transformation steps)
+        # Clip reaction source plate (steps: clip)
         irow += 1
-        self.labware_96_wellplate_200ul_pcr_step_14_entry = self.__make_labware_entry(
-            label="96 well rigid PCR plate (clip and transformation steps)",
-            labware_id='96_wellplate_200ul_pcr_step_14',
+        self.labware_clip_source_plate_entry = self.__make_labware_entry(
+            label="Clip reaction source plate (steps: clip)",
+            labware_id='clip_source_plate',
             irow=irow)
-
-        # 96 well rigid PCR plate (purification step)
+        # Clip reaction plate (steps: clip, purif, assembly)
         irow += 1
-        self.labware_96_wellplate_200ul_pcr_step_23_entry = self.__make_labware_entry(
-            label="96 well rigid PCR plate (purification and assembly steps)",
-            labware_id='96_wellplate_200ul_pcr_step_23',
+        self.labware_clip_plate_entry = self.__make_labware_entry(
+            label="Clip reaction plate (steps: clip, purification, assembly)",
+            labware_id='clip_plate',
             irow=irow)
-
+        # Mix plate (step: purification)
+        irow += 1
+        self.labware_mix_plate_entry = self.__make_labware_entry(
+            label="Mix plate (step purification)",
+            labware_id='mix_plate',
+            irow=irow)
+        # Final assembly plate (steps: assembly, transformation)
+        irow += 1
+        self.labware_final_assembly_plate_entry = self.__make_labware_entry(
+            label="Final assembly plate (steps: assembly, transformation)",
+            labware_id='final_assembly_plate',
+            irow=irow)
+        # Transformation plate (step: transformation)
+        irow += 1
+        self.labware_transfo_plate_entry = self.__make_labware_entry(
+            label="Transformation plate (step: transformation)",
+            labware_id='transfo_plate',
+            irow=irow)
+        # Transformation plate without thermocycler (step: transformation)
+        irow += 1
+        self.labware_transfo_plate_wo_thermo_entry = self.__make_labware_entry(
+            label="Transformation plate without thermocycler (step: transformation)",
+            labware_id='transfo_plate_wo_thermo',
+            irow=irow)
         # Agar plate (transformation step)
         irow += 1
-        self.agar_plate_step_4_entry = self.__make_labware_entry(
+        self.agar_plate_entry = self.__make_labware_entry(
             label="Agar plate (transformation step)",
-            labware_id='agar_plate_step_4',
+            labware_id='agar_plate',
             irow=irow)
-
         # Reservoir plate 21 mL 12 channels
         irow += 1
         self.labware_12_reservoir_21000ul_entry = self.__make_labware_entry(
             label="Reservoir plate 21 mL 12 channels",
             labware_id='12_reservoir_21000ul',
             irow=irow)
-
         # 96 deep well plate 2 mL wells
         irow += 1
         self.labware_96_deepwellplate_2ml_entry = self.__make_labware_entry(
             label="96 deep well plate 2 mL wells",
             labware_id='96_deepwellplate_2ml',
             irow=irow)
-
         # Corning 12 Well Plate 6.9 mL Flat
         irow += 1
         self.labware_12_corning_wellplate_entry = self.__make_labware_entry(
@@ -222,10 +251,36 @@ class GUI:
             labware_id="12_corning_wellplate",
             irow=irow)
         
-        # Step 3 -- Parameters for the purification step
+        # Sep =================================================================
         irow += 1
-        step_3 = tk.Message(self.frame, text=GUI.__INSTRUCTION_STEP_3, width=600, anchor='w')
-        step_3.grid(row=irow, columnspan=2, padx=5, pady=10, sticky='w')
+        self.__add_separator(irow)
+
+        # Parameters for the clip reaction step ===============================
+        irow += 1
+        message_3 = tk.Message(
+            self.frame,
+            text="3 - Specify parameters for the clip reaction step.",
+            width=600,
+            anchor='w')
+        message_3.grid(row=irow, columnspan=2, padx=5, pady=10, sticky='w')
+        irow += 1
+        self.param_clip_thermo_lid_closed = self.__make_parameter_entry(
+            label="Keep the thermocycler lid closed at 4°C at the end of execution? \n (1 for yes, 0 for no)",
+            parameter_id="clip_keep_thermo_lid_closed",
+            irow=irow)
+
+        # Sep =================================================================
+        irow += 1
+        self.__add_separator(irow)
+
+        # Parameters for the purification step ================================
+        irow += 1
+        message_4 = tk.Message(
+            self.frame,
+            text="4 - Specify parameters for the purification step.",
+            width=600,
+            anchor='w')
+        message_4.grid(row=irow, columnspan=2, padx=5, pady=10, sticky='w')
         irow += 1
         self.param_purif_magdeck_height = self.__make_parameter_entry(
             label="Magnetic module height (mm)",
@@ -262,10 +317,18 @@ class GUI:
             parameter_id="purif_elution_time",
             irow=irow)
 
-        # Step 4 -- Parameters for the transformation step
+        # Sep =================================================================
         irow += 1
-        step_4 = tk.Message(self.frame, text=GUI.__INSTRUCTION_STEP_4, width=600, anchor='w')
-        step_4.grid(row=irow, columnspan=2, padx=5, pady=10, sticky='w')
+        self.__add_separator(irow)
+
+        # Parameters for the transformation step ==============================
+        irow += 1
+        message_5 = tk.Message(
+            self.frame,
+            text="5 - Specify parameters for the transformation step.",
+            width=600,
+            anchor='w')
+        message_5.grid(row=irow, columnspan=2, padx=5, pady=10, sticky='w')
         irow += 1
         self.param_transfo_incubation_temp = self.__make_parameter_entry(
             label="Incubation temperature (°C)",
@@ -277,26 +340,50 @@ class GUI:
             parameter_id="transfo_incubation_time",
             irow=irow)
 
-        # Step 5 -- Construct CSV file
+        # Sep =================================================================
         irow += 1
-        step_5 = tk.Message(self.frame, text=GUI.__INSTRUCTION_STEP_5, width=600, anchor='w')
-        step_5.grid(row=irow, columnspan=2, padx=5, pady=10, sticky='w')
+        self.__add_separator(irow)
+
+        # Construct CSV file ==================================================
+        irow += 1
+        message_6 = tk.Message(
+            self.frame,
+            text="6 - Select the CSV file describing constructs.",
+            width=600,
+            anchor='w')
+        message_6.grid(row=irow, columnspan=2, padx=5, pady=10, sticky='w')
         irow += 1
         self.construct_file_selector = FileSelector(self.frame, irow, title='Construct CSV file', multiple_files=False)
         irow = self.construct_file_selector.irow
 
-        # Step 6 -- Source CSV files
+        # Sep =================================================================
         irow += 1
-        step_6 = tk.Message(self.frame, text=GUI.__INSTRUCTION_STEP_6, width=600, anchor='w')
-        step_6.grid(row=irow, columnspan=2, padx=5, pady=10, sticky='w')
+        self.__add_separator(irow)
+
+        # Source CSV files ====================================================
+        irow += 1
+        message_7 = tk.Message(
+            self.frame,
+            text=(
+                "7 - Select up to 6 csv files describing plates "
+                "containing BASIC parts and linkers. If all files "
+                "are not within one folder, absolute paths should "
+                "be given."),
+            width=600,
+            anchor='w')
+        message_7.grid(row=irow, columnspan=2, padx=5, pady=10, sticky='w')
         irow += 1
         self.source_files_selector = FileSelector(self.frame, irow, title='Source CSV files', multiple_files=True)
         irow = self.source_files_selector.irow
 
-        # White space
+        # Sep =================================================================
         irow += 1
-        spacer = tk.Label(self.frame, text="", font=GUI.__APP_FONT)
-        spacer.grid(row=irow, columnspan=2, padx=5, pady=10)
+        self.__add_separator(irow)
+
+        # # White space
+        # irow += 1
+        # spacer = tk.Label(self.frame, text="", font=GUI.__APP_FONT)
+        # spacer.grid(row=irow, columnspan=2, padx=5, pady=10)
 
         # Quit and generate buttons
         irow += 1
@@ -321,20 +408,27 @@ class GUI:
         # Step 1
         self.user_settings['etoh_well'] = self.etoh_well.get()
         self.user_settings['soc_column'] = self.soc_column.get()
-        # Step 2
+
+        # Labware IDs
         self.user_settings['labwares']['p20_single']['id'] = self.labware_p10_single_entry.get()
         self.user_settings['labwares']['p300_multi']['id'] = self.labware_p300_multi_entry.get()
         self.user_settings['labwares']['mag_deck']['id'] = self.labware_mag_deck_entry.get()
         self.user_settings['labwares']['24_tuberack_1500ul']['id'] = self.labware_24_tuberack_1500ul_entry.get()
         self.user_settings['labwares']['96_tiprack_20ul']['id'] = self.labware_96_tiprack_20ul_entry.get()
         self.user_settings['labwares']['96_tiprack_300ul']['id'] = self.labware_96_tiprack_300ul_entry.get()
-        self.user_settings['labwares']['96_wellplate_200ul_pcr_step_14']['id'] = self.labware_96_wellplate_200ul_pcr_step_14_entry.get()
-        self.user_settings['labwares']['96_wellplate_200ul_pcr_step_23']['id'] = self.labware_96_wellplate_200ul_pcr_step_23_entry.get()
-        self.user_settings['labwares']['agar_plate_step_4']['id'] = self.agar_plate_step_4_entry.get()
+        self.user_settings['labwares']['clip_source_plate']['id'] = self.labware_clip_source_plate_entry.get()
+        self.user_settings['labwares']['clip_plate']['id'] = self.labware_clip_plate_entry.get()
+        self.user_settings['labwares']['mix_plate']['id'] = self.labware_mix_plate_entry.get()
+        self.user_settings['labwares']['final_assembly_plate']['id'] = self.labware_final_assembly_plate_entry.get()
+        self.user_settings['labwares']['transfo_plate']['id'] = self.labware_transfo_plate_entry.get()
+        self.user_settings['labwares']['transfo_plate_wo_thermo']['id'] = self.labware_transfo_plate_wo_thermo_entry.get()
+        self.user_settings['labwares']['agar_plate']['id'] = self.agar_plate_entry.get()
         self.user_settings['labwares']['12_reservoir_21000ul']['id'] = self.labware_12_reservoir_21000ul_entry.get()
         self.user_settings['labwares']['96_deepwellplate_2ml']['id'] = self.labware_96_deepwellplate_2ml_entry.get()
         self.user_settings['labwares']['12_corning_wellplate']['id'] = self.labware_12_corning_wellplate_entry.get()
-        # Step 3
+        # Parameters for the clip reaction step
+        self.user_settings["parameters"]["clip_keep_thermo_lid_closed"]["value"] = to_numeric_value(self.param_clip_thermo_lid_closed.get())
+        # Parameters for the purification step
         self.user_settings['parameters']['purif_magdeck_height']['value'] = to_numeric_value(self.param_purif_magdeck_height.get())
         self.user_settings['parameters']['purif_wash_time']['value'] = to_numeric_value(self.param_purif_wash_time.get())
         self.user_settings['parameters']['purif_bead_ratio']['value'] = to_numeric_value(self.param_purif_bead_ratio.get())
@@ -342,12 +436,12 @@ class GUI:
         self.user_settings['parameters']['purif_settling_time']['value'] = to_numeric_value(self.param_purif_settling_time.get())
         self.user_settings['parameters']['purif_drying_time']['value'] = to_numeric_value(self.param_purif_drying_time.get())
         self.user_settings['parameters']['purif_elution_time']['value'] = to_numeric_value(self.param_purif_elution_time.get())
-        # Step 4
+        # Parameters for the transformation step
         self.user_settings['parameters']['transfo_incubation_temp']['value'] = to_numeric_value(self.param_transfo_incubation_temp.get())
         self.user_settings['parameters']['transfo_incubation_time']['value'] = to_numeric_value(self.param_transfo_incubation_time.get())
-        # Step 5
+        # Construct CSV file
         self.user_settings['construct_path'] = self.construct_file_selector.get()
-        # Step 6
+        # Source CSV files
         self.user_settings['sources_paths'] = self.source_files_selector.get()
         self.root.quit()
 
@@ -355,14 +449,24 @@ class GUI:
         labware_label = tk.Label(self.frame, text=label, font=GUI.__APP_FONT)
         labware_label.grid(row=irow, column=0, sticky='e')
         labware_entry = tk.Entry(self.frame, width=30)
-        labware_entry.insert(0, self.user_settings['labwares'][labware_id]['id'])
+        labware_entry.insert(0, self.user_settings["labwares"][labware_id]['id'])
         labware_entry.grid(row=irow, column=1, sticky='w')
         return labware_entry
 
-    def __make_parameter_entry(self, label, parameter_id, irow):
+    def __make_parameter_entry(self, label, parameter_id, irow, parameter_value="value"):
         parameter_label = tk.Label(self.frame, text=label, font=GUI.__APP_FONT)
         parameter_label.grid(row=irow, column=0, sticky='e')
         parameter_entry = tk.Entry(self.frame, width=30)
-        parameter_entry.insert(0, self.user_settings['parameters'][parameter_id]['value'])
+        parameter_entry.insert(0, self.user_settings["parameters"][parameter_id][parameter_value])
         parameter_entry.grid(row=irow, column=1, sticky='w')
         return parameter_entry
+
+    def __add_separator(self, irow):
+        ttk.Separator(
+            self.frame,
+            orient=tk.HORIZONTAL
+        ).grid(
+            row=irow,
+            columnspan=2,
+            sticky="ew"
+        )

@@ -5,7 +5,7 @@ Created on Thu May 30 17:05:37 2019
 @authors: mh2210, gizembuldum, tduigou
 """
 
-def final_well(sample_number):
+def final_well(sample_number: int) -> str:
     """Determines well containing the final sample from sample number.
     
     """

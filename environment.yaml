@@ -24,3 +24,4 @@ dependencies:
   - yarl
   - zipp==0.6.0
   - pyyaml
+  - tabulate

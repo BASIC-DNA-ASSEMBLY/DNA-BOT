@@ -14,7 +14,7 @@ import numpy as np
 
 metadata = {
      'apiLevel': '2.8',
-     'protocolName': 'Transformation',
+     'protocolName': 'DNABOT Step 4: Transformation with thermocycler and 12 wellplate',
      'description': 'Transformation reactions using an opentrons OT-2 for BASIC assembly.'}
 
 
@@ -33,10 +33,10 @@ def run(protocol: protocol_api.ProtocolContext):
     P300_TIPRACK_TYPE = __LABWARES['96_tiprack_300ul']['id']
     P20_MOUNT = 'right'
     P300_MOUNT = 'left'
-    ASSEMBLY_PLATE_TYPE = __LABWARES['96_wellplate_200ul_pcr_step_14']['id']
+    ASSEMBLY_PLATE_TYPE = __LABWARES['final_assembly_plate']['id']
     ASSEMBLY_PLATE_SLOT = '5'
 
-    TRANSFORMATION_PLATE_TYPE = __LABWARES['96_wellplate_200ul_pcr_step_14']['id']
+    TRANSFORMATION_PLATE_TYPE = __LABWARES['transfo_plate']['id']
     SOC_PLATE_TYPE = __LABWARES['96_deepwellplate_2ml']['id']
     SOC_PLATE_SLOT = '4'
     #Removed the tuberack for waste to have space for more tipracts for 88 assemblies

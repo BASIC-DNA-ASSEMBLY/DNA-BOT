@@ -7,7 +7,7 @@ import numpy as np
 
 metadata = {
      'apiLevel': '2.8',
-     'protocolName': 'Transformation',
+     'protocolName': 'DNABOT Step 4: Transformation',
      'description': 'Transformation reactions using an opentrons OT-2 for BASIC assembly.'}
 
 # Example output produced by DNA-BOT for a single construct, uncomment and run to test the template
@@ -34,16 +34,16 @@ def run(protocol: protocol_api.ProtocolContext):
     P300_TIPRACK_TYPE = __LABWARES['96_tiprack_300ul']['id']
     P20_MOUNT = 'right'
     P300_MOUNT = 'left'
-    ASSEMBLY_PLATE_TYPE = __LABWARES['96_wellplate_200ul_pcr_step_14']['id']
+    ASSEMBLY_PLATE_TYPE = __LABWARES['final_assembly_plate']['id']
     ASSEMBLY_PLATE_SLOT = '8'
 
-    TRANSFORMATION_PLATE_TYPE = __LABWARES['96_wellplate_200ul_pcr_step_14']['id']
+    TRANSFORMATION_PLATE_TYPE = __LABWARES['transfo_plate_wo_thermo']['id']
     SOC_PLATE_TYPE = __LABWARES['96_deepwellplate_2ml']['id']
     SOC_PLATE_SLOT = '7'
     TUBE_RACK_TYPE = __LABWARES['24_tuberack_1500ul']['id']
     TUBE_RACK_SLOT = '11'
     SPOTTING_WASTE_WELL = 'A1'
-    AGAR_PLATE_TYPE = __LABWARES['agar_plate_step_4']['id']
+    AGAR_PLATE_TYPE = __LABWARES['agar_plate']['id']
         # changed from 'Nunc_Omnitray'
             # it is a 1 well plate filled with agar;
             # but for the Opentron to spot in the locations of a 96 wp, it is defined similar to a 96 wp

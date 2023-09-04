@@ -24,6 +24,7 @@ sys.path.insert(0, abs_path)
 
 import dnabot_gui as gui
 import mplates
+import slots
 
 # Constant str
 TEMPLATE_DIR_NAME = 'template_ot2_scripts'
@@ -62,6 +63,7 @@ TRANS_SPOT_FNAME_4 = '4_transformation_ot2_Thermocycler_12wellplate_APIv2.8.py'
 CLIPS_INFO_FNAME = 'clip_run_info.csv'
 FINAL_ASSEMBLIES_INFO_FNAME = 'final_assembly_run_info.csv'
 WELL_OUTPUT_FNAME = 'wells.txt'
+DECK_OUTPUT_FNAME = "deck.md"
 
 # Constant floats/ints
 CLIP_DEAD_VOL = 60
@@ -140,7 +142,7 @@ def __get_settings_from_file(file_path: str) -> None:
         return yaml.safe_load(ifh)
 
 
-def __info_from_gui(user_settings):
+def __info_from_gui(user_settings: dict) -> dict:
     """Pop GUI to collect user inputs
 
     Parameters
@@ -249,19 +251,28 @@ def main():
     clips_df = generate_clips_df(constructs_list)
     sources_dict = generate_sources_dict(sources_paths)
 
-    # calculate OT2 script variables
+    # Calculate OT2 script variables
     print('Calculating OT-2 variables...')
-    clips_dict = generate_clips_dict(clips_df, sources_dict)
+    clips_dict = generate_clips_dict(
+        clips_df,
+        sources_dict
+        )
     magbead_sample_number = clips_df['number'].sum()
-    final_assembly_dict = generate_final_assembly_dict(constructs_list,
-                                                       clips_df)
+    final_assembly_dict = generate_final_assembly_dict(
+        constructs_list,
+        clips_df
+        )
     final_assembly_tipracks = calculate_final_assembly_tipracks(
-        final_assembly_dict)
-    spotting_tuples = generate_spotting_tuples(constructs_list,
-                                               SPOTTING_VOLS_DICT)
-
-    spotting_tuples_12 = generate_spotting_tuples_12(constructs_list,
-                                               SPOTTING_VOLS_DICT_12)
+        final_assembly_dict
+        )
+    spotting_tuples = generate_spotting_tuples(
+        constructs_list,
+        SPOTTING_VOLS_DICT
+        )
+    spotting_tuples_12 = generate_spotting_tuples_12(
+        constructs_list,
+        SPOTTING_VOLS_DICT_12
+        )
 
     print('Writing files...')
     # Write OT2 scripts
@@ -278,7 +289,8 @@ def main():
         CLIP_FNAME_3,
         os.path.join(template_dir_path, CLIP_TEMP_FNAME_3),
         clips_dict=clips_dict,
-        __LABWARES=labware_settings)
+        __LABWARES=labware_settings,
+        __PARAMETERS=parameter_settings)
        
     generate_ot2_script(
         MAGBEAD_FNAME_1,
@@ -330,7 +342,6 @@ def main():
         soc_well=f"A{soc_column}",
         __LABWARES=labware_settings,
         __PARAMETERS=parameter_settings)
-
     generate_ot2_script(
         TRANS_SPOT_FNAME_4,
         os.path.join(template_dir_path, TRANS_SPOT_TEMP_FNAME_4),
@@ -340,25 +351,44 @@ def main():
         __PARAMETERS=parameter_settings)
 
     # Write non-OT2 scripts
-    if 'metainformation' in os.listdir():
-        pass
-    else:
-        os.makedirs('metainformation')
-    os.chdir('metainformation')
+    metainfo_dir = Path().resolve() / "metainformation"
+    metainfo_dir.mkdir(exist_ok=True)
     master_mix_df = generate_master_mix_df(clips_df['number'].sum())
     sources_paths_df = generate_sources_paths_df(sources_paths, SOURCE_DECK_POS)
-    dfs_to_csv(construct_base + '_' + CLIPS_INFO_FNAME, index=False,
-               MASTER_MIX=master_mix_df, SOURCE_PLATES=sources_paths_df,
-               CLIP_REACTIONS=clips_df)
-    with open(construct_base + '_' + FINAL_ASSEMBLIES_INFO_FNAME,
-              'w', newline='') as csvfile:
+    dfs_to_csv(
+        metainfo_dir / f"{construct_base}_{CLIPS_INFO_FNAME}",
+        index=False,
+        MASTER_MIX=master_mix_df,
+        SOURCE_PLATES=sources_paths_df,
+        CLIP_REACTIONS=clips_df
+        )
+    with open(metainfo_dir / f"{construct_base}_{FINAL_ASSEMBLIES_INFO_FNAME}", "w", newline='') as csvfile:
         csvwriter = csv.writer(csvfile)
         for final_assembly_well, construct_clips in final_assembly_dict.items():
             csvwriter.writerow([final_assembly_well, construct_clips])
-    with open(construct_base + '_' + WELL_OUTPUT_FNAME, 'w') as f:
+    with open(metainfo_dir / f"{construct_base}_{WELL_OUTPUT_FNAME}", "w") as f:
         f.write('Magbead ethanol well: {}'.format(etoh_well))
         f.write('\n')
         f.write('SOC column: {}'.format(soc_column))
+
+    # Write deck position info
+    with open(metainfo_dir / f"{construct_base}_{DECK_OUTPUT_FNAME}", "w") as ofh:
+        for fname in (CLIP_FNAME_2, CLIP_FNAME_3):
+            deck = slots.get_positions_from_clip(fname)
+            s = slots.format_deck_info(deck, section = f"Clip reaction script: {fname}")
+            ofh.write(s)
+        for fname in (MAGBEAD_FNAME_2,):
+            deck = slots.get_positions_from_purif(fname)
+            s = slots.format_deck_info(deck, section = f"Purification script: {fname}")
+            ofh.write(s)
+        for fname in (F_ASSEMBLY_FNAME_2, F_ASSEMBLY_FNAME_3):
+            deck = slots.get_positions_from_assembly(fname)
+            s = slots.format_deck_info(deck, section = f"Assembly script: {fname}")
+            ofh.write(s)
+        for fname in (TRANS_SPOT_FNAME_2, TRANS_SPOT_FNAME_3, TRANS_SPOT_FNAME_4):
+            deck = slots.get_positions_from_transfo(fname)
+            s = slots.format_deck_info(deck, section = f"Transformation script: {fname}")
+            ofh.write(s)
     print('BOT-2 generator successfully completed!')
 
 
@@ -384,8 +414,11 @@ def generate_constructs_list(path):
             else:
                 return linker + "-S"
 
-        clips_info = {'prefixes': [], 'parts': [],
-                      'suffixes': []}
+        clips_info = {
+            'prefixes': [],
+            'parts': [],
+            'suffixes': []
+            }
         for i, sequence in enumerate(construct):
             if i % 2 != 0:
                 clips_info['parts'].append(sequence)

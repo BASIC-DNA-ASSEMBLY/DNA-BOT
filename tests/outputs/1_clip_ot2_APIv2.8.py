@@ -6,7 +6,7 @@ from opentrons import protocol_api
 #metadata
 metadata = {
      'apiLevel': '2.8',
-     'protocolName': 'CLIP_No_Thermocycler',
+     'protocolName': 'DNABOT Step 1: Clip Reaction',
      'description': 'Implements linker ligation reactions using an opentrons OT-2. This version does not include the Thermocycler module.'}
 
 # example dictionary produced by DNA-BOT for a single construct containing 5 parts, un-comment and run to test the template
@@ -17,7 +17,7 @@ metadata = {
 # __LABWARES={"p20_single": {"id": "p20_single_gen2"}, "p300_multi": {"id": "p300_multi_gen2"}, "mag_deck": {"id": "magdeck"}, "96_tiprack_20ul": {"id": "opentrons_96_tiprack_20ul"}, "96_tiprack_300ul": {"id": "opentrons_96_tiprack_300ul"}, "24_tuberack_1500ul": {"id": "e14151500starlab_24_tuberack_1500ul"}, "96_wellplate_200ul_pcr_step_14": {"id": "4ti0960rig_96_wellplate_200ul"}, "96_wellplate_200ul_pcr_step_23": {"id": "4ti0960rig_96_wellplate_200ul"}, "agar_plate_step_4": {"id": "4ti0960rig_96_wellplate_200ul"}, "12_reservoir_21000ul": {"id": "4ti0131_12_reservoir_21000ul"}, "96_deepwellplate_2ml": {"id": "4ti0136_96_wellplate_2200ul"}}
 
 clips_dict={"prefixes_wells": ["B8", "B7", "C5", "C12", "C7", "B7", "C4", "C9", "C10", "B7", "C8", "C11", "C5"], "prefixes_plates": ["2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2"], "suffixes_wells": ["A7", "C1", "C3", "C2", "A8", "C1", "C2", "C3", "A8", "C2", "C3", "C1", "A8"], "suffixes_plates": ["2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2"], "parts_wells": ["A1", "A10", "A3", "A11", "A6", "A9", "A2", "A5", "A7", "A10", "A8", "A4", "A12"], "parts_plates": ["5", "5", "5", "5", "5", "5", "5", "5", "5", "5", "5", "5", "5"], "parts_vols": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], "water_vols": [7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0]}
-__LABWARES={"p20_single": {"id": "p20_single_gen2"}, "p300_multi": {"id": "p300_multi_gen2"}, "mag_deck": {"id": "magdeck"}, "96_tiprack_20ul": {"id": "opentrons_96_tiprack_20ul"}, "96_tiprack_300ul": {"id": "opentrons_96_tiprack_300ul"}, "24_tuberack_1500ul": {"id": "e14151500starlab_24_tuberack_1500ul"}, "96_wellplate_200ul_pcr_step_14": {"id": "4ti0960rig_96_wellplate_200ul"}, "96_wellplate_200ul_pcr_step_23": {"id": "4ti0960rig_96_wellplate_200ul"}, "agar_plate_step_4": {"id": "4ti0960rig_96_wellplate_200ul"}, "12_reservoir_21000ul": {"id": "4ti0131_12_reservoir_21000ul"}, "96_deepwellplate_2ml": {"id": "4ti0136_96_wellplate_2200ul"}, "12_corning_wellplate": {"id": "corning_12_wellplate_6.9ml_flat"}}
+__LABWARES={"p20_single": {"id": "p20_single_gen2"}, "p300_multi": {"id": "p300_multi_gen2"}, "mag_deck": {"id": "magdeck"}, "96_tiprack_20ul": {"id": "opentrons_96_tiprack_20ul"}, "96_tiprack_300ul": {"id": "opentrons_96_tiprack_300ul"}, "24_tuberack_1500ul": {"id": "e14151500starlab_24_tuberack_1500ul"}, "clip_source_plate": {"id": "4ti0960rig_96_wellplate_200ul"}, "clip_plate": {"id": "4ti0960rig_96_wellplate_200ul"}, "mix_plate": {"id": "4ti0960rig_96_wellplate_200ul"}, "final_assembly_plate": {"id": "4ti0960rig_96_wellplate_200ul"}, "transfo_plate": {"id": "4ti0960rig_96_wellplate_200ul"}, "transfo_plate_wo_thermo": {"id": "4ti0960rig_96_wellplate_200ul"}, "agar_plate": {"id": "4ti0960rig_96_wellplate_200ul"}, "12_reservoir_21000ul": {"id": "4ti0131_12_reservoir_21000ul"}, "96_deepwellplate_2ml": {"id": "4ti0136_96_wellplate_2200ul"}, "12_corning_wellplate": {"id": "corning_12_wellplate_6.9ml_flat"}}
 
 
 def run(protocol: protocol_api.ProtocolContext):
@@ -41,12 +41,12 @@ def run(protocol: protocol_api.ProtocolContext):
         exit()
 
     # Source Plates
-    SOURCE_PLATE_TYPE = __LABWARES['96_wellplate_200ul_pcr_step_14']['id']
+    SOURCE_PLATE_TYPE = __LABWARES['clip_source_plate']['id']
             # modified from custom labware as API 2 doesn't support labware.create anymore, so the old add_labware script can't be used
 
     # Destination Plates
-    DESTINATION_PLATE_TYPE = __LABWARES['96_wellplate_200ul_pcr_step_14']['id']
-    DESTINATION_PLATE_POSITION = '1'
+    DESTINATION_PLATE_TYPE = __LABWARES['clip_plate']['id']
+    DESTINATION_PLATE_POSITION = "7"
             # INITIAL_DESTINATION_WELL constant removed, as destination_plate.wells() automatically starts from A1
 
     # Tube Rack

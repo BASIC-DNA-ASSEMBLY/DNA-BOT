@@ -4,7 +4,7 @@ from opentrons import protocol_api
 
 metadata = {
      'apiLevel': '2.8',
-     'protocolName': 'purification_template',
+     'protocolName': 'DNABOT Step 2: Purification',
      'description': 'Implements magbead purification reactions for BASIC assembly using an opentrons OT-2'}
 
 
@@ -67,7 +67,7 @@ def run(protocol: protocol_api.ProtocolContext):
         MAGDECK_POSITION = '1'
 
         # Mix Plate
-        MIX_PLATE_TYPE = __LABWARES['96_wellplate_200ul_pcr_step_23']['id']
+        MIX_PLATE_TYPE = __LABWARES['mix_plate']['id']
             # modified from custom labware as API 2 doesn't support labware.create anymore, so the old add_labware script can't be used
             # also acts as the type of plate loaded onto the magnetic module
         MIX_PLATE_POSITION = '4'
