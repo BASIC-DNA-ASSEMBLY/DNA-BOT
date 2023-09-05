@@ -25,3 +25,4 @@ dependencies:
   - zipp==0.6.0
   - pyyaml
   - tabulate
+  - pytest
