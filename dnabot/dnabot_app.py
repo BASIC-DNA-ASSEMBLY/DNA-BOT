@@ -478,7 +478,7 @@ def generate_clips_df(constructs_list):
     # Associate well/s for each CLIP reaction
     clips_df['mag_well'] = pd.Series(['0'] * len(clips_df.index),
                                      index=clips_df.index)
-    for index, number in clips_df['number'].iteritems():
+    for index, number in clips_df['number'].items():
         if index == 0:
             mag_wells = []
             for x in range(number):

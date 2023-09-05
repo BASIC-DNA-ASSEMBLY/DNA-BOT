@@ -115,10 +115,10 @@ labwares:
     id: p300_multi_gen2
 
   # Modules ###############################################
-  # Opentrons magnetic module
+  # Opentrons magnetic module (step: purification)
   mag_deck:
     id: magdeck
-    # id: magnetic module gen2  # BRS script 2
+    # id: magnetic module gen2  # BRS
 
   # Tip racks #############################################
   # Opentrons 20μL tips rack
@@ -132,46 +132,74 @@ labwares:
     # id: tipone_yellow_3dprinted_96_tiprack_300ul  # BRS
 
   # Plates ################################################
-  # Opentrons 4-in-1 tubes rack for 1.5 ml eppendorf tubes
+  # Opentrons 4-in-1 tubes rack for 1.5 ml eppendorf tubes (steps: clip, assembly, transformation)
   24_tuberack_1500ul:
     id: e14151500starlab_24_tuberack_1500ul
-    # id: opentrons_24_tuberack_eppendorf_1.5ml_safelock_snapcap  # BRS scripts 1, 3, 4
+    # id: opentrons_24_tuberack_eppendorf_1.5ml_safelock_snapcap  # BRS
 
-  # 96 well rigid PCR plate (clip and transformation steps)
-  96_wellplate_200ul_pcr_step_14:
+  # Clip reaction source plate (steps: clip)
+  clip_source_plate:
     id: 4ti0960rig_96_wellplate_200ul
-    # id: green_96_wellplate_200ul_pcr  # BRS scripts 1, 4
+    # id: green_96_wellplate_200ul_pcr  # BRS (transparent)
 
-  # 96 well rigid PCR plate (purification and assembly steps)
-  96_wellplate_200ul_pcr_step_23:
+  # Clip reaction plate (steps: clip, purif, assembly)
+  clip_plate:
     id: 4ti0960rig_96_wellplate_200ul
-    # id: black_96_wellplate_200ul_pcr  # BRS script 2, 3
+    # id: black_96_wellplate_200ul_pcr  # BRS (black)
+
+  # Mix plate (step: purification)
+  mix_plate:
+    id: 4ti0960rig_96_wellplate_200ul
+    # id: black_96_wellplate_200ul_pcr  # BRS (black)
+  
+  # Final assembly plate (steps: assembly, transformation)
+  final_assembly_plate:
+    id: 4ti0960rig_96_wellplate_200ul
+    # id: black_96_wellplate_200ul_pcr  # BRS (black)
+  
+  # Transformation plate with thermocycler (step: transformation)
+  transfo_plate:
+    id: 4ti0960rig_96_wellplate_200ul
+    # id: black_96_wellplate_200ul_pcr  # BRS (black)
+
+  # Transformation plate without thermocycler (step: transformation)
+  transfo_plate_wo_thermo:
+    id: 4ti0960rig_96_wellplate_200ul
+    # id: green_96_wellplate_200ul_pcr  # BRS (transparent)
 
   # Agar plate (transformation step)
-  agar_plate_step_4:
+  agar_plate:
     id: 4ti0960rig_96_wellplate_200ul
-    # id: thermoomnitrayfor96spots_96_wellplate_50ul  # BRS script 4
+    # id: thermoomnitrayfor96spots_96_wellplate_50ul  # BRS
 
-  # Reservoir plate 21 mL 12 channels
+  # Reservoir plate 21 mL 12 channels (step: purification)
   12_reservoir_21000ul:
     id: 4ti0131_12_reservoir_21000ul
-    # id: citadel_12_wellplate_22000ul  # BRS script 2
+    # id: citadel_12_wellplate_22000ul  # BRS
 
-  # 96 deep well plate 2 mL wells
+  # 96 deep well plate 2 mL wells (steps; purification, transormation)
   96_deepwellplate_2ml:
     id: 4ti0136_96_wellplate_2200ul
-    # id: transparent_96_wellplate_2ml_deep  # BRS scripts 2, 4
+    # id: transparent_96_wellplate_2ml_deep  # BRS
   
-  # Corning 12 Well Plate 6.9 mL Flat
+  # Corning 12 Well Plate 6.9 mL Flat (step: transformation)
   12_corning_wellplate:
     id: corning_12_wellplate_6.9ml_flat
+    # id: sarstedtcplatte_12_wellplate_6640ul  # BRS
+  
 
 parameters:
+
+  # Clip reaction step ####################################
+  # Keep the thermocycler lid closed at 4°C at the end of execution?
+  # 1 for yes, 0 for no
+  clip_keep_thermo_lid_closed:
+    value: 0
 
   # Purification step #####################################
   # Magnetic module height (mm) - purification step
   purif_magdeck_height: 
-    value: 20.0
+    value: 20
     # value: 10.8  # BRS
 
   # Washing time (min) - purification step
@@ -184,21 +212,21 @@ parameters:
 
   # Incubation time (min) - purification step
   purif_incubation_time:
-    value: 5.0
+    value: 5
 
   # Settling time (min) - purification step
   purif_settling_time:
-    value: 2.0
+    value: 2
     # value: 6  # BRS
 
   # Drying time (min) - purification step
   purif_drying_time:
-    value: 5.0
+    value: 5
     # value: 15  # BRS
 
   # Elution time (min) - purif step
   purif_elution_time:
-    value: 2.0
+    value: 2
     # value: 5  # BRS
   
   # Transformation step ###################################
@@ -211,6 +239,7 @@ parameters:
   transfo_incubation_time:
     value: 20
     # value: 30  # BRS
+
 ```
 
 ## For developers

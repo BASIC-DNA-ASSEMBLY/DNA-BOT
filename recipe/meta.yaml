@@ -18,7 +18,6 @@ requirements:
     - python {{ python }}
   run:
     - python {{ python }}
-    - aiohttp==3.7.4
     - async-timeout==3.0.1
     - attrs==19.3.0
     - chardet==3.0.4
