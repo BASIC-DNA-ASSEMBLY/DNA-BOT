@@ -1,0 +1,24 @@
+MASTER_MIX
+Component,Volume (uL)
+"Promega T4 DNA Ligase buffer, 10X",33.0
+Water,170.5
+NEB BsaI-HFv2,11.0
+Promega T4 DNA Ligase,5.5
+
+SOURCE_PLATES
+Deck position,Source plate,Path
+2,BIOLEGIO_BASIC_Pro_Plate_Set.csv,//icnas1.cc.ic.ac.uk/ljh119/DNA-BOT/200120_scripts_nbs/648_constructs/fp_library_builds/220902_test_build/BIOLEGIO_BASIC_Pro_Plate_Set.csv
+5,220902_parts.csv,//icnas1.cc.ic.ac.uk/ljh119/DNA-BOT/200120_scripts_nbs/648_constructs/fp_library_builds/220902_test_build/220902_parts.csv
+
+CLIP_REACTIONS
+prefixes,parts,suffixes,number,mag_well
+LMS-P,BASIC_SEVA_37_CmR-p15A_v1.0,LMP-S,1,"('A7',)"
+LMP-P,BASIC_L3S2P21_J23101_RiboJ,UTR2-S,1,"('B7',)"
+UTR2-RBS1-P,BASIC_BFP_ORF_v1.0,UTR1-S,1,"('C7',)"
+UTR1-RBS1-P,BASIC_sfGFP_ORF_v1.0,UTR3-S,1,"('D7',)"
+UTR3-RBS1-P,BASIC_RFP_ORF_v1.0,LMS-S,1,"('E7',)"
+UTR3-RBS2-P,BASIC_RFP_ORF_v1.0,LMS-S,1,"('F7',)"
+UTR3-RBS3-P,BASIC_RFP_ORF_v1.0,LMS-S,1,"('G7',)"
+UTR1-RBS2-P,BASIC_sfGFP_ORF_v1.0,UTR3-S,1,"('H7',)"
+UTR1-RBS3-P,BASIC_sfGFP_ORF_v1.0,UTR3-S,1,"('A8',)"
+
