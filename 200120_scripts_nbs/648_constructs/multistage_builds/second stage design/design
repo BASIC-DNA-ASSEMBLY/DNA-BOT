@@ -1,10 +1,11 @@
+# 1) Generate a combined list of all constructs
+
 import os
 import pandas as pd
 
 def find_csv_filenames(path_to_dir, exclusion_words, prefix = "fp_library_build_", suffix=".csv"):
     ''' Returns file names with a specified prefix, suffix, and excluding certain words (split by '_')'''
     filenames = os.listdir(path_to_dir)
-    print(filenames)
     return [filename for filename in filenames if filename.startswith(prefix) and filename.endswith(suffix) and not any(word in filename.split('_') for word in exclusion_words)]
 
 def combine_csvs(root_dir, exclusion_words):
@@ -16,10 +17,85 @@ def combine_csvs(root_dir, exclusion_words):
             all_dataframes.append(df)
 
     combined_df = pd.concat(all_dataframes, ignore_index=True, sort=False)
-    print(combined_df)
+
+    combined_df.replace(to_replace='BASIC_SEVA_37_CmR-p15A_v1.0', value='BASIC_SEVA_36_CmR-p15A_v1.0', inplace=True)
+    combined_df.replace(to_replace='BASIC_BFP_ORF_v1.0', value='BASIC_mTagBFP2_ORF_v1.0', inplace=True)
+    combined_df.replace(to_replace='BASIC_RFP_ORF_v1.0', value='BASIC_mCherry_ORF_v1.0', inplace=True)
+
     combined_df.to_csv('200120_scripts_nbs\\648_constructs\\multistage_builds\\second stage design\\648_combined_output.csv', index=False)
 
 # Replace 'path/to/your/directory' with the path to the directory containing your subfolders
 path = '200120_scripts_nbs\\648_constructs\\fp_library_builds'
 exclusion_words = ['clip', 'assembly']
-combine_csvs(path, exclusion_words)
+# combine_csvs(path, exclusion_words)
+
+
+
+# 2) Generate stage 2 construct csv from intermediate US and DS builds
+
+import pandas as pd
+
+def read_and_process_csv(file_path):
+    df = pd.read_csv(file_path, header=0).iloc[:, 4:]
+
+    df.replace(to_replace='BASIC_BFP_ORF_v1.0', value='BASIC_mTagBFP2_ORF_v1.0', inplace=True)
+    df.replace(to_replace='BASIC_RFP_ORF_v1.0', value='BASIC_mCherry_ORF_v1.0', inplace=True)
+    
+    return df
+
+def compare_construct_dfs(df1, df2, side):
+    # Define the subset of columns to compare
+    if side == 'US':
+        subset_columns = ['Part 2', 'Linker 3', 'Part 3']
+    else: # side == DS
+        subset_columns = ['Part 4', 'Linker 5', 'Part 5']
+
+    df2.columns = subset_columns
+
+    # Filter df1 to the subset of columns
+    df1_subset = df1[subset_columns]
+    # print(df1_subset.head())
+    # print(df2.head(36))
+
+    def find_matching_index(row):
+        for index, df2_row in df2.iterrows():
+            if all(row[col] == df2_row[col] for col in subset_columns):
+                return index
+        return None  # or a placeholder like -1
+
+    # Apply the function to each row in df1
+    return df1.apply(find_matching_index, axis=1)
+
+
+# File paths for the two CSV files
+US_construct_path = "200120_scripts_nbs\\648_constructs\\multistage_builds\\210221_36_constructs.csv"
+DS_construct_path = "200120_scripts_nbs\\648_constructs\\multistage_builds\\ds constructs\\ds_constructs.csv"
+combined_constructs = "200120_scripts_nbs\\648_constructs\\multistage_builds\\second stage design\\648_combined_output.csv"
+
+# Process the CSV files
+US_df = read_and_process_csv(US_construct_path).iloc[:, :3]
+DS_df = read_and_process_csv(DS_construct_path).iloc[:, :3]
+constructs_df = read_and_process_csv(combined_constructs)
+
+# find stage 2 parts
+backbones = pd.read_csv(combined_constructs, header=0).iloc[:, 1:4]
+US_parts = compare_construct_dfs(constructs_df, US_df, 'US')
+linkers = constructs_df['Linker 4']
+DS_parts = compare_construct_dfs(constructs_df, DS_df, 'DS')
+
+# Stage 2 build design
+new_constructs_df = pd.read_csv(combined_constructs, header=0)
+new_constructs_df['Part 2'] = US_parts
+new_constructs_df['Linker 3'] = linkers
+new_constructs_df['Part 3'] = DS_parts
+blank_col = new_constructs_df['Part 6'].values[:, None]
+new_constructs_df.iloc[:, 7] = blank_col
+new_constructs_df.iloc[:, 8] = blank_col
+new_constructs_df.iloc[:, 9] = blank_col
+new_constructs_df.iloc[:, 10] = blank_col
+
+print(new_constructs_df)
+
+# Optional: Save the result to a new CSV file
+output_file = '200120_scripts_nbs\\648_constructs\\multistage_builds\\second stage design\\stage2_constructs.csv'  # Replace with your desired output file path
+new_constructs_df.to_csv(output_file, index=False)
