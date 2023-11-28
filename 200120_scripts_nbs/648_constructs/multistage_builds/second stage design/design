@@ -1,0 +1,25 @@
+import os
+import pandas as pd
+
+def find_csv_filenames(path_to_dir, exclusion_words, prefix = "fp_library_build_", suffix=".csv"):
+    ''' Returns file names with a specified prefix, suffix, and excluding certain words (split by '_')'''
+    filenames = os.listdir(path_to_dir)
+    print(filenames)
+    return [filename for filename in filenames if filename.startswith(prefix) and filename.endswith(suffix) and not any(word in filename.split('_') for word in exclusion_words)]
+
+def combine_csvs(root_dir, exclusion_words):
+    all_dataframes = []
+    for subdir, dirs, files in os.walk(root_dir):
+        for file in find_csv_filenames(subdir, exclusion_words):
+            file_path = os.path.join(subdir, file)
+            df = pd.read_csv(file_path)
+            all_dataframes.append(df)
+
+    combined_df = pd.concat(all_dataframes, ignore_index=True, sort=False)
+    print(combined_df)
+    combined_df.to_csv('200120_scripts_nbs\\648_constructs\\multistage_builds\\second stage design\\648_combined_output.csv', index=False)
+
+# Replace 'path/to/your/directory' with the path to the directory containing your subfolders
+path = '200120_scripts_nbs\\648_constructs\\fp_library_builds'
+exclusion_words = ['clip', 'assembly']
+combine_csvs(path, exclusion_words)
