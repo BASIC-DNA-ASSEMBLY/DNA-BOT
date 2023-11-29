@@ -5,25 +5,53 @@ Created on Thu Apr 11 14:26:07 2019
 @author: mh2210
 """
 import os
+import sys
+
+#add dnabot module to syspath
+abs_path = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, abs_path)
+
 import csv
+import argparse
 import pandas as pd
 import numpy as np
 import json
-import sys
-import dnabot.dnabot_gui as gui
 import tkinter as tk
-from dnabot import mplates
+import dnabot_gui as gui
+import mplates
 
 # Constant str
 TEMPLATE_DIR_NAME = 'template_ot2_scripts'
-CLIP_TEMP_FNAME = 'clip_template.py'
-MAGBEAD_TEMP_FNAME = 'purification_template.py'
-F_ASSEMBLY_TEMP_FNAME = 'assembly_template.py'
-TRANS_SPOT_TEMP_FNAME = 'transformation_template.py'
-CLIP_FNAME = '1_clip.ot2.py'
-MAGBEAD_FNAME = '2_purification.ot2.py'
-F_ASSEMBLY_FNAME = '3_assembly.ot2.py'
-TRANS_SPOT_FNAME = '4_transformation.ot2.py'
+CLIP_TEMP_FNAME_1 = 'clip_template_APIv1.py'
+CLIP_TEMP_FNAME_2 = 'clip_template_APIv2.8.py'
+CLIP_TEMP_FNAME_3 = 'clip_template_Thermocycler_module_APIv2.8.py'
+
+MAGBEAD_TEMP_FNAME_1 = 'purification_template_APIv1.py'
+MAGBEAD_TEMP_FNAME_2 = 'purification_template_APIv2.8.py'
+
+F_ASSEMBLY_TEMP_FNAME_1 = 'assembly_template_APIv1.py'
+F_ASSEMBLY_TEMP_FNAME_2 = 'assembly_template_APIv2.8.py'
+F_ASSEMBLY_TEMP_FNAME_3 = 'assembly_template_Thermocycler_module_APIv2.8.py'
+
+TRANS_SPOT_TEMP_FNAME_1 = 'transformation_template_APIv1.py'
+TRANS_SPOT_TEMP_FNAME_2 = 'transformation_template_APIv2.8.py'
+TRANS_SPOT_TEMP_FNAME_3 = 'transformation_template_Thermocycler_module_APIv2.8.py'
+
+CLIP_FNAME_1 = '1_clip_ot2_APIv1.py'
+CLIP_FNAME_2 = '1_clip_ot2_APIv2.8.py'
+CLIP_FNAME_3 = '1_clip_ot2_Thermocycler_APIv2.8.py'
+
+MAGBEAD_FNAME_1 = '2_purification_ot2_APIv1.py'
+MAGBEAD_FNAME_2 = '2_purification_ot2_APIv2.8.py'
+
+F_ASSEMBLY_FNAME_1 = '3_assembly_ot2_APIv1.py'
+F_ASSEMBLY_FNAME_2 = '3_assembly_ot2_APIv2.8.py'
+F_ASSEMBLY_FNAME_3 = '3_assembly_ot2_Thermocycler_APIv2.8.py'
+
+TRANS_SPOT_FNAME_1 = '4_transformation_ot2_APIv1.py'
+TRANS_SPOT_FNAME_2 = '4_transformation_ot2_APIv2.8.py'
+TRANS_SPOT_FNAME_3 = '4_transformation_ot2_Thermocycler_APIv2.8.py'
+
 CLIPS_INFO_FNAME = 'clip_run_info.csv'
 FINAL_ASSEMBLIES_INFO_FNAME = 'final_assembly_run_info.csv'
 WELL_OUTPUT_FNAME = 'wells.txt'
@@ -51,10 +79,49 @@ SPOTTING_VOLS_DICT = {2: 5, 3: 5, 4: 5, 5: 5, 6: 5, 7: 5}
 SOURCE_DECK_POS = ['2', '5', '8', '7', '10', '11']
 
 
-def main():
-    # Parent directories
-    generator_dir = os.getcwd()
-    template_dir_path = os.path.join(generator_dir, TEMPLATE_DIR_NAME)
+def __cli():
+    """Command line interface.
+
+    :returns: CLI arguments
+    :rtype: <argparse.Namespace>
+    """
+    desc = "DNA assembly using BASIC on OpenTrons."
+    parser = argparse.ArgumentParser(description=desc)
+
+    # Specific options for collecting settings from command line
+    subparsers = parser.add_subparsers(help='Optional, to define settings from the terminal instead of the graphical '
+                                            'interface. Type "python dnabot_app.py nogui -h" for more info.')
+    parser_nogui = subparsers.add_parser('nogui')
+    parser_nogui.add_argument('--construct_path', help='Construct CSV file.', required=True)
+    parser_nogui.add_argument('--source_paths', help='Source CSV files.', nargs='+', required=True)
+    parser_nogui.add_argument('--etoh_well', help='Well coordinate for Ethanol. Default: A11', default='A11', type=str)
+    parser_nogui.add_argument('--soc_column', help='Column coordinate for SOC. Default: 1', default=1, type=int)
+    parser_nogui.add_argument('--output_dir',
+                              help='Output directory. Default: same directory than the one containing the '
+                                   '"construct_path" file',
+                              default=None, type=str or None)
+    parser_nogui.add_argument('--template_dir',
+                              help='Template directory. Default: "template_ot2_scripts" located next to the present '
+                                   'script.',
+                              default=None, type=str or None)
+    # Makes life easier to decide if we should switch to GUI or not
+    parser.set_defaults(nogui=False)
+    parser_nogui.set_defaults(nogui=True)
+    return parser.parse_args()
+
+
+def __info_from_gui():
+    """Pop GUI to collect user inputs.
+
+    :returns user_inputs: info collected
+    :rtype: dict
+    """
+    user_inputs = {
+        'construct_path': None,
+        'sources_paths': None,
+        'etoh_well': None,
+        'soc_column': None
+    }
 
     # Obtain user input
     print("Requesting user input, if not visible checked minimized windows.")
@@ -64,26 +131,75 @@ def main():
     root.destroy()
     if dnabotinst.quit_status:
         sys.exit("User specified 'QUIT' during app.")
+    # etoh_well and soc_column are silently collected by the gui
+    user_inputs['etoh_well'] = dnabotinst.etoh_well
+    user_inputs['soc_column'] = dnabotinst.soc_column
+    # construct file path
     root = tk.Tk()
-    construct_path = gui.UserDefinedPaths(root, 'Construct csv file')
+    user_inputs['construct_path'] = gui.UserDefinedPaths(root, 'Construct csv file').output
     root.destroy()
+
+    # part & linker file paths
     root = tk.Tk()
-    sources_paths = gui.UserDefinedPaths(root, 'Sources csv files',
-                                         multiple_files=True)
-    if len(sources_paths.output) > len(SOURCE_DECK_POS):
-        raise ValueError(
-            'Number of source plates exceeds deck positions.')
+    user_inputs['sources_paths'] = gui.UserDefinedPaths(root, 'Sources csv files', multiple_files=True).output
     root.destroy()
-    os.chdir(os.path.dirname(construct_path.output))
-    construct_base = os.path.basename(construct_path.output)
+
+    return user_inputs
+
+
+def main():
+    # Settings
+    args = __cli()
+    if args.nogui:
+        etoh_well = args.etoh_well
+        soc_column = args.soc_column
+        construct_path = args.construct_path
+        sources_paths = args.source_paths
+        output_dir = args.output_dir
+        template_dir = args.template_dir
+    else:
+        user_inputs = __info_from_gui()
+        etoh_well = user_inputs['etoh_well']
+        soc_column = user_inputs['soc_column']
+        construct_path = user_inputs['construct_path']
+        sources_paths = user_inputs['sources_paths']
+        output_dir = os.path.dirname(construct_path)
+        template_dir = None
+
+    # Args checking
+    if len(sources_paths) > len(SOURCE_DECK_POS):
+        raise ValueError('Number of source plates exceeds deck positions.')
+
+    # Path to template directory
+    if template_dir is not None:
+        # Just to comment this case: only way to fall here is that the variable has been set throught the command
+        # line arguments, nothing to do.^
+        template_dir_path = template_dir
+        pass
+    elif __name__ == '__main__':
+        # Alternatively, try to automatically deduce the path relatively to the main script path
+        script_path = os.path.abspath(__file__)
+        template_dir_path = os.path.abspath(os.path.join(script_path, '..', TEMPLATE_DIR_NAME))
+    else:
+        # Fallback
+        generator_dir = os.getcwd()
+        template_dir_path = os.path.abspath(os.path.join(generator_dir, TEMPLATE_DIR_NAME))
+
+    # Dealing with output dir
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+    os.chdir(output_dir)
+
+    # Prefix name
+    construct_base = os.path.basename(construct_path)
     construct_base = os.path.splitext(construct_base)[0]
     print('User input successfully collected.')
 
     # Process input csv files
     print('Processing input csv files...')
-    constructs_list = generate_constructs_list(construct_path.output)
+    constructs_list = generate_constructs_list(construct_path)
     clips_df = generate_clips_df(constructs_list)
-    sources_dict = generate_sources_dict(sources_paths.output)
+    sources_dict = generate_sources_dict(sources_paths)
 
     # calculate OT2 script variables
     print('Calculating OT-2 variables...')
@@ -98,20 +214,47 @@ def main():
 
     print('Writing files...')
     # Write OT2 scripts
-    generate_ot2_script(CLIP_FNAME, os.path.join(
-        template_dir_path, CLIP_TEMP_FNAME), clips_dict=clips_dict)
-    generate_ot2_script(MAGBEAD_FNAME, os.path.join(
-        template_dir_path, MAGBEAD_TEMP_FNAME),
+    generate_ot2_script(CLIP_FNAME_1, os.path.join(
+        template_dir_path, CLIP_TEMP_FNAME_1), clips_dict=clips_dict)
+    generate_ot2_script(CLIP_FNAME_2, os.path.join(
+        template_dir_path, CLIP_TEMP_FNAME_2), clips_dict=clips_dict)
+    generate_ot2_script(CLIP_FNAME_3, os.path.join(
+        template_dir_path, CLIP_TEMP_FNAME_3), clips_dict=clips_dict)
+       
+    generate_ot2_script(MAGBEAD_FNAME_1, os.path.join(
+        template_dir_path, MAGBEAD_TEMP_FNAME_1),
         sample_number=magbead_sample_number,
-        ethanol_well=dnabotinst.etoh_well)
-    generate_ot2_script(F_ASSEMBLY_FNAME, os.path.join(
-        template_dir_path, F_ASSEMBLY_TEMP_FNAME),
+        ethanol_well=etoh_well)
+    generate_ot2_script(MAGBEAD_FNAME_2, os.path.join(
+        template_dir_path, MAGBEAD_TEMP_FNAME_2),
+        sample_number=magbead_sample_number,
+        ethanol_well=etoh_well)
+    
+    generate_ot2_script(F_ASSEMBLY_FNAME_1, os.path.join(
+        template_dir_path, F_ASSEMBLY_TEMP_FNAME_1),
         final_assembly_dict=final_assembly_dict,
         tiprack_num=final_assembly_tipracks)
-    generate_ot2_script(TRANS_SPOT_FNAME, os.path.join(
-        template_dir_path, TRANS_SPOT_TEMP_FNAME),
+    generate_ot2_script(F_ASSEMBLY_FNAME_2, os.path.join(
+        template_dir_path, F_ASSEMBLY_TEMP_FNAME_2),
+        final_assembly_dict=final_assembly_dict,
+        tiprack_num=final_assembly_tipracks)
+    generate_ot2_script(F_ASSEMBLY_FNAME_3, os.path.join(
+        template_dir_path, F_ASSEMBLY_TEMP_FNAME_3),
+        final_assembly_dict=final_assembly_dict,
+        tiprack_num=final_assembly_tipracks)
+    
+    generate_ot2_script(TRANS_SPOT_FNAME_1, os.path.join(
+        template_dir_path, TRANS_SPOT_TEMP_FNAME_1),
         spotting_tuples=spotting_tuples,
-        soc_well=f"A{dnabotinst.soc_column}")
+        soc_well=f"A{soc_column}")
+    generate_ot2_script(TRANS_SPOT_FNAME_2, os.path.join(
+        template_dir_path, TRANS_SPOT_TEMP_FNAME_2),
+        spotting_tuples=spotting_tuples,
+        soc_well=f"A{soc_column}")
+    generate_ot2_script(TRANS_SPOT_FNAME_3, os.path.join(
+        template_dir_path, TRANS_SPOT_TEMP_FNAME_3),
+        spotting_tuples=spotting_tuples,
+        soc_well=f"A{soc_column}")
 
     # Write non-OT2 scripts
     if 'metainformation' in os.listdir():
@@ -120,8 +263,7 @@ def main():
         os.makedirs('metainformation')
     os.chdir('metainformation')
     master_mix_df = generate_master_mix_df(clips_df['number'].sum())
-    sources_paths_df = generate_sources_paths_df(
-        sources_paths.output, SOURCE_DECK_POS)
+    sources_paths_df = generate_sources_paths_df(sources_paths, SOURCE_DECK_POS)
     dfs_to_csv(construct_base + '_' + CLIPS_INFO_FNAME, index=False,
                MASTER_MIX=master_mix_df, SOURCE_PLATES=sources_paths_df,
                CLIP_REACTIONS=clips_df)
@@ -131,50 +273,48 @@ def main():
         for final_assembly_well, construct_clips in final_assembly_dict.items():
             csvwriter.writerow([final_assembly_well, construct_clips])
     with open(construct_base + '_' + WELL_OUTPUT_FNAME, 'w') as f:
-        f.write('Magbead ethanol well: {}'.format(dnabotinst.etoh_well))
+        f.write('Magbead ethanol well: {}'.format(etoh_well))
         f.write('\n')
-        f.write('SOC column: {}'.format(dnabotinst.soc_column))
+        f.write('SOC column: {}'.format(soc_column))
     print('BOT-2 generator successfully completed!')
 
 
-def process_construct(construct):
-    """Processes an individual construct into a dataframe of CLIP reactions
-    outlining prefix linkers, parts and suffix linkers.
-
-    """
-
-    def interogate_linker(linker):
-        """Interogates linker to determine if the suffix linker is a UTR
-        linker.
-
-        """
-        if len(linker) >= 4:
-            if linker[:3] == 'UTR':
-                return linker[:4] + '-S'
-        else:
-            return linker + "-S"
-
-    clips_info = {'prefixes': [], 'parts': [],
-                    'suffixes': []}
-    for i, sequence in enumerate(construct):
-        if i % 2 != 0:
-            clips_info['parts'].append(sequence)
-            clips_info['prefixes'].append(
-                construct[i - 1] + '-P')
-            if i == len(construct) - 1:
-                suffix_linker = interogate_linker(construct[0])
-                clips_info['suffixes'].append(suffix_linker)
-            else:
-                suffix_linker = interogate_linker(construct[i + 1])
-                clips_info['suffixes'].append(suffix_linker)
-    return pd.DataFrame.from_dict(clips_info)
-
-
 def generate_constructs_list(path):
-    """Generates a list of dataframes corresponding to each construct. Each 
+    """Generates a list of dataframes corresponding to each construct. Each
     dataframe lists components of the CLIP reactions required.
 
     """
+
+    def process_construct(construct):
+        """Processes an individual construct into a dataframe of CLIP reactions
+        outlining prefix linkers, parts and suffix linkers.
+
+        """
+
+        def interogate_linker(linker):
+            """Interrogates linker to determine if the suffix linker is a UTR
+            linker.
+
+            """
+            if linker.startswith('U'):
+                return linker.split('-')[0] + '-S'
+            else:
+                return linker + "-S"
+
+        clips_info = {'prefixes': [], 'parts': [],
+                      'suffixes': []}
+        for i, sequence in enumerate(construct):
+            if i % 2 != 0:
+                clips_info['parts'].append(sequence)
+                clips_info['prefixes'].append(
+                    construct[i - 1] + '-P')
+                if i == len(construct) - 1:
+                    suffix_linker = interogate_linker(construct[0])
+                    clips_info['suffixes'].append(suffix_linker)
+                else:
+                    suffix_linker = interogate_linker(construct[i + 1])
+                    clips_info['suffixes'].append(suffix_linker)
+        return pd.DataFrame.from_dict(clips_info)
 
     constructs_list = []
     with open(path, 'r') as csvfile:
@@ -190,13 +330,13 @@ def generate_constructs_list(path):
     # Errors
     if len(constructs_list) > MAX_CONSTRUCTS:
         raise ValueError(
-            f"Number of constructs exceeds maximum ({MAX_CONSTRUCTS}). Reduce construct number in construct.csv.")
+            'Number of constructs exceeds maximum. Reduce construct number in construct.csv.')
     else:
         return constructs_list
 
 
 def generate_clips_df(constructs_list):
-    """Generates a dataframe containing information about all the unique CLIP 
+    """Generates a dataframe containing information about all the unique CLIP
     reactions required to synthesise the constructs in constructs_list.
 
     """
@@ -208,7 +348,7 @@ def generate_clips_df(constructs_list):
     # Error
     if len(unique_clips_df.index) > MAX_CLIPS:
         raise ValueError(
-            f"Number of CLIP reactions exceeds {MAX_CLIPS}. Reduce number of constructs in construct.csv.")
+            'Number of CLIP reactions exceeds 48. Reduce number of constructs in construct.csv.')
 
     # Count number of each CLIP reaction
     clip_count = np.zeros(len(clips_df.index))
@@ -239,13 +379,13 @@ def generate_clips_df(constructs_list):
 
 
 def generate_sources_dict(paths):
-    """Imports csvs files containing a series of parts/linkers with 
+    """Imports csvs files containing a series of parts/linkers with
     corresponding information into a dictionary where the key corresponds with
     part/linker and the value contains a tuple of corresponding information.
 
     Args:
-        paths (list): list of strings each corresponding to a path for a 
-                      sources csv file. 
+        paths (list): list of strings each corresponding to a path for a
+                      sources csv file.
 
     """
     sources_dict = {}
@@ -261,7 +401,7 @@ def generate_sources_dict(paths):
 
 
 def generate_clips_dict(clips_df, sources_dict):
-    """Using clips_df and sources_dict, returns a clips_dict which acts as the 
+    """Using clips_df and sources_dict, returns a clips_dict which acts as the
     sole variable for the opentrons script "clip.ot2.py".
 
     """
@@ -279,16 +419,16 @@ def generate_clips_dict(clips_df, sources_dict):
             clips_dict['prefixes_wells'].append([sources_dict[prefix_linker][0]]
                                                 * clip_info['number'])
             clips_dict['prefixes_plates'].append(
-                [sources_dict[prefix_linker][2]] * clip_info['number'])
+                [handle_2_columns(sources_dict[prefix_linker])[2]] * clip_info['number'])
             suffix_linker = clip_info['suffixes']
             clips_dict['suffixes_wells'].append([sources_dict[suffix_linker][0]]
                                                 * clip_info['number'])
             clips_dict['suffixes_plates'].append(
-                [sources_dict[suffix_linker][2]] * clip_info['number'])
+                [handle_2_columns(sources_dict[suffix_linker])[2]] * clip_info['number'])
             part = clip_info['parts']
             clips_dict['parts_wells'].append([sources_dict[part][0]]
                                              * clip_info['number'])
-            clips_dict['parts_plates'].append([sources_dict[part][2]]
+            clips_dict['parts_plates'].append([handle_2_columns(sources_dict[part])[2]]
                                               * clip_info['number'])
             if not sources_dict[part][1]:
                 clips_dict['parts_vols'].append([DEFAULT_PART_VOL] *
@@ -360,7 +500,7 @@ def calculate_final_assembly_tipracks(final_assembly_dict):
 
 def generate_spotting_tuples(constructs_list, spotting_vols_dict):
     """Using constructs_list, generates a spotting tuple
-    (Refer to 'transformation_spotting_template.py') for every column of 
+    (Refer to 'transformation_spotting_template.py') for every column of
     constructs, assuming the 1st construct is located in well A1 and wells
     increase linearly. Target wells locations are equivalent to construct well
     locations and spotting volumes are defined by spotting_vols_dict.
@@ -391,10 +531,10 @@ def generate_spotting_tuples(constructs_list, spotting_vols_dict):
 
 
 def generate_ot2_script(ot2_script_path, template_path, **kwargs):
-    """Generates an ot2 script named 'ot2_script_path', where kwargs are 
-    written as global variables at the top of the script. For each kwarg, the 
-    keyword defines the variable name while the value defines the name of the 
-    variable. The remainder of template file is subsequently written below.        
+    """Generates an ot2 script named 'ot2_script_path', where kwargs are
+    written as global variables at the top of the script. For each kwarg, the
+    keyword defines the variable name while the value defines the name of the
+    variable. The remainder of template file is subsequently written below.
 
     """
     with open(ot2_script_path, 'w') as wf:
@@ -422,7 +562,7 @@ def generate_ot2_script(ot2_script_path, template_path, **kwargs):
 
 
 def generate_master_mix_df(clip_number):
-    """Generates a dataframe detailing the components required in the clip 
+    """Generates a dataframe detailing the components required in the clip
     reaction master mix.
 
     """
@@ -456,7 +596,7 @@ def generate_sources_paths_df(paths, deck_positions):
 
 
 def dfs_to_csv(path, index=True, **kw_dfs):
-    """Generates a csv file defined by path, where kw_dfs are 
+    """Generates a csv file defined by path, where kw_dfs are
     written one after another with each key acting as a title. If index=True,
     df indexes are written to the csv file.
 
@@ -468,6 +608,29 @@ def dfs_to_csv(path, index=True, **kw_dfs):
             value.to_csv(csvfile, index=index)
             csvwriter.writerow('')
 
+def handle_2_columns(datalist):
+    """This function has the intent of changing:
+    ('A8', '2') => ('A8', '', '2')
+    ('A8', '', '2') => ('A8', '', '2')
+    [('E2', '5')] => [('E2', '', '5')]
+    [('G1', '', '5')] => [('G1', '', '5')]
+    with the purpose of handling 2 column csv part file inputs,
+    as at times when 2 column csv files are input it creates tuples
+    of length 2 instead of 3
+    """
+    return_list = 0
+    if isinstance(datalist,list):
+        datalist = datalist[0]
+        return_list = 1
+    if len(datalist) == 2:
+        datalist = list(datalist)
+        datalist.insert(1,"")
+        datalist = tuple(datalist)
+    if return_list:
+        mylist = [""]
+        mylist[0] = datalist
+        return mylist
+    return datalist
 
 if __name__ == '__main__':
     main()

@@ -6,7 +6,7 @@ Created on Thu May 30 17:05:37 2019
 """
 
 def final_well(sample_number):
-    """Determines well containing the final sample from sample number. Indexes to 1 not 0.
+    """Determines well containing the final sample from sample number.
     
     """
     letter = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
