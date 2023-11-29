@@ -1,4 +1,5 @@
-# 1) Generate a combined list of all constructs
+''' 1) Generate a combined list of all constructs
+    - Collect and combine all of the 8 builds that comprise the 648 into one construct csv '''
 
 import os
 import pandas as pd
@@ -22,7 +23,9 @@ def combine_csvs(root_dir, exclusion_words):
     combined_df.replace(to_replace='BASIC_BFP_ORF_v1.0', value='BASIC_mTagBFP2_ORF_v1.0', inplace=True)
     combined_df.replace(to_replace='BASIC_RFP_ORF_v1.0', value='BASIC_mCherry_ORF_v1.0', inplace=True)
 
-    combined_df.to_csv('200120_scripts_nbs\\648_constructs\\multistage_builds\\second stage design\\648_combined_output.csv', index=False)
+    file_path = os.path.dirname(os.path.realpath(__file__))
+    new_file_name = os.path.join(file_path, '648_combined_output.csv')
+    combined_df.to_csv(new_file_name, index=False)
 
 # Replace 'path/to/your/directory' with the path to the directory containing your subfolders
 path = '200120_scripts_nbs\\648_constructs\\fp_library_builds'
@@ -31,13 +34,16 @@ exclusion_words = ['clip', 'assembly']
 
 
 
-# 2) Generate stage 2 construct csv from intermediate US and DS builds
+''' 2) Generate stage 2 construct csv from intermediate US and DS builds
+    - Match each side of the combined construct csv to the stage 1 intermediate constructs.
+    - Create a new construct csv for stage 2 with the intermediate constructs'''
 
 import pandas as pd
 
 def read_and_process_csv(file_path):
     df = pd.read_csv(file_path, header=0).iloc[:, 4:]
 
+    df.replace(to_replace='BASIC_SEVA_37_CmR-p15A_v1.0', value='BASIC_SEVA_36_CmR-p15A_v1.0', inplace=True)
     df.replace(to_replace='BASIC_BFP_ORF_v1.0', value='BASIC_mTagBFP2_ORF_v1.0', inplace=True)
     df.replace(to_replace='BASIC_RFP_ORF_v1.0', value='BASIC_mCherry_ORF_v1.0', inplace=True)
     
@@ -45,7 +51,8 @@ def read_and_process_csv(file_path):
 
 def compare_construct_dfs(df1, df2, side):
     # Define the subset of columns to compare
-    if side == 'US':
+
+    if side == 'US':            # which side of the construct
         subset_columns = ['Part 2', 'Linker 3', 'Part 3']
     else: # side == DS
         subset_columns = ['Part 4', 'Linker 5', 'Part 5']
@@ -70,7 +77,7 @@ def compare_construct_dfs(df1, df2, side):
 # File paths for the two CSV files
 US_construct_path = "200120_scripts_nbs\\648_constructs\\multistage_builds\\210221_36_constructs.csv"
 DS_construct_path = "200120_scripts_nbs\\648_constructs\\multistage_builds\\ds constructs\\ds_constructs.csv"
-combined_constructs = "200120_scripts_nbs\\648_constructs\\multistage_builds\\second stage design\\648_combined_output.csv"
+combined_constructs = "200120_scripts_nbs\\648_constructs\\multistage_builds\\stage 2\\648_combined_output.csv"
 
 # Process the CSV files
 US_df = read_and_process_csv(US_construct_path).iloc[:, :3]
@@ -88,14 +95,16 @@ new_constructs_df = pd.read_csv(combined_constructs, header=0)
 new_constructs_df['Part 2'] = US_parts
 new_constructs_df['Linker 3'] = linkers
 new_constructs_df['Part 3'] = DS_parts
-blank_col = new_constructs_df['Part 6'].values[:, None]
+
+blank_col = new_constructs_df['Part 6'].values[:, None]         # replace other columns with blanks
 new_constructs_df.iloc[:, 7] = blank_col
 new_constructs_df.iloc[:, 8] = blank_col
 new_constructs_df.iloc[:, 9] = blank_col
 new_constructs_df.iloc[:, 10] = blank_col
 
-print(new_constructs_df)
+# print(new_constructs_df)
 
 # Optional: Save the result to a new CSV file
-output_file = '200120_scripts_nbs\\648_constructs\\multistage_builds\\second stage design\\stage2_constructs.csv'  # Replace with your desired output file path
+file_path = os.path.dirname(os.path.realpath(__file__))
+output_file = os.path.join(file_path, 'stage2_constructs.csv')
 new_constructs_df.to_csv(output_file, index=False)
