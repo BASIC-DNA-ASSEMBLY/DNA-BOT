@@ -67,7 +67,7 @@ def compare_construct_dfs(df1, df2, side):
     def find_matching_index(row):
         for index, df2_row in df2.iterrows():
             if all(row[col] == df2_row[col] for col in subset_columns):
-                return index
+                return side + '_' + str(index)
         return None  # or a placeholder like -1
 
     # Apply the function to each row in df1
