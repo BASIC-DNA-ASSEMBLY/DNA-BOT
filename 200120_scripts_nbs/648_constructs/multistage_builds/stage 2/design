@@ -104,7 +104,30 @@ new_constructs_df.iloc[:, 10] = blank_col
 
 # print(new_constructs_df)
 
-# Optional: Save the result to a new CSV file
+# Save the result to a new CSV file
 file_path = os.path.dirname(os.path.realpath(__file__))
 output_file = os.path.join(file_path, 'stage2_constructs.csv')
 new_constructs_df.to_csv(output_file, index=False)
+
+
+''' 3) Write parts and linkers csv '''
+
+# # Find linkers used
+# linker_list = new_constructs_df.iloc[:, [1, 3, 5]].stack().unique()
+# print(linker_list, len(linker_list))
+
+parts_columns  = ['Part/linker', 'Well', 'Part concentration (ng/uL)']
+linker_list = ['LMS-P', 'LMS-S', 'LMP-P', 'LMP-S', 'UTR1', 'UTR1-RBS1', 'UTR1-RBS2', 'UTR1-RBS3', 'UTR2', 'UTR2-RBS1', 'UTR2-RBS2', 'UTR2-RBS3', 'UTR3', 'UTR3-RBS1', 'UTR3-RBS2', 'UTR3-RBS3']
+parts_list = ['US_' + str(n+1) for n in range(36)] + ['DS_' + str(n+1) for n in range(18)] + [''] * 6 + ['BASIC_SEVA_36_CmR-p15A_v1.0'] + [''] * 11 + linker_list + [''] * 8
+letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
+well_list = [l+str(n+1) for l in letters for n in range(12)]
+
+parts_df_dict = {
+    parts_columns[0]: parts_list,
+    parts_columns[1]: well_list,
+    parts_columns[2]: ['']*96
+}
+
+parts_df = pd.DataFrame(parts_df_dict)
+output_file = os.path.join(file_path, 'stage2_parts.csv')
+parts_df.to_csv(output_file, index=False)
