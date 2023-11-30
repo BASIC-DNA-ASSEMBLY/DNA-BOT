@@ -67,7 +67,7 @@ def compare_construct_dfs(df1, df2, side):
     def find_matching_index(row):
         for index, df2_row in df2.iterrows():
             if all(row[col] == df2_row[col] for col in subset_columns):
-                return side + '_' + str(index)
+                return side + '_' + str(index+1)
         return None  # or a placeholder like -1
 
     # Apply the function to each row in df1
@@ -75,9 +75,9 @@ def compare_construct_dfs(df1, df2, side):
 
 
 # File paths for the two CSV files
-US_construct_path = "200120_scripts_nbs\\648_constructs\\multistage_builds\\210221_36_constructs.csv"
-DS_construct_path = "200120_scripts_nbs\\648_constructs\\multistage_builds\\ds constructs\\ds_constructs.csv"
-combined_constructs = "200120_scripts_nbs\\648_constructs\\multistage_builds\\stage 2\\648_combined_output.csv"
+US_construct_path = "648_constructs\\multistage_builds\\210221_36_constructs.csv"
+DS_construct_path = "648_constructs\\multistage_builds\\ds constructs\\ds_constructs.csv"
+combined_constructs = "648_constructs\\multistage_builds\\stage_2\\648_combined_output.csv"
 
 # Process the CSV files
 US_df = read_and_process_csv(US_construct_path).iloc[:, :3]
@@ -117,8 +117,8 @@ new_constructs_df.to_csv(output_file, index=False)
 # print(linker_list, len(linker_list))
 
 parts_columns  = ['Part/linker', 'Well', 'Part concentration (ng/uL)']
-linker_list = ['LMS-P', 'LMS-S', 'LMP-P', 'LMP-S', 'UTR1', 'UTR1-RBS1', 'UTR1-RBS2', 'UTR1-RBS3', 'UTR2', 'UTR2-RBS1', 'UTR2-RBS2', 'UTR2-RBS3', 'UTR3', 'UTR3-RBS1', 'UTR3-RBS2', 'UTR3-RBS3']
-parts_list = ['US_' + str(n+1) for n in range(36)] + ['DS_' + str(n+1) for n in range(18)] + [''] * 6 + ['BASIC_SEVA_36_CmR-p15A_v1.0'] + [''] * 11 + linker_list + [''] * 8
+linker_list = ['LMS-P', 'LMS-S', 'LMP-P', 'LMP-S', 'UTR1-S', 'UTR1-RBS1-P', 'UTR1-RBS2-P', 'UTR1-RBS3-P', 'UTR2-S', 'UTR2-RBS1-P', 'UTR2-RBS2-P', 'UTR2-RBS3-P', 'UTR3-S', 'UTR3-RBS1-P', 'UTR3-RBS2-P', 'UTR3-RBS3-P']
+parts_list = ['US_' + str(n+1) for n in range(36)] + ['DS_' + str(n+1) for n in range(18)] + [''] * 6 + ['BASIC_SEVA_36_CmR-p15A_v1.0'] + [''] * 11 + linker_list[:4] + [''] * 8 + linker_list[4:]
 letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
 well_list = [l+str(n+1) for l in letters for n in range(12)]
 
@@ -131,3 +131,10 @@ parts_df_dict = {
 parts_df = pd.DataFrame(parts_df_dict)
 output_file = os.path.join(file_path, 'stage2_parts.csv')
 parts_df.to_csv(output_file, index=False)
+
+# # Flatten the DataFrames into a list of unique values for each DataFrame
+# flatten_df1 = pd.unique(df1.values.ravel('K'))
+# flatten_df2 = pd.unique(df2.values.ravel('K'))
+
+# # Convert to sets and compare
+# same_unique_elements = set(flatten_df1) == set(flatten_df2)

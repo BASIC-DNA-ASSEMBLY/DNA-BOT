@@ -3,6 +3,10 @@
 Created on Thu Apr 11 14:26:07 2019
 
 @author: mh2210
+
+
+ & C:/Users/ljh119/Anaconda3/python.exe "c:/Users/ljh119/OneDrive - Imperial College London/648_build/DNA-BOT/dnabot/dnabot_app.py" nogui --construct_path "C:\Users\ljh119\OneDrive - Imperial College London\648_build\DNA-BOT\648_constructs\multistage_builds\stage_2\stage2_constructs.csv" --source_paths "C:\Users\ljh119\OneDrive - Imperial College London\648_build\DNA-BOT\648_constructs\multistage_builds\stage_2\stage2_parts.csv" --output_dir "C:\Users\ljh119\OneDrive - Imperial College London\648_build\DNA-BOT\648_constructs\multistage_builds\stage_2"
+ 
 """
 import os
 import sys
@@ -65,8 +69,8 @@ T4_LIG_VOL = 0.5
 CLIP_MAST_WATER = 15.5
 PART_PER_CLIP = 200
 MIN_VOL = 1
-MAX_CONSTRUCTS = 96
-MAX_CLIPS = 48
+MAX_CONSTRUCTS = 1000
+MAX_CLIPS = 1000
 FINAL_ASSEMBLIES_PER_CLIP = 15
 DEFAULT_PART_VOL = 1
 MAX_SOURCE_PLATES = 6
