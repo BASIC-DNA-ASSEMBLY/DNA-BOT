@@ -5,7 +5,6 @@ Created on Thu Apr 11 14:26:07 2019
 @author: mh2210
 
 
- & C:/Users/ljh119/Anaconda3/python.exe "c:/Users/ljh119/OneDrive - Imperial College London/648_build/DNA-BOT/dnabot/dnabot_app.py" nogui --construct_path "C:\Users\ljh119\OneDrive - Imperial College London\648_build\DNA-BOT\648_constructs\multistage_builds\stage_2\stage2_constructs.csv" --source_paths "C:\Users\ljh119\OneDrive - Imperial College London\648_build\DNA-BOT\648_constructs\multistage_builds\stage_2\stage2_parts.csv" --output_dir "C:\Users\ljh119\OneDrive - Imperial College London\648_build\DNA-BOT\648_constructs\multistage_builds\stage_2"
  
 """
 import os
@@ -69,12 +68,12 @@ T4_LIG_VOL = 0.5
 CLIP_MAST_WATER = 15.5
 PART_PER_CLIP = 200
 MIN_VOL = 1
-MAX_CONSTRUCTS = 1000
-MAX_CLIPS = 1000
+MAX_CONSTRUCTS = 1000               # 96
+MAX_CLIPS = 1000                    # 48
 FINAL_ASSEMBLIES_PER_CLIP = 15
 DEFAULT_PART_VOL = 1
 MAX_SOURCE_PLATES = 6
-MAX_FINAL_ASSEMBLY_TIPRACKS = 7
+MAX_FINAL_ASSEMBLY_TIPRACKS = 20    # 7 
 
 # Constant dicts
 SPOTTING_VOLS_DICT = {2: 5, 3: 5, 4: 5, 5: 5, 6: 5, 7: 5}
@@ -153,22 +152,33 @@ def __info_from_gui():
 
 def main():
     # Settings
-    args = __cli()
-    if args.nogui:
-        etoh_well = args.etoh_well
-        soc_column = args.soc_column
-        construct_path = args.construct_path
-        sources_paths = args.source_paths
-        output_dir = args.output_dir
-        template_dir = args.template_dir
-    else:
-        user_inputs = __info_from_gui()
-        etoh_well = user_inputs['etoh_well']
-        soc_column = user_inputs['soc_column']
-        construct_path = user_inputs['construct_path']
-        sources_paths = user_inputs['sources_paths']
-        output_dir = os.path.dirname(construct_path)
-        template_dir = None
+    # args = __cli()
+    
+    # if args.nogui:
+    #     etoh_well = args.etoh_well
+    #     soc_column = args.soc_column
+    #     construct_path = args.construct_path
+    #     sources_paths = args.source_paths
+    #     output_dir = args.output_dir
+    #     template_dir = args.template_dir
+    # else:
+    #     user_inputs = __info_from_gui()
+    #     etoh_well = user_inputs['etoh_well']
+    #     soc_column = user_inputs['soc_column']
+    #     construct_path = user_inputs['construct_path']
+    #     sources_paths = user_inputs['sources_paths']
+    #     output_dir = os.path.dirname(construct_path)
+    #     template_dir = None
+
+    #### TEST FILES - TO BE DELETED ####
+    etoh_well = 'A11'
+    soc_column = 1
+    construct_path = 'C:\\Users\\ljh119\\OneDrive - Imperial College London\\648_build\\DNA-BOT\\648_constructs\\multistage_builds\\stage_2\\stage2_constructs.csv'
+    sources_paths = ['C:\\Users\\ljh119\\OneDrive - Imperial College London\\648_build\\DNA-BOT\\648_constructs\\multistage_builds\\stage_2\\stage2_parts.csv']
+    output_dir = 'C:\\Users\\ljh119\\OneDrive - Imperial College London\\648_build\\DNA-BOT\\648_constructs\\multistage_builds\\stage_2'
+    template_dir = None
+
+    ####################################
 
     # Args checking
     if len(sources_paths) > len(SOURCE_DECK_POS):
@@ -177,7 +187,7 @@ def main():
     # Path to template directory
     if template_dir is not None:
         # Just to comment this case: only way to fall here is that the variable has been set throught the command
-        # line arguments, nothing to do.^
+        # line arguments, nothing to do.
         template_dir_path = template_dir
         pass
     elif __name__ == '__main__':
@@ -185,7 +195,8 @@ def main():
         script_path = os.path.abspath(__file__)
         template_dir_path = os.path.abspath(os.path.join(script_path, '..', TEMPLATE_DIR_NAME))
     else:
-        # Fallback
+        # Fallback - if template directory is neither given in cli nor the file is run directly, 
+        # check for the template dir in the current wd
         generator_dir = os.getcwd()
         template_dir_path = os.path.abspath(os.path.join(generator_dir, TEMPLATE_DIR_NAME))
 
@@ -201,9 +212,18 @@ def main():
 
     # Process input csv files
     print('Processing input csv files...')
-    constructs_list = generate_constructs_list(construct_path)
-    clips_df = generate_clips_df(constructs_list)
-    sources_dict = generate_sources_dict(sources_paths)
+    constructs_list = generate_constructs_list(construct_path)      # returns a list of individual dfs for each construct in which each row is a required clip reaction
+    clips_df = generate_clips_df(constructs_list)                   # takes the constructs_list and returns a df of all unique clip reactions with the number of times each one is required to be made and the location(s) of it
+    sources_dict = generate_sources_dict(sources_paths)             # returns a dict with source id as keys and location as values
+
+    ##################### TEST #####################
+    # print(constructs_list)
+    # print(clips_df)
+    # print(sources_dict)
+
+    output_file = os.path.join(output_dir, 'clips_df.csv')
+    clips_df.to_csv(output_file, index=False)
+    ################################################
 
     # calculate OT2 script variables
     print('Calculating OT-2 variables...')
@@ -217,7 +237,7 @@ def main():
                                                SPOTTING_VOLS_DICT)
 
     print('Writing files...')
-    # Write OT2 scripts
+    # Write OT2 scripts ############################################ Could be rewritten to run from a for loop ############################################
     generate_ot2_script(CLIP_FNAME_1, os.path.join(
         template_dir_path, CLIP_TEMP_FNAME_1), clips_dict=clips_dict)
     generate_ot2_script(CLIP_FNAME_2, os.path.join(
@@ -331,12 +351,13 @@ def generate_constructs_list(path):
                 else:
                     constructs_list.append(process_construct(construct[1:]))
 
-    # Errors
+    # Errors ########################################################## NEEDS REWRITING ##########################################################
     if len(constructs_list) > MAX_CONSTRUCTS:
         raise ValueError(
             'Number of constructs exceeds maximum. Reduce construct number in construct.csv.')
     else:
         return constructs_list
+    ##############################################################################################################################################
 
 
 def generate_clips_df(constructs_list):
