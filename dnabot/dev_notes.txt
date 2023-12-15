@@ -1,0 +1,57 @@
+Aim: 
+To allow builds with more clips to be undertaken
+
+Objectives:
+    (1) Increase the 'MAX_xxx' capacities of the script so that the script isn't arbitrarily limited
+        - Specifically allow tip racks to be replaced by iterating the index of the tip
+        - Also consider volume of reagents required at every step
+    (2) Increase the total number of clips which can be generated from the clip step (i.e. increase from 48 to at least two whole plates - 192) 
+    (3) Alter the mag purification script to allow for the purification of a whole plate (96)
+    (4) Change the DNA_Bot app to be able to generate multiple clip and mag purification scripts as required
+    (5) Change the assembly step to allow multiple clip plates as required (I think max two plates of 96 wells each)
+    (6) Increase the efficiency of scripts by including multidispensing, also look for other ways to speed up script
+    (7) Introduce new start point from clips df
+    (8) General improvements to the code such as texting capability and flashing lights
+    (9) Intelligent iterative build design that suggests intermediate builds
+
+
+(1) Reagent vol considerations
+Reagents are required for each of the four steps and the total volume required may exceed the current capacity, either in terms 
+of requiring additional tubes, or infact being greater than the absolute capacity of what is possible on the opentron. For the 
+clip step, master mix and water are required. I will not be increasing the max number of clips from 48 (see discussion in (2)) 
+so therefore no additional changes are required for the clip step. The Mag step will be altered to allow for the purification of
+96 constructs which is double the original number of 48. Three reagents are used for this step which are ethanol, H2O, and beads.
+Both the volume of beads and the volume of H2O in the reservoir are adequate (with beads required being 456ul out of 750ul and 
+H2O being 3648ul out of 20,000ul). However the amount of ethanol required is greater than the amount in the reservoir (at 
+2,8800ul out of 20,000ul). This can be easily fixed by including a second well of ethanol within the reservoir. For the assembly 
+step, the changes in the program will impact only the number of clips which are present on the plate and not the total number of 
+constructs which are to be built, which is limited by the capacity of the thermocycler and therefore remains at a maximum of 96.
+No changes therefore need to be made to the reagent capaciuty for the assembly reaction. For the Transformation, I have written 
+an entire new script which I will substitute the original for. 
+
+I may need to consider the API v1.0 scripts and the APIv2.8 scripts without the thermocycler but these are not a priority.
+
+
+(2) increase max clip number
+This could be done in a couple of ways. The two options are to produce multiple plates of 48 or to produce multiple plates of 96.
+Advantages of 48 plate:
+    - Do not need to edit the mag purification script too much
+    - amount of time taken for clip and purification step is not significantly increased - less evaporation
+    - less deck slots required as source and destination plate are the same
+
+Advantages of 96 plate:
+    - more clips per plate so fewer deck slots taken up in assembly step
+    - more compact for storage
+
+I think its probably better to keep the 48 script as the time take for the clip step is already significant (~ 4 hours), however 
+a third option presents itself wherein multiple clip plates could be combined at the purification stage.
+
+
+(6) Increase efficiency
+Consider making a BB master mix 
+
+
+To Do:
+    - Increase max capacities
+    - check whether any scripts are running out of tips? how will I know? how can I fix?
+    - check what max vol of reagents could hypothetically be required for 192 clips
