@@ -5,14 +5,13 @@ Objectives:
     (1) Increase the 'MAX_xxx' capacities of the script so that the script isn't arbitrarily limited
         - Specifically allow tip racks to be replaced by iterating the index of the tip
         - Also consider volume of reagents required at every step
-    (2) Increase the total number of clips which can be generated from the clip step (i.e. increase from 48 to at least two whole plates - 192) 
-    (3) Alter the mag purification script to allow for the purification of a whole plate (96)
-    (4) Change the DNA_Bot app to be able to generate multiple clip and mag purification scripts as required
-    (5) Change the assembly step to allow multiple clip plates as required (I think max two plates of 96 wells each)
-    (6) Increase the efficiency of scripts by including multidispensing, also look for other ways to speed up script
-    (7) Introduce new start point from clips df
-    (8) General improvements to the code such as texting capability and flashing lights
-    (9) Intelligent iterative build design that suggests intermediate builds
+    (2) Alter the mag purification script to allow for the purification of a whole plate (96)
+    (3) Change the DNA_Bot app to be able to generate multiple clip and mag purification scripts as required
+    (4) Change the assembly step to allow multiple clip plates as required (I think max two plates of 96 wells each)
+    (5) Increase the efficiency of scripts by including multidispensing, also look for other ways to speed up script
+    (6) Introduce new start point from clips df
+    (7) General improvements to the code such as texting capability and flashing lights
+    (8) Intelligent iterative build design that suggests intermediate builds
 
 
 (1) Reagent vol considerations
@@ -26,7 +25,7 @@ H2O being 3648ul out of 20,000ul). However the amount of ethanol required is gre
 2,8800ul out of 20,000ul). This can be easily fixed by including a second well of ethanol within the reservoir. For the assembly 
 step, the changes in the program will impact only the number of clips which are present on the plate and not the total number of 
 constructs which are to be built, which is limited by the capacity of the thermocycler and therefore remains at a maximum of 96.
-No changes therefore need to be made to the reagent capaciuty for the assembly reaction. For the Transformation, I have written 
+No changes therefore need to be made to the reagent capacity for the assembly reaction. For the Transformation, I have written 
 an entire new script which I will substitute the original for. 
 
 I may need to consider the API v1.0 scripts and the APIv2.8 scripts without the thermocycler but these are not a priority.
@@ -55,3 +54,9 @@ To Do:
     - Increase max capacities
     - check whether any scripts are running out of tips? how will I know? how can I fix?
     - check what max vol of reagents could hypothetically be required for 192 clips
+
+The current DNA_Bot app works in the following way:
+    - user inputs a list of constructs and a list of sources
+    - DNA Bot extracts a list of unique clips required to manufacture all constructs and the quantity of each required
+    - individual clips are further broken down into their constituents, these are referenced against the list of sources provided by the user
+    

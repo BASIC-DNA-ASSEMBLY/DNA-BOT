@@ -227,7 +227,7 @@ def main():
 
     # calculate OT2 script variables
     print('Calculating OT-2 variables...')
-    clips_dict = generate_clips_dict(clips_df, sources_dict)
+    clips_dict = generate_clips_dict(clips_df, sources_dict)        # takes the clips df and the sources dict and produces a dictionary of tuples of the parts, prefixes, and suffixes' wells and plate locations
     magbead_sample_number = clips_df['number'].sum()
     final_assembly_dict = generate_final_assembly_dict(constructs_list,
                                                        clips_df)
