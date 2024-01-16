@@ -69,7 +69,7 @@ CLIP_MAST_WATER = 15.5
 PART_PER_CLIP = 200
 MIN_VOL = 1
 MAX_CONSTRUCTS = 1000               # 96
-MAX_CLIPS = 1000                    # 48
+MAX_CLIPS = 48
 FINAL_ASSEMBLIES_PER_CLIP = 15
 DEFAULT_PART_VOL = 1
 MAX_SOURCE_PLATES = 6
@@ -361,7 +361,7 @@ def generate_constructs_list(path):
 
 
 def generate_clips_df(constructs_list):
-    """Generates a dataframe containing information about all the unique CLIP
+    """Generates a list of dataframes containing information about all the unique CLIP
     reactions required to synthesise the constructs in constructs_list.
 
     """
@@ -370,20 +370,27 @@ def generate_clips_df(constructs_list):
     unique_clips_df = unique_clips_df.reset_index(drop=True)
     clips_df = unique_clips_df.copy()
 
-    # Error
-    if len(unique_clips_df.index) > MAX_CLIPS:
-        raise ValueError(
-            'Number of CLIP reactions exceeds 48. Reduce number of constructs in construct.csv.')
+    ############################################################ Old Version #####################################################################
+    # # Error 
+    # if len(unique_clips_df.index) > MAX_CLIPS:
+    #     raise ValueError(
+    #         'Number of CLIP reactions exceeds 48. Reduce number of constructs in construct.csv.')
+    ##############################################################################################################################################
 
-    # Count number of each CLIP reaction
-    clip_count = np.zeros(len(clips_df.index))
-    for i, unique_clip in unique_clips_df.iterrows():
-        for _, clip in merged_construct_dfs.iterrows():
-            if unique_clip.equals(clip):
-                clip_count[i] = clip_count[i] + 1
-    clip_count = clip_count // FINAL_ASSEMBLIES_PER_CLIP + 1
-    clips_df['number'] = [int(i) for i in clip_count.tolist()]
-
+    def count_unique_clips(clips_df, merged_construct_dfs):
+        ''' Count number of each CLIP reaction
+            Iterates through unique clip list, counts number of instances of each unique clip'''
+        clip_count = np.zeros(len(clips_df.index))
+        for i, unique_clip in clips_df.iterrows():
+            for _, clip in merged_construct_dfs.iterrows():
+                if unique_clip.equals(clip):
+                    clip_count[i] = clip_count[i] + 1
+        clip_count = clip_count // FINAL_ASSEMBLIES_PER_CLIP + 1
+        clips_df['number'] = [int(i) for i in clip_count.tolist()]
+        return clips_df
+    
+    clips_df = count_unique_clips(clips_df, merged_construct_dfs)
+    
     # Associate well/s for each CLIP reaction
     clips_df['mag_well'] = pd.Series(['0'] * len(clips_df.index),
                                      index=clips_df.index)
