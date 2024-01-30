@@ -40,9 +40,9 @@ TRANS_SPOT_TEMP_FNAME_1 = 'transformation_template_APIv1.py'
 TRANS_SPOT_TEMP_FNAME_2 = 'transformation_template_APIv2.8.py'
 TRANS_SPOT_TEMP_FNAME_3 = 'transformation_template_Thermocycler_module_APIv2.8.py'
 
-CLIP_FNAME_1 = '1_clip_ot2_APIv1.py'
-CLIP_FNAME_2 = '1_clip_ot2_APIv2.8.py'
-CLIP_FNAME_3 = '1_clip_ot2_Thermocycler_APIv2.8.py'
+CLIP_FNAME_1 = '1_clip_ot2_APIv1'                           # removed '.py'
+CLIP_FNAME_2 = '1_clip_ot2_APIv2.8'                         # removed '.py'
+CLIP_FNAME_3 = '1_clip_ot2_Thermocycler_APIv2.8'            # removed '.py'
 
 MAGBEAD_FNAME_1 = '2_purification_ot2_APIv1.py'
 MAGBEAD_FNAME_2 = '2_purification_ot2_APIv2.8.py'
@@ -69,7 +69,8 @@ CLIP_MAST_WATER = 15.5
 PART_PER_CLIP = 200
 MIN_VOL = 1
 MAX_CONSTRUCTS = 1000               # 96
-MAX_CLIPS = 48
+MAX_CLIPS_PER_PLATE = 48
+MAX_CLIPS_TOTAL = 96*2
 FINAL_ASSEMBLIES_PER_CLIP = 15
 DEFAULT_PART_VOL = 1
 MAX_SOURCE_PLATES = 6
@@ -227,23 +228,41 @@ def main():
 
     # calculate OT2 script variables
     print('Calculating OT-2 variables...')
-    clips_dict = generate_clips_dict(clips_df, sources_dict)        # takes the clips df and the sources dict and produces a dictionary of tuples of the parts, prefixes, and suffixes' wells and plate locations
-    magbead_sample_number = clips_df['number'].sum()
-    final_assembly_dict = generate_final_assembly_dict(constructs_list,
-                                                       clips_df)
-    final_assembly_tipracks = calculate_final_assembly_tipracks(
-        final_assembly_dict)
-    spotting_tuples = generate_spotting_tuples(constructs_list,
-                                               SPOTTING_VOLS_DICT)
+    clips_dict_list = generate_clips_dict_list(clips_df, sources_dict)      # takes the clips df and the sources dict and produces a list of dictionaries of tuples of the parts, prefixes, and suffixes' wells and plate locations
+    clips_dict = generate_clips_dict(clips_df, sources_dict)                # one dict of everything - original version - to be used by final assembly generator functions
+    # print(clips_dict)
+
+    ################### UNCOMMENT ###################
+    # magbead_sample_number = clips_df['number'].sum()
+    # final_assembly_dict = generate_final_assembly_dict(constructs_list,
+    #                                                    clips_df)
+    # final_assembly_tipracks = calculate_final_assembly_tipracks(
+    #     final_assembly_dict)
+    # spotting_tuples = generate_spotting_tuples(constructs_list,
+    #                                            SPOTTING_VOLS_DICT)
+    #################################################
 
     print('Writing files...')
-    # Write OT2 scripts ############################################ Could be rewritten to run from a for loop ############################################
-    generate_ot2_script(CLIP_FNAME_1, os.path.join(
-        template_dir_path, CLIP_TEMP_FNAME_1), clips_dict=clips_dict)
-    generate_ot2_script(CLIP_FNAME_2, os.path.join(
-        template_dir_path, CLIP_TEMP_FNAME_2), clips_dict=clips_dict)
-    generate_ot2_script(CLIP_FNAME_3, os.path.join(
-        template_dir_path, CLIP_TEMP_FNAME_3), clips_dict=clips_dict)
+    # Write OT2 scripts
+    for clip_plate in range(len(clips_dict_list)):
+        print(clip_plate)
+        sub_clip_dict = clips_dict_list[clip_plate]
+                
+        generate_ot2_script(CLIP_FNAME_1 + '_SCRIPT_{}.py'.format(clip_plate+1), os.path.join(
+            template_dir_path, CLIP_TEMP_FNAME_1), clips_dict=sub_clip_dict)
+        generate_ot2_script(CLIP_FNAME_2 + '_SCRIPT_{}.py'.format(clip_plate+1), os.path.join(
+            template_dir_path, CLIP_TEMP_FNAME_2), clips_dict=sub_clip_dict)
+        generate_ot2_script(CLIP_FNAME_3 + '_SCRIPT_{}.py'.format(clip_plate+1), os.path.join(
+            template_dir_path, CLIP_TEMP_FNAME_3), clips_dict=sub_clip_dict)
+        
+    # generate_ot2_script(CLIP_FNAME_1, os.path.join(
+    #     template_dir_path, CLIP_TEMP_FNAME_1), clips_dict=clips_dict)
+    # generate_ot2_script(CLIP_FNAME_2, os.path.join(
+    #     template_dir_path, CLIP_TEMP_FNAME_2), clips_dict=clips_dict)
+    # generate_ot2_script(CLIP_FNAME_3, os.path.join(
+    #     template_dir_path, CLIP_TEMP_FNAME_3), clips_dict=clips_dict)
+        
+    ######## NEED TO AMMEND META DATA ##########
        
     generate_ot2_script(MAGBEAD_FNAME_1, os.path.join(
         template_dir_path, MAGBEAD_TEMP_FNAME_1),
@@ -370,12 +389,10 @@ def generate_clips_df(constructs_list):
     unique_clips_df = unique_clips_df.reset_index(drop=True)
     clips_df = unique_clips_df.copy()
 
-    ############################################################ Old Version #####################################################################
-    # # Error 
-    # if len(unique_clips_df.index) > MAX_CLIPS:
-    #     raise ValueError(
-    #         'Number of CLIP reactions exceeds 48. Reduce number of constructs in construct.csv.')
-    ##############################################################################################################################################
+    # Error 
+    if len(unique_clips_df.index) > MAX_CLIPS_TOTAL:
+        raise ValueError(
+            'Number of CLIP reactions exceeds {}. Reduce number of constructs in construct.csv.'.format(MAX_CLIPS_TOTAL))
 
     def count_unique_clips(clips_df, merged_construct_dfs):
         ''' Count number of each CLIP reaction
@@ -484,6 +501,31 @@ def generate_clips_dict(clips_df, sources_dict):
     for key, value in clips_dict.items():
         clips_dict[key] = [item for sublist in value for item in sublist]
     return clips_dict
+
+
+def generate_clips_dict_list(clips_df, sources_dict):
+    '''Subsets the clips df into chunks of 48, runs the generate_final_assembly_dict 
+    and then returns the resulting '''
+
+    CLIP_COUNT = len(clips_df)
+    CLIP_PLATE_COUNT = CLIP_COUNT // MAX_CLIPS_PER_PLATE + 1    # plus one to include final partially full plate
+
+    clips_dict_list = []
+
+    for plate in range(CLIP_PLATE_COUNT):                       # plus one for zero indexing
+        subset_lower = (plate * MAX_CLIPS_PER_PLATE)
+        subset_upper = subset_lower + MAX_CLIPS_PER_PLATE
+
+        if subset_upper > CLIP_COUNT:
+            subset_upper = CLIP_COUNT
+        print(subset_lower, subset_upper)
+    
+        sub_clip_df = clips_df.iloc[subset_lower:subset_upper, :]
+        sub_clip_dict = generate_clips_dict(sub_clip_df, sources_dict)
+        clips_dict_list.append(sub_clip_dict)
+
+    # clips_dict = generate_clips_dict(clips_df, sources_dict)
+    return clips_dict_list
 
 
 def generate_final_assembly_dict(constructs_list, clips_df):
