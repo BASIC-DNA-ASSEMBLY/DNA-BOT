@@ -11,8 +11,8 @@ metadata = {
 
 
 # example values produced by DNA-BOT for a single construct containing 5 parts, un-comment and run to test the template:
-#sample_number=8
-#ethanol_well='A3'
+sample_number=8
+ethanol_well='A3'
 
 def run(protocol: protocol_api.ProtocolContext):
 # added run function for API verison 2
@@ -54,18 +54,21 @@ def run(protocol: protocol_api.ProtocolContext):
         TIPS_PER_SAMPLE = 9
         PIPETTE_TYPE = 'p300_multi_gen2'
             # new constant for easier swapping between pipette types
+        
+        # Source plate(s)
+
 
         # Tiprack
-        CANDIDATE_TIPRACK_SLOTS = ['3', '6', '9', '2', '5']
+        CANDIDATE_TIPRACK_SLOTS = ['3', '6', '9', '5']
 
         # Magnetic Module
-        MAGDECK_POSITION = '1'
+        MAGDECK_POSITION = '4'
 
         # Mix Plate
         MIX_PLATE_TYPE = '4ti0960rig_96_wellplate_200ul'
             # modified from custom labware as API 2 doesn't support labware.create anymore, so the old add_labware script can't be used
             # also acts as the type of plate loaded onto the magnetic module
-        MIX_PLATE_POSITION = '4'
+        MIX_PLATE_POSITION = '5'
 
         # Reagents
         REAGENT_CONTAINER_TYPE = '4ti0131_12_reservoir_21000ul'
@@ -137,7 +140,7 @@ def run(protocol: protocol_api.ProtocolContext):
         ### Calculating Columns
 
         # Total number of columns
-        col_num = sample_number // 8 + (1 if sample_number % 8 > 0 else 0)
+        col_num = sample_number // 8 + (1 if sample_number % 8 > 0 else 0)          #####################################################################
 
         # Columns containing samples in location 1 (magentic module)
             # generates a list of lists: [[A1, B1, C1...], [A2, B2, C2...]...]
@@ -178,14 +181,12 @@ def run(protocol: protocol_api.ProtocolContext):
             pipette.aspirate(bead_volume, beads)
             protocol.max_speeds.update(SLOW_HEAD_SPEEDS)
 
-            # Aspirte samples
-            pipette.aspirate(sample_volume + DEAD_TOTAL_VOL, samples[target][0])
+            # Aspirate samples
+            pipette.aspirate(sample_volume + DEAD_TOTAL_VOL, samples[target][0])    # samples[target][0] returns top well of column - allows for multichannel operations
 
             # Transfer and mix on mix_plate
             pipette.dispense(total_vol, mixing[target][0])
-                # similar to above, added [0] because samples[target] returned a list of every well in column 1 rather than just one well
             pipette.mix(IMMOBILISE_MIX_REPS, mix_vol, mixing[target][0])
-                # similar to above, added [0] because samples[target] returned a list of every well in column 1 rather than just one well
             pipette.blow_out()
 
             # Dispose of tip
