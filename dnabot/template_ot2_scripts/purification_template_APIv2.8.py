@@ -176,12 +176,12 @@ def run(protocol: protocol_api.ProtocolContext):
         # Mix beads and parts
         for target in range(int(len(samples))):
 
-            # Aspirate beads
+            # Aspirate beads from bead container
             pipette.pick_up_tip()
             pipette.aspirate(bead_volume, beads)
             protocol.max_speeds.update(SLOW_HEAD_SPEEDS)
 
-            # Aspirate samples
+            # Aspirate samples from left half of mag plate
             pipette.aspirate(sample_volume + DEAD_TOTAL_VOL, samples[target][0])    # samples[target][0] returns top well of column - allows for multichannel operations
 
             # Transfer and mix on mix_plate
