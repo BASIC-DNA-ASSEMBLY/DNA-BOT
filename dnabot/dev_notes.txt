@@ -54,9 +54,5 @@ To Do:
     - Increase max capacities
     - check whether any scripts are running out of tips? how will I know? how can I fix?
     - check what max vol of reagents could hypothetically be required for 192 clips
-
-The current DNA_Bot app works in the following way:
-    - user inputs a list of constructs and a list of sources
-    - DNA Bot extracts a list of unique clips required to manufacture all constructs and the quantity of each required
-    - individual clips are further broken down into their constituents, these are referenced against the list of sources provided by the user
-    
+    - ammend meta data to match new requirements
+    - output all files into different folders for each version
