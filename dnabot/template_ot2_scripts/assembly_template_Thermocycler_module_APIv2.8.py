@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 from opentrons import protocol_api
 import numpy as np
 # metadata
@@ -63,20 +64,39 @@ def run(protocol: protocol_api.ProtocolContext):
                 final_assembly_lens.append(len(values))
             unique_assemblies_lens = list(set(final_assembly_lens))
             master_mix_well_letters = ['A', 'B', 'C', 'D']
+            destination_wells = np.array([key for key, value in list(final_assembly_dict.items())])
             
-            for x in unique_assemblies_lens:
-                master_mix_well = master_mix_well_letters[(x - 1) // 6] + str(x - 1)
-                destination_inds = [i for i, lens in enumerate(final_assembly_lens) if lens == x]
-                destination_wells = np.array([key for key, value in list(final_assembly_dict.items())])
-                destination_wells = list(destination_wells[destination_inds])
+            for x in unique_assemblies_lens: 
+                master_mix_well = master_mix_well_letters[0] + str(x - 1)    # select well in tube rack, for assembly with x number of parts put tube in column x 
+                destination_inds = [i for i, lens in enumerate(final_assembly_lens) if lens == x]   # find all assemblies of length x
+                destination_wells_for_len = list(destination_wells[destination_inds])
+
+                # Common backbones (up to 3, else complete original way)
+                backbones = []
+                for components in final_assembly_dict.values():
+                    backbone = components[0]
+                    backbones.append(backbone) 
+                unique_backbones = list(set(backbones))
+
+                if len(unique_backbones) < 3:
+                    print('finish this part')
+                    ''''Notes
+                        The idea here was to produce a master mix for each backbone and dilution combination.
+                        I could do away with the user having to premix their own dilution of the assembly buffer
+                        and have the robot make a series of master mixes for each unique number of parts (i.e. 
+                        dilution) and backbone. This would save a lot of time and tips.
+
+                        This could be done by having the user make a stronger buffer and putting a limit on the 
+                        max number of parts for an assembly 
+                    '''
                 
                 pipette.pick_up_tip()
-                for destination_well in destination_wells:# make tube_rack_wells and destination_plate.wells in the same type
+                for destination_well in destination_wells_for_len: # make tube_rack_wells and destination_plate.wells in the same type
                     
                     pipette.transfer(TOTAL_VOL - x * PART_VOL, tube_rack.wells(master_mix_well),
-                                     destination_plate.wells(destination_well), new_tip='never')#transfer water and buffer in the pipette
+                                     destination_plate.wells(destination_well), new_tip='never')    #transfer water and buffer in the pipette
 
-            pipette.drop_tip()
+                pipette.drop_tip()
 
             # Part transfers
             for key, values in list(final_assembly_dict.items()):
