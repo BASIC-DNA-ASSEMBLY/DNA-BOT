@@ -11,8 +11,10 @@ metadata = {
 
 
 # example values produced by DNA-BOT for a single construct containing 5 parts, un-comment and run to test the template:
-#sample_number=8
-#ethanol_well='A3'
+sample_number=8
+ethanol_well='A3'
+
+# opentrons_simulate.exe dnabot\template_ot2_scripts\purification_template_APIv2.8.py --custom-labware-path 'labware\Labware definitions'
 
 def run(protocol: protocol_api.ProtocolContext):
 # added run function for API verison 2
@@ -25,7 +27,7 @@ def run(protocol: protocol_api.ProtocolContext):
             bead_ratio=1.8,
             elution_buffer_volume=40,
             incubation_time=5,
-            settling_time=2,
+            settling_time=5,                    # 2
                 # if using Gen 2 magentic module, need to change time! see: https://docs.opentrons.com/v2/new_modules.html
                 # "The GEN2 Magnetic Module uses smaller magnets than the GEN1 version...this means it will take longer for the GEN2 module to attract beads."
                 # Recommended Magnetic Module GEN2 bead attraction time:
@@ -54,18 +56,21 @@ def run(protocol: protocol_api.ProtocolContext):
         TIPS_PER_SAMPLE = 9
         PIPETTE_TYPE = 'p300_multi_gen2'
             # new constant for easier swapping between pipette types
+        
+        # Source plate(s)
+        SOURCE_PLATE_TYPE = '4ti0960rig_96_wellplate_200ul'
+        SRC1_PLATE_POSITION = '1'
+        SRC2_PLATE_POSITION = '2'
 
         # Tiprack
-        CANDIDATE_TIPRACK_SLOTS = ['3', '6', '9', '2', '5']
+        CANDIDATE_TIPRACK_SLOTS = ['3', '6', '9', '5']
 
         # Magnetic Module
-        MAGDECK_POSITION = '1'
+        MAGDECK_POSITION = '4'
 
-        # Mix Plate
-        MIX_PLATE_TYPE = '4ti0960rig_96_wellplate_200ul'
-            # modified from custom labware as API 2 doesn't support labware.create anymore, so the old add_labware script can't be used
-            # also acts as the type of plate loaded onto the magnetic module
-        MIX_PLATE_POSITION = '4'
+        # Dest Plate
+        DEST_PLATE_TYPE = '4ti0960rig_96_wellplate_200ul'
+        DEST_PLATE_POSITION = '5'
 
         # Reagents
         REAGENT_CONTAINER_TYPE = '4ti0131_12_reservoir_21000ul'
@@ -78,7 +83,7 @@ def run(protocol: protocol_api.ProtocolContext):
         # Settings
         LIQUID_WASTE_WELL = 'A5'
         BEADS_WELL = 'A1'
-        DEAD_TOTAL_VOL = 5
+        DEAD_TOTAL_VOL = 6
         SLOW_HEAD_SPEEDS = {'x': 600 // 4, 'y': 400 // 4, 'z': 125 // 10, 'a': 125 // 10}
         DEFAULT_HEAD_SPEEDS = {'x': 400, 'y': 400, 'z': 125, 'a': 100}
         IMMOBILISE_MIX_REPS = 10
@@ -92,9 +97,9 @@ def run(protocol: protocol_api.ProtocolContext):
         ELUTION_DEAD_VOL = 2
 
 
-        ### Errors
-        if sample_number > 48:
-            raise ValueError('sample number cannot exceed 48')
+        # ### Errors
+        # if sample_number > 48:
+        #     raise ValueError('sample number cannot exceed 48')
 
 
         ### Loading Tiprack
@@ -122,10 +127,15 @@ def run(protocol: protocol_api.ProtocolContext):
                 # if using gen 2 module, need to change settling time! (see comments under Constants)
         MAGDECK.disengage()
             # disengages the magnets when it is turned on
-        mag_plate = MAGDECK.load_labware(MIX_PLATE_TYPE)
+        mag_plate = MAGDECK.load_labware(DEST_PLATE_TYPE)
 
-        # Mix Plate
-        mix_plate = protocol.load_labware(MIX_PLATE_TYPE, MIX_PLATE_POSITION)
+        # Source Plate
+        src1_plate = protocol.load_labware(SOURCE_PLATE_TYPE, SRC1_PLATE_POSITION)
+
+        sample_number = 50
+
+        if sample_number > 48:      # initialise source plate 2 if more than 48 clips
+            src2_plate = protocol.load_labware(SOURCE_PLATE_TYPE, SRC2_PLATE_POSITION)
 
         # Reagents
         reagent_container = protocol.load_labware(REAGENT_CONTAINER_TYPE, REAGENT_CONTAINER_POSITION)
@@ -136,12 +146,30 @@ def run(protocol: protocol_api.ProtocolContext):
 
         ### Calculating Columns
 
+        # Col split between source plates
+        # sample_number = 49
+        if sample_number > 48:
+            src1_sample_number = 48
+            src2_sample_number = sample_number - 48
+        else:
+            src1_sample_number = sample_number
+            src2_sample_number = 0
+
         # Total number of columns
-        col_num = sample_number // 8 + (1 if sample_number % 8 > 0 else 0)
+        src1_col_num = (src1_sample_number - 1) // 8 + 1
+        src2_col_num = (src2_sample_number - 1) // 8 + 1
 
         # Columns containing samples in location 1 (magentic module)
             # generates a list of lists: [[A1, B1, C1...], [A2, B2, C2...]...]
-        samples = [col for col in mag_plate.columns()[sample_offset : col_num + sample_offset]]
+        samples = [col for col in src1_plate.columns()[sample_offset : src1_col_num + sample_offset]]
+
+        if sample_number > 48:
+            src2_samples = [col for col in src2_plate.columns()[sample_offset : src2_col_num + sample_offset]]
+            samples = samples + src2_samples
+
+        print('\n', samples, '\n')
+
+        return
 
         # Columns to mix beads and samples in location 4 (mix plate)
         mixing = [col for col in mix_plate.columns()[sample_offset:col_num + sample_offset]]
@@ -173,19 +201,17 @@ def run(protocol: protocol_api.ProtocolContext):
         # Mix beads and parts
         for target in range(int(len(samples))):
 
-            # Aspirate beads
+            # Aspirate beads from bead container on 8
             pipette.pick_up_tip()
             pipette.aspirate(bead_volume, beads)
             protocol.max_speeds.update(SLOW_HEAD_SPEEDS)
 
-            # Aspirte samples
-            pipette.aspirate(sample_volume + DEAD_TOTAL_VOL, samples[target][0])
+            # Aspirate samples from left half of mag plate
+            pipette.aspirate(sample_volume + DEAD_TOTAL_VOL, samples[target][0])    # samples[target][0] returns top well of column - allows for multichannel operations
 
             # Transfer and mix on mix_plate
             pipette.dispense(total_vol, mixing[target][0])
-                # similar to above, added [0] because samples[target] returned a list of every well in column 1 rather than just one well
             pipette.mix(IMMOBILISE_MIX_REPS, mix_vol, mixing[target][0])
-                # similar to above, added [0] because samples[target] returned a list of every well in column 1 rather than just one well
             pipette.blow_out()
 
             # Dispose of tip
@@ -206,7 +232,7 @@ def run(protocol: protocol_api.ProtocolContext):
 
         # Remove supernatant from magnetic beads
         for target in samples:
-            pipette.transfer(total_vol, target, liquid_waste, blow_out=True)
+            pipette.transfer(total_vol, target, liquid_waste)
 
         # Wash beads twice with 70% ethanol
         air_vol = pipette.max_volume * AIR_VOL_COEFF

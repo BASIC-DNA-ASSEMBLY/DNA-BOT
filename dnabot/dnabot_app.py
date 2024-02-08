@@ -59,6 +59,10 @@ CLIPS_INFO_FNAME = 'clip_run_info.csv'
 FINAL_ASSEMBLIES_INFO_FNAME = 'final_assembly_run_info.csv'
 WELL_OUTPUT_FNAME = 'wells.txt'
 
+V1_PATH = "\\APIv1\\"
+V2_8_PATH = "\\APIv2.8\\"
+V2_8_TC_PATH = "\\Thermocycler_APIv2.8\\"
+
 # Constant floats/ints
 CLIP_DEAD_VOL = 60
 CLIP_VOL = 30
@@ -70,7 +74,7 @@ PART_PER_CLIP = 200
 MIN_VOL = 1
 MAX_CONSTRUCTS = 1000               # 96
 MAX_CLIPS_PER_PLATE = 48
-MAX_CLIPS_TOTAL = 96*2
+MAX_CLIPS_TOTAL = 96*2              # 48
 FINAL_ASSEMBLIES_PER_CLIP = 15
 DEFAULT_PART_VOL = 1
 MAX_SOURCE_PLATES = 6
@@ -230,10 +234,9 @@ def main():
     print('Calculating OT-2 variables...')
     clips_dict_list = generate_clips_dict_list(clips_df, sources_dict)      # takes the clips df and the sources dict and produces a list of dictionaries of tuples of the parts, prefixes, and suffixes' wells and plate locations
     clips_dict = generate_clips_dict(clips_df, sources_dict)                # one dict of everything - original version - to be used by final assembly generator functions
-    # print(clips_dict)
 
+    magbead_sample_number = clips_df['number'].sum()
     ################### UNCOMMENT ###################
-    # magbead_sample_number = clips_df['number'].sum()
     # final_assembly_dict = generate_final_assembly_dict(constructs_list,
     #                                                    clips_df)
     # final_assembly_tipracks = calculate_final_assembly_tipracks(
@@ -245,7 +248,7 @@ def main():
     print('Writing files...')
     # Write OT2 scripts
     for clip_plate in range(len(clips_dict_list)):
-        print(clip_plate)
+        
         sub_clip_dict = clips_dict_list[clip_plate]
                 
         generate_ot2_script(CLIP_FNAME_1 + '_SCRIPT_{}.py'.format(clip_plate+1), os.path.join(
@@ -273,6 +276,7 @@ def main():
         sample_number=magbead_sample_number,
         ethanol_well=etoh_well)
     
+    print('test')
     generate_ot2_script(F_ASSEMBLY_FNAME_1, os.path.join(
         template_dir_path, F_ASSEMBLY_TEMP_FNAME_1),
         final_assembly_dict=final_assembly_dict,
@@ -389,10 +393,10 @@ def generate_clips_df(constructs_list):
     unique_clips_df = unique_clips_df.reset_index(drop=True)
     clips_df = unique_clips_df.copy()
 
-    # Error 
-    if len(unique_clips_df.index) > MAX_CLIPS_TOTAL:
-        raise ValueError(
-            'Number of CLIP reactions exceeds {}. Reduce number of constructs in construct.csv.'.format(MAX_CLIPS_TOTAL))
+    # # Error 
+    # if len(unique_clips_df.index) > MAX_CLIPS_TOTAL:
+    #     raise ValueError(
+    #         'Number of CLIP reactions exceeds {}. Reduce number of constructs in construct.csv.'.format(MAX_CLIPS_TOTAL))
 
     def count_unique_clips(clips_df, merged_construct_dfs):
         ''' Count number of each CLIP reaction
@@ -504,27 +508,30 @@ def generate_clips_dict(clips_df, sources_dict):
 
 
 def generate_clips_dict_list(clips_df, sources_dict):
-    '''Subsets the clips df into chunks of 48, runs the generate_final_assembly_dict 
-    and then returns the resulting '''
+    '''Subsets the clips df into chunks of 48, runs the generate_clips_dict function 
+    for each and then returns a list of the resulting sub clips dicts'''
 
     CLIP_COUNT = len(clips_df)
     CLIP_PLATE_COUNT = CLIP_COUNT // MAX_CLIPS_PER_PLATE + 1    # plus one to include final partially full plate
 
+    # Error 
+    if clips_df['number'].sum() > MAX_CLIPS_TOTAL:
+        raise ValueError(
+            'Number of CLIP reactions exceeds {}. Reduce number of constructs in construct.csv.'.format(MAX_CLIPS_TOTAL))
+
     clips_dict_list = []
 
-    for plate in range(CLIP_PLATE_COUNT):                       # plus one for zero indexing
+    for plate in range(CLIP_PLATE_COUNT):
         subset_lower = (plate * MAX_CLIPS_PER_PLATE)
         subset_upper = subset_lower + MAX_CLIPS_PER_PLATE
 
         if subset_upper > CLIP_COUNT:
             subset_upper = CLIP_COUNT
-        print(subset_lower, subset_upper)
     
         sub_clip_df = clips_df.iloc[subset_lower:subset_upper, :]
         sub_clip_dict = generate_clips_dict(sub_clip_df, sources_dict)
         clips_dict_list.append(sub_clip_dict)
 
-    # clips_dict = generate_clips_dict(clips_df, sources_dict)
     return clips_dict_list
 
 
