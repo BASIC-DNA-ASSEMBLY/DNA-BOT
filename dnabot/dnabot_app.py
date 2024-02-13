@@ -21,7 +21,7 @@ import numpy as np
 import json
 import tkinter as tk
 import dnabot_gui as gui
-import mplates
+import regex as re
 
 # Constant str
 TEMPLATE_DIR_NAME = 'template_ot2_scripts'
@@ -225,20 +225,20 @@ def main():
     # print(constructs_list)
     # print(clips_df)
     # print(sources_dict)
-    ################################################
 
     output_file = os.path.join(output_dir, 'clips_df.csv')
-    clips_df.to_csv(output_file, index=False)
+    clips_df.to_csv(output_file, index=False)                      ############################### fix this (includes well locations which are out of scope for a 96 well plate)
+    ################################################
 
     # calculate OT2 script variables
     print('Calculating OT-2 variables...')
     clips_dict_list = generate_clips_dict_list(clips_df, sources_dict)      # takes the clips df and the sources dict and produces a list of dictionaries of tuples of the parts, prefixes, and suffixes' wells and plate locations
-    clips_dict = generate_clips_dict(clips_df, sources_dict)                # one dict of everything - original version - to be used by final assembly generator functions
-
+    
     magbead_sample_number_total = clips_df['number'].sum()                  # the total number of clips is built in sets of >48, these are combined in pairs into up to 2 plates each of >96 clips, the total number of clips possible is 192 (see error trapping in clip_dict_list_generator)
     magbead_sample_list = [96 for i in range(magbead_sample_number_total//96)] + [magbead_sample_number_total % 96 + 1]
 
 
+    clips_dict = generate_clips_dict(clips_df, sources_dict)                # one dict of everything - original version - to be used by final assembly generator functions
     final_assembly_dict = generate_final_assembly_dict(constructs_list,
                                                        clips_df)
     
@@ -291,18 +291,18 @@ def main():
         final_assembly_dict=final_assembly_dict,
         tiprack_num=final_assembly_tipracks)
     
-    generate_ot2_script(TRANS_SPOT_FNAME_1, os.path.join(
-        template_dir_path, TRANS_SPOT_TEMP_FNAME_1),
-        spotting_tuples=spotting_tuples,
-        soc_well=f"A{soc_column}")
-    generate_ot2_script(TRANS_SPOT_FNAME_2, os.path.join(
-        template_dir_path, TRANS_SPOT_TEMP_FNAME_2),
-        spotting_tuples=spotting_tuples,
-        soc_well=f"A{soc_column}")
-    generate_ot2_script(TRANS_SPOT_FNAME_3, os.path.join(
-        template_dir_path, TRANS_SPOT_TEMP_FNAME_3),
-        spotting_tuples=spotting_tuples,
-        soc_well=f"A{soc_column}")
+    # generate_ot2_script(TRANS_SPOT_FNAME_1, os.path.join(
+    #     template_dir_path, TRANS_SPOT_TEMP_FNAME_1),
+    #     spotting_tuples=spotting_tuples,
+    #     soc_well=f"A{soc_column}")
+    # generate_ot2_script(TRANS_SPOT_FNAME_2, os.path.join(
+    #     template_dir_path, TRANS_SPOT_TEMP_FNAME_2),
+    #     spotting_tuples=spotting_tuples,
+    #     soc_well=f"A{soc_column}")
+    # generate_ot2_script(TRANS_SPOT_FNAME_3, os.path.join(
+    #     template_dir_path, TRANS_SPOT_TEMP_FNAME_3),
+    #     spotting_tuples=spotting_tuples,
+    #     soc_well=f"A{soc_column}")
 
     # Write non-OT2 scripts
     if 'metainformation' in os.listdir():
@@ -393,16 +393,15 @@ def generate_clips_df(constructs_list):
     unique_clips_df = merged_construct_dfs.drop_duplicates()
     unique_clips_df = unique_clips_df.reset_index(drop=True)
     clips_df = unique_clips_df.copy()
-    print(clips_df)
 
-    # # Error  (I think I commented this out because it uses unique_clips_df rather than total number of clips)
+    # # Error  (I removed this because it uses unique_clips_df rather than total number of clips)
     # if len(unique_clips_df.index) > MAX_CLIPS_TOTAL:
     #     raise ValueError(
     #         'Number of CLIP reactions exceeds {}. Reduce number of constructs in construct.csv.'.format(MAX_CLIPS_TOTAL))
 
     def count_unique_clips(clips_df, merged_construct_dfs):
         ''' Count number of each CLIP reaction
-            Iterates through unique clip list, counts number of instances of each unique clip'''
+            Iterates through unique clip list, counts number of instances of each unique clip, adds this as a new column'''
         clip_count = np.zeros(len(clips_df.index))
         for i, unique_clip in clips_df.iterrows():
             for _, clip in merged_construct_dfs.iterrows():
@@ -413,24 +412,40 @@ def generate_clips_df(constructs_list):
         return clips_df
     
     clips_df = count_unique_clips(unique_clips_df, merged_construct_dfs)
-    print(clips_df)
     
-    # Associate well/s for each CLIP reaction
-    clips_df['mag_well'] = pd.Series(['0'] * len(clips_df.index),
-                                     index=clips_df.index)
-    for index, number in clips_df['number'].iteritems():
-        if index == 0:
-            mag_wells = []
-            for x in range(number):
-                mag_wells.append(mplates.final_well(x + 1 + 48))
-            clips_df.at[index, 'mag_well'] = tuple(mag_wells)
-        else:
-            mag_wells = []
-            for x in range(number):
-                well_count = clips_df.loc[
-                    :index - 1, 'number'].sum() + x + 1 + 48
-                mag_wells.append(mplates.final_well(well_count))
-            clips_df.at[index, 'mag_well'] = tuple(mag_wells)
+    # Associate well/s and plate/s for each CLIP reaction
+    clips_df['mag_well'] = pd.Series(['0'] * len(clips_df.index), index=clips_df.index)
+    clips_df['plate'] = pd.Series(['0'] * len(clips_df.index), index=clips_df.index)
+    clip_count = 0
+    
+    for unique_clip_count, clip_number in clips_df['number'].iteritems():
+        mag_wells = []
+        plates = []
+        
+        # print(unique_clip_count, clip_number, clips_df.loc[:unique_clip_count - 1, 'number'].sum(), foo)
+        # if unique_clip_count == 0:
+        #     for clip_count in range(clip_number):
+        #         mag_wells.append(tip_counter(clip_count))
+        #         # print(unique_clip_count, clip_count, type(clip_count))
+        # else:
+        #     for clip_count in range(clip_number):
+        #         well_count = clip_count + clips_df.loc[:unique_clip_count - 1, 'number'].sum()
+        #         mag_wells.append(tip_counter(well_count))
+        #         # print(unique_clip_count, well_count, type(well_count))
+        #         # print(clips_df.loc[:unique_clip_count - 1, 'number'].sum())
+
+        for well in range(clip_count, clip_count + clip_number):
+            mag_wells.append(tip_counter(well % 96))
+            plates.append(1 + well//96)
+            # print(unique_clip_count, tip_counter(well % 96), 1 + well//96)
+
+            
+        clips_df.at[unique_clip_count, 'mag_well'] = tuple(mag_wells)
+        clips_df.at[unique_clip_count, 'plate'] = tuple(plates)
+        clip_count += clip_number
+    
+    print(clips_df)
+
     return clips_df
 
 
@@ -486,12 +501,12 @@ def generate_clips_dict(clips_df, sources_dict):
                                              * clip_info['number'])
             clips_dict['parts_plates'].append([handle_2_columns(sources_dict[part])[2]]
                                               * clip_info['number'])
-            if not sources_dict[part][1]:
+            if not sources_dict[part][1]:                               # add default vols for part and water if not user defined
                 clips_dict['parts_vols'].append([DEFAULT_PART_VOL] *
                                                 clip_info['number'])
                 clips_dict['water_vols'].append([max_part_vol - DEFAULT_PART_VOL]
                                                 * clip_info['number'])
-            else:
+            else:                                                       # add bespoke vols for part and water if part has a declared conc
                 part_vol = round(
                     PART_PER_CLIP / float(sources_dict[part][1]), 1)
                 if part_vol < MIN_VOL:
@@ -503,10 +518,13 @@ def generate_clips_dict(clips_df, sources_dict):
                     [part_vol] * clip_info['number'])
                 clips_dict['water_vols'].append(
                     [water_vol] * clip_info['number'])
+                    
     except KeyError:
         sys.exit('likely part/linker not listed in sources.csv')
-    for key, value in clips_dict.items():
+    
+    for key, value in clips_dict.items():   # unlist all sublist in clips dict to yield a single list as the value for every key
         clips_dict[key] = [item for sublist in value for item in sublist]
+
     return clips_dict
 
 
@@ -558,8 +576,7 @@ def generate_final_assembly_dict(constructs_list, clips_df):
                                        FINAL_ASSEMBLIES_PER_CLIP)]
             clips_count[clip_num] = clips_count[clip_num] + 1
             construct_well_list.append(clip_well)
-        final_assembly_dict[mplates.final_well(
-            construct_index + 1)] = construct_well_list
+        final_assembly_dict[tip_counter(construct_index)] = construct_well_list
     return final_assembly_dict
 
 
@@ -595,7 +612,7 @@ def generate_spotting_tuples(constructs_list, spotting_vols_dict):
 
     """
     # Calculate wells and volumes
-    wells = [mplates.final_well(x + 1) for x in range(len(constructs_list))]
+    wells = [tip_counter(x) for x in range(len(constructs_list))]
     vols = [SPOTTING_VOLS_DICT[len(construct_df.index)]
             for construct_df in constructs_list]
 
@@ -692,6 +709,7 @@ def dfs_to_csv(path, index=True, **kw_dfs):
             value.to_csv(csvfile, index=index)
             csvwriter.writerow('')
 
+
 def handle_2_columns(datalist):
     """This function has the intent of changing:
     ('A8', '2') => ('A8', '', '2')
@@ -715,6 +733,30 @@ def handle_2_columns(datalist):
         mylist[0] = datalist
         return mylist
     return datalist
+
+
+def counter(rows):
+    def inner(n):
+        """ Takes either a value or a well location and converts to other fomat """
+        
+        row_dict = {0: "A", 1: "B", 2: "C", 3: "D", 4: "E", 5: "F", 6: "G", 7: "H"}
+        inv_row_dict = {v: k for k, v in row_dict.items()}
+
+        if type(n) == int:
+            row = row_dict[n % rows]
+            col = 1 + n // rows
+            return row + f'{col}'
+            # return row + f'{col:02d}' # for if 2 sf number required (i.e. 'A01' rather than 'A1')
+
+        elif type(n) == str:
+            row, col = re.findall('\d+|\D+', n)
+            col = int(col) - 1
+
+            return col*rows + inv_row_dict[row]
+
+    return inner
+tip_counter = counter(8)
+
 
 if __name__ == '__main__':
     main()
