@@ -73,7 +73,7 @@ CLIP_MAST_WATER = 15.5
 PART_PER_CLIP = 200
 MIN_VOL = 1
 MAX_CONSTRUCTS = 1000               # 96
-MAX_CLIPS_PER_PLATE = 48
+MAX_CLIPS_PER_PLATE = 48            # Max clips per clip plate
 MAX_CLIPS_TOTAL = 96*2              # 48
 FINAL_ASSEMBLIES_PER_CLIP = 15
 DEFAULT_PART_VOL = 1
@@ -225,20 +225,24 @@ def main():
     # print(constructs_list)
     # print(clips_df)
     # print(sources_dict)
+    ################################################
 
     output_file = os.path.join(output_dir, 'clips_df.csv')
     clips_df.to_csv(output_file, index=False)
-    ################################################
 
     # calculate OT2 script variables
     print('Calculating OT-2 variables...')
     clips_dict_list = generate_clips_dict_list(clips_df, sources_dict)      # takes the clips df and the sources dict and produces a list of dictionaries of tuples of the parts, prefixes, and suffixes' wells and plate locations
     clips_dict = generate_clips_dict(clips_df, sources_dict)                # one dict of everything - original version - to be used by final assembly generator functions
 
-    magbead_sample_number = clips_df['number'].sum()
+    magbead_sample_number_total = clips_df['number'].sum()                  # the total number of clips is built in sets of >48, these are combined in pairs into up to 2 plates each of >96 clips, the total number of clips possible is 192 (see error trapping in clip_dict_list_generator)
+    magbead_sample_list = [96 for i in range(magbead_sample_number_total//96)] + [magbead_sample_number_total % 96 + 1]
+
+
+    final_assembly_dict = generate_final_assembly_dict(constructs_list,
+                                                       clips_df)
+    
     ################### UNCOMMENT ###################
-    # final_assembly_dict = generate_final_assembly_dict(constructs_list,
-    #                                                    clips_df)
     # final_assembly_tipracks = calculate_final_assembly_tipracks(
     #     final_assembly_dict)
     # spotting_tuples = generate_spotting_tuples(constructs_list,
@@ -246,37 +250,34 @@ def main():
     #################################################
 
     print('Writing files...')
-    # Write OT2 scripts
-    for clip_plate in range(len(clips_dict_list)):
+    # # Write OT2 scripts
+    # for clip_plate in range(len(clips_dict_list)):
         
-        sub_clip_dict = clips_dict_list[clip_plate]
+    #     sub_clip_dict = clips_dict_list[clip_plate]
                 
-        generate_ot2_script(CLIP_FNAME_1 + '_SCRIPT_{}.py'.format(clip_plate+1), os.path.join(
-            template_dir_path, CLIP_TEMP_FNAME_1), clips_dict=sub_clip_dict)
-        generate_ot2_script(CLIP_FNAME_2 + '_SCRIPT_{}.py'.format(clip_plate+1), os.path.join(
-            template_dir_path, CLIP_TEMP_FNAME_2), clips_dict=sub_clip_dict)
-        generate_ot2_script(CLIP_FNAME_3 + '_SCRIPT_{}.py'.format(clip_plate+1), os.path.join(
-            template_dir_path, CLIP_TEMP_FNAME_3), clips_dict=sub_clip_dict)
-        
-    # generate_ot2_script(CLIP_FNAME_1, os.path.join(
-    #     template_dir_path, CLIP_TEMP_FNAME_1), clips_dict=clips_dict)
-    # generate_ot2_script(CLIP_FNAME_2, os.path.join(
-    #     template_dir_path, CLIP_TEMP_FNAME_2), clips_dict=clips_dict)
-    # generate_ot2_script(CLIP_FNAME_3, os.path.join(
-    #     template_dir_path, CLIP_TEMP_FNAME_3), clips_dict=clips_dict)
-        
-    ######## NEED TO AMMEND META DATA ##########
-       
-    generate_ot2_script(MAGBEAD_FNAME_1, os.path.join(
-        template_dir_path, MAGBEAD_TEMP_FNAME_1),
-        sample_number=magbead_sample_number,
-        ethanol_well=etoh_well)
-    generate_ot2_script(MAGBEAD_FNAME_2, os.path.join(
-        template_dir_path, MAGBEAD_TEMP_FNAME_2),
-        sample_number=magbead_sample_number,
-        ethanol_well=etoh_well)
+    #     generate_ot2_script(CLIP_FNAME_1 + '_SCRIPT_{}.py'.format(clip_plate+1), os.path.join(
+    #         template_dir_path, CLIP_TEMP_FNAME_1), clips_dict=sub_clip_dict)
+    #     generate_ot2_script(CLIP_FNAME_2 + '_SCRIPT_{}.py'.format(clip_plate+1), os.path.join(
+    #         template_dir_path, CLIP_TEMP_FNAME_2), clips_dict=sub_clip_dict)
+    #     generate_ot2_script(CLIP_FNAME_3 + '_SCRIPT_{}.py'.format(clip_plate+1), os.path.join(
+    #         template_dir_path, CLIP_TEMP_FNAME_3), clips_dict=sub_clip_dict)
     
-    print('test')
+        
+    # ######## NEED TO AMMEND META DATA ##########
+        
+    # for i, magbead_sample_number in enumerate(magbead_sample_list):
+        
+    #     generate_ot2_script(MAGBEAD_FNAME_1 + '_SCRIPT_{}.py'.format(i+1), os.path.join(
+    #         template_dir_path, MAGBEAD_TEMP_FNAME_1),
+    #         sample_number=magbead_sample_number,
+    #         ethanol_well=etoh_well)
+    #     generate_ot2_script(MAGBEAD_FNAME_2 + '_SCRIPT_{}.py'.format(i+1), os.path.join(
+    #         template_dir_path, MAGBEAD_TEMP_FNAME_2),
+    #         sample_number=magbead_sample_number,
+    #         ethanol_well=etoh_well)
+    
+    # If I want to add in the clips as a new source point I need to append the new clips plate at this point 
+
     generate_ot2_script(F_ASSEMBLY_FNAME_1, os.path.join(
         template_dir_path, F_ASSEMBLY_TEMP_FNAME_1),
         final_assembly_dict=final_assembly_dict,
@@ -392,8 +393,9 @@ def generate_clips_df(constructs_list):
     unique_clips_df = merged_construct_dfs.drop_duplicates()
     unique_clips_df = unique_clips_df.reset_index(drop=True)
     clips_df = unique_clips_df.copy()
+    print(clips_df)
 
-    # # Error 
+    # # Error  (I think I commented this out because it uses unique_clips_df rather than total number of clips)
     # if len(unique_clips_df.index) > MAX_CLIPS_TOTAL:
     #     raise ValueError(
     #         'Number of CLIP reactions exceeds {}. Reduce number of constructs in construct.csv.'.format(MAX_CLIPS_TOTAL))
@@ -405,12 +407,13 @@ def generate_clips_df(constructs_list):
         for i, unique_clip in clips_df.iterrows():
             for _, clip in merged_construct_dfs.iterrows():
                 if unique_clip.equals(clip):
-                    clip_count[i] = clip_count[i] + 1
+                    clip_count[i] += 1
         clip_count = clip_count // FINAL_ASSEMBLIES_PER_CLIP + 1
         clips_df['number'] = [int(i) for i in clip_count.tolist()]
         return clips_df
     
-    clips_df = count_unique_clips(clips_df, merged_construct_dfs)
+    clips_df = count_unique_clips(unique_clips_df, merged_construct_dfs)
+    print(clips_df)
     
     # Associate well/s for each CLIP reaction
     clips_df['mag_well'] = pd.Series(['0'] * len(clips_df.index),

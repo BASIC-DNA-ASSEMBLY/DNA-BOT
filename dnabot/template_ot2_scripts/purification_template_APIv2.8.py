@@ -11,7 +11,7 @@ metadata = {
 
 
 # example values produced by DNA-BOT for a single construct containing 5 parts, un-comment and run to test the template:
-sample_number=59
+sample_number=24
 ethanol_well='A3'
 
 # opentrons_simulate.exe dnabot\template_ot2_scripts\purification_template_APIv2.8.py --custom-labware-path 'labware\Labware definitions'
@@ -59,9 +59,6 @@ def run(protocol: protocol_api.ProtocolContext):
         tiprack_num = (total_tips - 1) // 96 + 1
         slots = CANDIDATE_TIPRACK_SLOTS[:tiprack_num]
         tipracks = [protocol.load_labware(tiprack_type, slot) for slot in slots]
-
-        print(tipracks)
-        # return
 
         # Pipettes
         PIPETTE_TYPE = 'p300_multi_gen2'
@@ -183,14 +180,8 @@ def run(protocol: protocol_api.ProtocolContext):
             protocol.max_speeds.update(DEFAULT_HEAD_SPEEDS)
             pipette.drop_tip()
 
-        # Immobilise sample
+        # Initial mix and incubation sample
         protocol.delay(minutes=incubation_time)
-
-
-        # Transfer beads+samples back to magdeck
-        # for target in range(int(len(samples))):
-        #     pipette.transfer(total_vol, samples[target], mag_cols[target], blow_out=True, blowout_location='destination well')
-            # added blowout_location=destination well because default location of blowout is waste in API version 2
 
         # Engagae MagDeck and incubate
         MAGDECK.engage(height=MAGDECK_HEIGHT)
@@ -203,12 +194,13 @@ def run(protocol: protocol_api.ProtocolContext):
         # Wash beads twice with 70% ethanol
         air_vol = pipette.max_volume * AIR_VOL_COEFF
         for cycle in range(2):
+            # help(pipette.transfer)
+            print(pipette._starting_tip, '\n\n')
             for target in mag_cols:
-                pipette.transfer(ETHANOL_VOL, ethanol, target, air_gap=air_vol)
+                pipette.transfer(ETHANOL_VOL, ethanol, target, trash = False, air_gap=air_vol)      # trash = False command returns tip to rack
             protocol.delay(minutes=WASH_TIME)
             for target in mag_cols:
                 pipette.transfer(ETHANOL_VOL + ETHANOL_DEAD_VOL, target, liquid_waste, air_gap=air_vol)
-
         # Dry at room temperature
         protocol.delay(minutes=drying_time)
 
