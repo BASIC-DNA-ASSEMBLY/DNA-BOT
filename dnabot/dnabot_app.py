@@ -75,6 +75,7 @@ MIN_VOL = 1
 MAX_CONSTRUCTS = 1000               # 96
 MAX_CLIPS_PER_PLATE = 48            # Max clips per clip plate
 MAX_CLIPS_TOTAL = 96*2              # 48
+MAX_ASSEMBLIES_PER_PLATE = 96
 FINAL_ASSEMBLIES_PER_CLIP = 15
 DEFAULT_PART_VOL = 1
 MAX_SOURCE_PLATES = 6
@@ -235,12 +236,11 @@ def main():
     clips_dict_list = generate_clips_dict_list(clips_df, sources_dict)      # takes the clips df and the sources dict and produces a list of dictionaries of tuples of the parts, prefixes, and suffixes' wells and plate locations
     
     magbead_sample_number_total = clips_df['number'].sum()                  # the total number of clips is built in sets of >48, these are combined in pairs into up to 2 plates each of >96 clips, the total number of clips possible is 192 (see error trapping in clip_dict_list_generator)
-    magbead_sample_list = [96 for i in range(magbead_sample_number_total//96)] + [magbead_sample_number_total % 96 + 1]
+    magbead_sample_list = [96 for i in range(magbead_sample_number_total//96)] + [magbead_sample_number_total % 96 + 1] # creates a list of values where each value represents the number of mag purifications for a single step
 
 
     clips_dict = generate_clips_dict(clips_df, sources_dict)                # one dict of everything - original version - to be used by final assembly generator functions
-    final_assembly_dict = generate_final_assembly_dict(constructs_list,
-                                                       clips_df)
+    final_assembly_dict = generate_final_assembly_dict_list(constructs_list, clips_df)
     
     ################### UNCOMMENT ###################
     # final_assembly_tipracks = calculate_final_assembly_tipracks(
@@ -385,19 +385,14 @@ def generate_constructs_list(path):
 
 
 def generate_clips_df(constructs_list):
-    """Generates a list of dataframes containing information about all the unique CLIP
-    reactions required to synthesise the constructs in constructs_list.
+    """Generates a dataframe containing information about all unique CLIP reactions required to synthesise the constructs 
+    in constructs_list. Mag_well and Clip plate info identified and added for each clip. Multiple entries added when required
 
     """
     merged_construct_dfs = pd.concat(constructs_list, ignore_index=True)
     unique_clips_df = merged_construct_dfs.drop_duplicates()
     unique_clips_df = unique_clips_df.reset_index(drop=True)
     clips_df = unique_clips_df.copy()
-
-    # # Error  (I removed this because it uses unique_clips_df rather than total number of clips)
-    # if len(unique_clips_df.index) > MAX_CLIPS_TOTAL:
-    #     raise ValueError(
-    #         'Number of CLIP reactions exceeds {}. Reduce number of constructs in construct.csv.'.format(MAX_CLIPS_TOTAL))
 
     def count_unique_clips(clips_df, merged_construct_dfs):
         ''' Count number of each CLIP reaction
@@ -420,31 +415,15 @@ def generate_clips_df(constructs_list):
     
     for unique_clip_count, clip_number in clips_df['number'].iteritems():
         mag_wells = []
-        plates = []
-        
-        # print(unique_clip_count, clip_number, clips_df.loc[:unique_clip_count - 1, 'number'].sum(), foo)
-        # if unique_clip_count == 0:
-        #     for clip_count in range(clip_number):
-        #         mag_wells.append(tip_counter(clip_count))
-        #         # print(unique_clip_count, clip_count, type(clip_count))
-        # else:
-        #     for clip_count in range(clip_number):
-        #         well_count = clip_count + clips_df.loc[:unique_clip_count - 1, 'number'].sum()
-        #         mag_wells.append(tip_counter(well_count))
-        #         # print(unique_clip_count, well_count, type(well_count))
-        #         # print(clips_df.loc[:unique_clip_count - 1, 'number'].sum())
+        plates = []         
 
-        for well in range(clip_count, clip_count + clip_number):
+        for well in range(clip_count, clip_count + clip_number):    # generate mag well and plate value(s) for a given unique clip
             mag_wells.append(tip_counter(well % 96))
-            plates.append(1 + well//96)
-            # print(unique_clip_count, tip_counter(well % 96), 1 + well//96)
-
+            plates.append(1 + well//96)                             # plus one for one indexing
             
         clips_df.at[unique_clip_count, 'mag_well'] = tuple(mag_wells)
         clips_df.at[unique_clip_count, 'plate'] = tuple(plates)
-        clip_count += clip_number
-    
-    print(clips_df)
+        clip_count += clip_number       # increase count of all previous clips by amount for current unique clip
 
     return clips_df
 
@@ -530,7 +509,7 @@ def generate_clips_dict(clips_df, sources_dict):
 
 def generate_clips_dict_list(clips_df, sources_dict):
     '''Subsets the clips df into chunks of 48, runs the generate_clips_dict function 
-    for each and then returns a list of the resulting sub clips dicts'''
+    for each and returns a list of the resulting sub clips dicts'''
 
     CLIP_COUNT = len(clips_df)
     CLIP_PLATE_COUNT = CLIP_COUNT // MAX_CLIPS_PER_PLATE + 1    # plus one to include final partially full plate
@@ -543,15 +522,15 @@ def generate_clips_dict_list(clips_df, sources_dict):
     clips_dict_list = []
 
     for plate in range(CLIP_PLATE_COUNT):
-        subset_lower = (plate * MAX_CLIPS_PER_PLATE)
+        subset_lower = (plate * MAX_CLIPS_PER_PLATE)            # set upper and lower bounds for subset of clips for a given plate
         subset_upper = subset_lower + MAX_CLIPS_PER_PLATE
 
-        if subset_upper > CLIP_COUNT:
+        if subset_upper > CLIP_COUNT:                           # set total number number of clips as upper bound if plate incomplete
             subset_upper = CLIP_COUNT
     
         sub_clip_df = clips_df.iloc[subset_lower:subset_upper, :]
         sub_clip_dict = generate_clips_dict(sub_clip_df, sources_dict)
-        clips_dict_list.append(sub_clip_dict)
+        clips_dict_list.append(sub_clip_dict)                   # generate and append sub_clip_dict to list - allows for multiple clip reactions
 
     return clips_dict_list
 
@@ -564,20 +543,66 @@ def generate_final_assembly_dict(constructs_list, clips_df):
     """
     final_assembly_dict = {}
     clips_count = np.zeros(len(clips_df.index))
-    for construct_index, construct_df in enumerate(constructs_list):
+
+    for construct_index, construct_df in enumerate(constructs_list):                # for each construct df in constructs_list
         construct_well_list = []
-        for _, clip in construct_df.iterrows():
-            clip_info = clips_df[(clips_df['prefixes'] == clip['prefixes']) &
+        construct_plate_list = []
+
+        for _, clip in construct_df.iterrows():                                     # for each clip in construct
+            clip_info = clips_df[(clips_df['prefixes'] == clip['prefixes']) &       # find clips in clips_df that match required clip
                                  (clips_df['parts'] == clip['parts']) &
                                  (clips_df['suffixes'] == clip['suffixes'])]
-            clip_wells = clip_info.at[clip_info.index[0], 'mag_well']
-            clip_num = int(clip_info.index[0])
-            clip_well = clip_wells[int(clips_count[clip_num] //
-                                       FINAL_ASSEMBLIES_PER_CLIP)]
-            clips_count[clip_num] = clips_count[clip_num] + 1
+            
+            clip_num = int(clip_info.index[0])                                      # row index of clip in clips_df
+            clip_wells = clip_info.at[clip_num, 'mag_well']                         # list of all mag_wells for clip
+            clip_plates = clip_info.at[clip_num, 'plate']                           # list of all plates for clip
+
+            chosen_well = int(clips_count[clip_num] // FINAL_ASSEMBLIES_PER_CLIP)   # next viable mag well for clip
+            clip_well = clip_wells[chosen_well]
+            clip_plate = clip_plates[chosen_well]
             construct_well_list.append(clip_well)
-        final_assembly_dict[tip_counter(construct_index)] = construct_well_list
+            construct_plate_list.append(clip_plate)
+
+            clips_count[clip_num] = clips_count[clip_num] + 1
+
+        final_assembly_dict[tip_counter(construct_index)] = [construct_well_list, construct_plate_list]
+
+    print(final_assembly_dict, '\n\n')
+
+    ''' I need to do two things here:
+         - generate list of final assemblies according to max assembly limitations
+        '''
+
     return final_assembly_dict
+
+
+def generate_final_assembly_dict_list(constructs_list, clips_df):
+    '''Subsets the clips df into chunks of max assemblies per plate (96), runs the generate_final_assembly_dict function 
+    for each and returns a list of the resulting sub assembly dicts'''
+
+    ASSEMBLY_COUNT = len(constructs_list)
+    ASSEMBLY_PLATE_COUNT = ASSEMBLY_COUNT // MAX_ASSEMBLIES_PER_PLATE + 1       # plus one to include final partially full plate
+
+    # # Error ########################### NO ERROR AS NO MAX ASSEMBLIES
+    # if clips_df['number'].sum() > MAX_CLIPS_TOTAL:
+    #     raise ValueError(
+    #         'Number of CLIP reactions exceeds {}. Reduce number of constructs in construct.csv.'.format(MAX_CLIPS_TOTAL))
+
+    assembly_dict_list = []
+
+    for plate in range(ASSEMBLY_PLATE_COUNT):
+        subset_lower = (plate * MAX_ASSEMBLIES_PER_PLATE)                # set upper and lower bounds for subset of assemblies for a given plate
+        subset_upper = subset_lower + MAX_ASSEMBLIES_PER_PLATE
+
+        if subset_upper > ASSEMBLY_COUNT:                           # set total number number of assemblies as upper bound if plate incomplete
+            subset_upper = ASSEMBLY_COUNT
+    
+        sub_assembly_df = constructs_list[subset_lower:subset_upper]
+        sub_assembly_dict = generate_final_assembly_dict(sub_assembly_df, clips_df)
+        assembly_dict_list.append(sub_assembly_dict)                    # generate and append sub_clip_dict to list - allows for multiple clip reactions
+        print(plate)
+    print(assembly_dict_list)
+    return assembly_dict_list
 
 
 def calculate_final_assembly_tipracks(final_assembly_dict):
