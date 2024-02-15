@@ -4,7 +4,13 @@ Created on Thu Apr 11 14:26:07 2019
 
 @author: mh2210
 
-
+TO DO
+    - add in new transformation protocol
+    - ammend meta information
+    - add robot comments 
+    - add clip input functionality
+    - ammend instruction manuel
+    - new GUI??
  
 """
 import os
@@ -72,7 +78,7 @@ T4_LIG_VOL = 0.5
 CLIP_MAST_WATER = 15.5
 PART_PER_CLIP = 200
 MIN_VOL = 1
-MAX_CONSTRUCTS = 1000               # 96
+# MAX_CONSTRUCTS = 96               # not required
 MAX_CLIPS_PER_PLATE = 48            # Max clips per clip plate
 MAX_CLIPS_TOTAL = 96*2              # 48
 MAX_ASSEMBLIES_PER_PLATE = 96
@@ -372,13 +378,6 @@ def generate_constructs_list(path):
                     constructs_list.append(process_construct(construct[1:]))
     
     return constructs_list
-
-    # # Errors ########################################################## NEEDS REWRITING ##########################################################
-    # if len(constructs_list) > MAX_CONSTRUCTS:
-    #     raise ValueError(
-    #         'Number of constructs exceeds maximum. Reduce construct number in construct.csv.')
-    # else:
-    # ##############################################################################################################################################
 
 
 def generate_clips_df(constructs_list):
