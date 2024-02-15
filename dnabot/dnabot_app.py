@@ -286,6 +286,8 @@ def main():
             template_dir_path, F_ASSEMBLY_TEMP_FNAME_3),
             final_assembly_dict=final_assembly_dict,
             tiprack_num=final_assembly_tipracks)
+        
+        ''' NEED TO CONSIDER: as clips are used up the well must be declared empty so that subsequent assembly reactions don't run out '''
     
     # generate_ot2_script(TRANS_SPOT_FNAME_1, os.path.join(
     #     template_dir_path, TRANS_SPOT_TEMP_FNAME_1),
@@ -538,7 +540,10 @@ def generate_final_assembly_dict(constructs_list, clips_df):
     indicating which clip reaction wells are used.
 
     """
-    final_assembly_dict = {}
+    # final_assembly_dict = {}                                                      # old version generates dictionary
+    final_assembly_dict_keys = []
+    final_assembly_dict_values = []
+
     clips_count = np.zeros(len(clips_df.index))
 
     for construct_index, construct_df in enumerate(constructs_list):                # for each construct df in constructs_list
@@ -562,14 +567,23 @@ def generate_final_assembly_dict(constructs_list, clips_df):
 
             clips_count[clip_num] = clips_count[clip_num] + 1
 
-        final_assembly_dict[tip_counter(construct_index)] = [construct_well_list, construct_plate_list]
+        # final_assembly_dict[tip_counter(construct_index)] = [construct_well_list, construct_plate_list]   # generate dictionary
+        final_assembly_dict_keys.append(tip_counter(construct_index))
+        final_assembly_dict_values.append([construct_well_list, construct_plate_list])
 
-    return final_assembly_dict
+    # return final_assembly_dict
+    return final_assembly_dict_keys, final_assembly_dict_values                     # return list of dict keys and values
 
 
 def generate_final_assembly_dict_list(constructs_list, clips_df):
-    '''Subsets the clips df into chunks of max assemblies per plate (96), runs the generate_final_assembly_dict function 
-    for each and returns a list of the resulting sub assembly dicts'''
+    ''' Runs the generate_final_assembly_dict function producing ORDERED lists of 
+    keys and values for the assembly source and destination (index of list denotes 
+    the pair). Subsets key and value lists into chunks of up to 96 (max assemblies 
+    per plate). A sub dictionary is generated for each chunk and then function  
+    returns a list of the resulting sub assembly dicts
+    
+    This method ensures that subsequent assembly scripts do not reuse empty clip 
+    wells while also keeping the correct destination well locations '''
 
     ASSEMBLY_COUNT = len(constructs_list)
     ASSEMBLY_PLATE_COUNT = ASSEMBLY_COUNT // MAX_ASSEMBLIES_PER_PLATE + 1           # plus one to include final partially full plate
@@ -579,6 +593,9 @@ def generate_final_assembly_dict_list(constructs_list, clips_df):
     #     raise ValueError(
     #         'Number of CLIP reactions exceeds {}. Reduce number of constructs in construct.csv.'.format(MAX_CLIPS_TOTAL))
 
+    # final_assembly_dict = generate_final_assembly_dict(constructs_list, clips_df)
+    final_assembly_dict_keys, final_assembly_dict_values = generate_final_assembly_dict(constructs_list, clips_df)
+
     assembly_dict_list = []
 
     for plate in range(ASSEMBLY_PLATE_COUNT):
@@ -587,12 +604,16 @@ def generate_final_assembly_dict_list(constructs_list, clips_df):
 
         if subset_upper > ASSEMBLY_COUNT:                               # set total number number of assemblies as upper bound if plate incomplete
             subset_upper = ASSEMBLY_COUNT
-    
-        sub_assembly_df = constructs_list[subset_lower:subset_upper]
-        sub_assembly_dict = generate_final_assembly_dict(sub_assembly_df, clips_df)
+
+        # sub_assembly_df = constructs_list[subset_lower:subset_upper]
+        # sub_assembly_dict = generate_final_assembly_dict(sub_assembly_df, clips_df)
+
+        keys = [tip_counter(i) for i in list(range(subset_upper - subset_lower))]
+        values = final_assembly_dict_values[subset_lower:subset_upper]
+        sub_assembly_dict = {keys[i]: values[i] for i in range(len(keys))}
+
         assembly_dict_list.append(sub_assembly_dict)                    # generate and append sub_clip_dict to list - allows for multiple clip reactions
-    #     print(plate)
-    # print(assembly_dict_list)
+
     return assembly_dict_list
 
 
