@@ -46,20 +46,20 @@ TRANS_SPOT_TEMP_FNAME_1 = 'transformation_template_APIv1.py'
 TRANS_SPOT_TEMP_FNAME_2 = 'transformation_template_APIv2.8.py'
 TRANS_SPOT_TEMP_FNAME_3 = 'transformation_template_Thermocycler_module_APIv2.8.py'
 
-CLIP_FNAME_1 = '1_clip_ot2_APIv1'                           # removed '.py'
-CLIP_FNAME_2 = '1_clip_ot2_APIv2.8'                         # removed '.py'
-CLIP_FNAME_3 = '1_clip_ot2_Thermocycler_APIv2.8'            # removed '.py'
+CLIP_FNAME_1 = 'A_clip_ot2_APIv1'                           # removed '.py'
+CLIP_FNAME_2 = 'A_clip_ot2_APIv2.8'                         # removed '.py'
+CLIP_FNAME_3 = 'A_clip_ot2_Thermocycler_APIv2.8'            # removed '.py'
 
-MAGBEAD_FNAME_1 = '2_purification_ot2_APIv1.py'
-MAGBEAD_FNAME_2 = '2_purification_ot2_APIv2.8.py'
+MAGBEAD_FNAME_1 = 'B_purification_ot2_APIv1'                # removed '.py'
+MAGBEAD_FNAME_2 = 'B_purification_ot2_APIv2.8'              # removed '.py'
 
-F_ASSEMBLY_FNAME_1 = '3_assembly_ot2_APIv1.py'
-F_ASSEMBLY_FNAME_2 = '3_assembly_ot2_APIv2.8.py'
-F_ASSEMBLY_FNAME_3 = '3_assembly_ot2_Thermocycler_APIv2.8.py'
+F_ASSEMBLY_FNAME_1 = 'C_assembly_ot2_APIv1'                 # removed '.py'
+F_ASSEMBLY_FNAME_2 = 'C_assembly_ot2_APIv2.8'               # removed '.py'
+F_ASSEMBLY_FNAME_3 = 'C_assembly_ot2_Thermocycler_APIv2.8'  # removed '.py'
 
-TRANS_SPOT_FNAME_1 = '4_transformation_ot2_APIv1.py'
-TRANS_SPOT_FNAME_2 = '4_transformation_ot2_APIv2.8.py'
-TRANS_SPOT_FNAME_3 = '4_transformation_ot2_Thermocycler_APIv2.8.py'
+TRANS_SPOT_FNAME_1 = 'D_transformation_ot2_APIv1.py'
+TRANS_SPOT_FNAME_2 = 'D_transformation_ot2_APIv2.8.py'
+TRANS_SPOT_FNAME_3 = 'D_transformation_ot2_Thermocycler_APIv2.8.py'
 
 CLIPS_INFO_FNAME = 'clip_run_info.csv'
 FINAL_ASSEMBLIES_INFO_FNAME = 'final_assembly_run_info.csv'
@@ -119,7 +119,7 @@ def __cli():
                               help='Template directory. Default: "template_ot2_scripts" located next to the present '
                                    'script.',
                               default=None, type=str or None)
-    # Makes life easier to decide if we should switch to GUI or not
+    
     parser.set_defaults(nogui=False)
     parser_nogui.set_defaults(nogui=True)
     return parser.parse_args()
