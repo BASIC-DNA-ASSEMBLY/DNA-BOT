@@ -79,7 +79,7 @@ MAX_ASSEMBLIES_PER_PLATE = 96
 FINAL_ASSEMBLIES_PER_CLIP = 15
 DEFAULT_PART_VOL = 1
 MAX_SOURCE_PLATES = 6
-MAX_FINAL_ASSEMBLY_TIPRACKS = 20    # 7 
+MAX_FINAL_ASSEMBLY_TIPRACKS = 7
 
 # Constant dicts
 SPOTTING_VOLS_DICT = {2: 5, 3: 5, 4: 5, 5: 5, 6: 5, 7: 5}
@@ -286,8 +286,6 @@ def main():
             template_dir_path, F_ASSEMBLY_TEMP_FNAME_3),
             final_assembly_dict=final_assembly_dict,
             tiprack_num=final_assembly_tipracks)
-        
-        ''' NEED TO CONSIDER: as clips are used up the well must be declared empty so that subsequent assembly reactions don't run out '''
     
     # generate_ot2_script(TRANS_SPOT_FNAME_1, os.path.join(
     #     template_dir_path, TRANS_SPOT_TEMP_FNAME_1),
@@ -412,7 +410,7 @@ def generate_clips_df(constructs_list):
     clips_df['plate'] = pd.Series(['0'] * len(clips_df.index), index=clips_df.index)
     clip_count = 0
     
-    for unique_clip_count, clip_number in clips_df['number'].iteritems():
+    for unique_clip_count, clip_number in clips_df['number'].iteritems():   # clip number is the number of each unique clip that must be built
         mag_wells = []
         plates = []         
 
