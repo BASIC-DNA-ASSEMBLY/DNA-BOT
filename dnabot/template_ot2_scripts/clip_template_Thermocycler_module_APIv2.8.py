@@ -8,10 +8,10 @@ metadata = {
      'protocolName': 'CLIP_With_Thermocycler',
      'description': 'Implements linker ligation reactions using an opentrons OT-2, including the thermocycler module.'}
 
-
+# opentrons_simulate.exe dnabot\template_ot2_scripts\clip_template_Thermocycler_module_APIv2.8.py --custom-labware-path 'labware\Labware definitions'
 
 # example dictionary produced by DNA-BOT for a single construct containing 5 parts, un-comment and run to test the template
-#clips_dict={"prefixes_wells": ["A8", "A7", "C5", "C7", "C10"], "prefixes_plates": ["2", "2", "2", "2", "2"], "suffixes_wells": ["B7", "C1", "C2", "C3", "B8"], "suffixes_plates": ["2", "2", "2", "2", "2"], "parts_wells": ["E2", "F2", "C2", "B2", "D2"], "parts_plates": ["5", "5", "5", "5", "5"], "parts_vols": [1, 1, 1, 1, 1], "water_vols": [7.0, 7.0, 7.0, 7.0, 7.0]}
+clips_dict={"prefixes_wells": ["A8", "A7", "C5", "C7", "C10"], "prefixes_plates": ["2", "2", "2", "2", "2"], "suffixes_wells": ["B7", "C1", "C2", "C3", "B8"], "suffixes_plates": ["2", "2", "2", "2", "2"], "parts_wells": ["E2", "F2", "C2", "B2", "D2"], "parts_plates": ["5", "5", "5", "5", "5"], "parts_vols": [1, 1, 1, 1, 1], "water_vols": [7.0, 7.0, 7.0, 7.0, 7.0]}
 
 def run(protocol: protocol_api.ProtocolContext):
 # added run function for API 2.8
@@ -21,7 +21,7 @@ def run(protocol: protocol_api.ProtocolContext):
     #Tiprack
     tiprack_type="opentrons_96_tiprack_20ul"
     INITIAL_TIP = 'A1'
-    CANDIDATE_TIPRACK_SLOTS = ['3', '6', '9']
+    CANDIDATE_TIPRACK_SLOTS = ['3', '6', '9', '1']
 
     # Pipettes - pipette instructions in a single location so redefining pipette type is simpler
     PIPETTE_TYPE = 'p20_single_gen2'
@@ -31,9 +31,10 @@ def run(protocol: protocol_api.ProtocolContext):
     if PIPETTE_TYPE != 'p20_single_gen2':
         print('Define labware must be changed to use', PIPETTE_TYPE)
         exit()
-#Thermocycler Module
+
+    # Thermocycler Module
     tc_mod = protocol.load_module('Thermocycler Module')
-# Destination Plates
+    # Destination Plates
     DESTINATION_PLATE_TYPE = '4ti0960rig_96_wellplate_200ul'
     # Loads destination plate onto Thermocycler Module
     destination_plate = tc_mod.load_labware(DESTINATION_PLATE_TYPE)

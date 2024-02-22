@@ -8,6 +8,7 @@ TO DO
     - add in new transformation protocol
     - ammend meta information
     - add robot comments 
+    - add different file locations for different protocol versions
     - add clip input functionality
     - ammend instruction manuel
     - new GUI??
@@ -91,7 +92,7 @@ MAX_FINAL_ASSEMBLY_TIPRACKS = 7
 SPOTTING_VOLS_DICT = {2: 5, 3: 5, 4: 5, 5: 5, 6: 5, 7: 5}
 
 # Constant lists
-SOURCE_DECK_POS = ['2', '5', '8', '7', '10', '11']
+SOURCE_DECK_POS = ['2', '5', '8', '7', '10', '11']      # NB for thermocycler protocols, the thermocycler takes up slots 7, 8, 10, 11
 
 
 def __cli():
@@ -507,7 +508,30 @@ def generate_clips_dict_list(clips_df, sources_dict):
     '''Subsets the clips df into chunks of 48, runs the generate_clips_dict function 
     for each and returns a list of the resulting sub clips dicts'''
 
-    CLIP_COUNT = len(clips_df)
+    def clip_df_long_format(clip_df):
+        ''' Takes clips df and returns a long format df with one row per mag well 
+        rather than one row per unique clip'''
+
+        df = clip_df.copy()
+        long_clip_df = pd.DataFrame(columns = df.columns)
+
+        index = 0
+
+        for row, clip in clip_df.iterrows():
+            for clip_rep in range(clip.number):                         # copy row and replace mag well and plate lists with well and plate for current rep
+                data = clip.copy()
+                data.number = 1
+                data.mag_well = clip.mag_well[clip_rep]
+                data.plate = clip.plate[clip_rep]
+                long_clip_df.loc[index] = data
+                index += 1
+
+        return long_clip_df
+    
+    long_clip_df = clip_df_long_format(clips_df)
+
+    # CLIP_COUNT = len(clips_df)
+    CLIP_COUNT = clips_df['number'].sum()
     CLIP_PLATE_COUNT = CLIP_COUNT // MAX_CLIPS_PER_PLATE + 1            # plus one to include final partially full plate
 
     # Error 
@@ -524,10 +548,11 @@ def generate_clips_dict_list(clips_df, sources_dict):
         if subset_upper > CLIP_COUNT:                                   # set total number number of clips as upper bound if plate incomplete
             subset_upper = CLIP_COUNT
     
-        sub_clip_df = clips_df.iloc[subset_lower:subset_upper, :]
+        # sub_clip_df = clips_df.iloc[subset_lower:subset_upper, :]
+        sub_clip_df = long_clip_df.iloc[subset_lower:subset_upper, :]
         sub_clip_dict = generate_clips_dict(sub_clip_df, sources_dict)
         clips_dict_list.append(sub_clip_dict)                           # generate and append sub_clip_dict to list - allows for multiple clip reactions
-
+        print(sub_clip_dict, '\n\n')
     return clips_dict_list
 
 

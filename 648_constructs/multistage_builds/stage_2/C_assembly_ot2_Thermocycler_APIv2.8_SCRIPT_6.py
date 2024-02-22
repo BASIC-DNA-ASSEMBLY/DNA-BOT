@@ -48,7 +48,8 @@ def run(protocol: protocol_api.ProtocolContext):
             # tiprack_num += 1                    # + 1 for one index ############################### I think(?)
 
             # Thermocycler Module
-            tc_mod = protocol.load_module('Thermocycler Module')
+            # tc_mod = protocol.load_module('Thermocycler Module')
+            tc_mod = protocol.load_module('thermocyclerModuleV2')
             destination_plate = tc_mod.load_labware(DESTINATION_PLATE_TYPE)
             tc_mod.set_block_temperature(20)
 
