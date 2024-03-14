@@ -92,7 +92,7 @@ MAX_FINAL_ASSEMBLY_TIPRACKS = 7
 SPOTTING_VOLS_DICT = {2: 5, 3: 5, 4: 5, 5: 5, 6: 5, 7: 5}
 
 # Constant lists
-SOURCE_DECK_POS = ['2', '5', '8', '7', '10', '11']      # NB for thermocycler protocols, the thermocycler takes up slots 7, 8, 10, 11
+SOURCE_DECK_POS = ['1', '2'] #'8', '7', '10', '11']      # NB for thermocycler protocols, the thermocycler takes up slots 7, 8, 10, 11
 
 
 def __cli():
@@ -552,7 +552,6 @@ def generate_clips_dict_list(clips_df, sources_dict):
         sub_clip_df = long_clip_df.iloc[subset_lower:subset_upper, :]
         sub_clip_dict = generate_clips_dict(sub_clip_df, sources_dict)
         clips_dict_list.append(sub_clip_dict)                           # generate and append sub_clip_dict to list - allows for multiple clip reactions
-        print(sub_clip_dict, '\n\n')
     return clips_dict_list
 
 

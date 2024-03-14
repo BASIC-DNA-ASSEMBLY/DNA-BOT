@@ -7,7 +7,7 @@ Promega T4 DNA Ligase,86.0
 
 SOURCE_PLATES
 Deck position,Source plate,Path
-2,stage2_parts.csv,C:\Users\ljh119\OneDrive - Imperial College London\648_build\DNA-BOT\648_constructs\multistage_builds\stage_2\stage2_parts.csv
+1,stage2_parts.csv,C:\Users\ljh119\OneDrive - Imperial College London\648_build\DNA-BOT\648_constructs\multistage_builds\stage_2\stage2_parts.csv
 
 CLIP_REACTIONS
 prefixes,parts,suffixes,number,mag_well,plate

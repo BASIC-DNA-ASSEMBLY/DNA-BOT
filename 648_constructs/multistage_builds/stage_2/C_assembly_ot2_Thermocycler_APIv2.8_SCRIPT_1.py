@@ -48,9 +48,13 @@ def run(protocol: protocol_api.ProtocolContext):
             # tiprack_num += 1                    # + 1 for one index ############################### I think(?)
 
             # Thermocycler Module
-            # tc_mod = protocol.load_module('Thermocycler Module')
-            tc_mod = protocol.load_module('thermocyclerModuleV2')
+            try:
+                tc_mod = protocol.load_module('Thermocycler Module')
+            except:
+                tc_mod = protocol.load_module('thermocyclerModuleV2')
+
             destination_plate = tc_mod.load_labware(DESTINATION_PLATE_TYPE)
+            tc_mod.open_lid()
             tc_mod.set_block_temperature(20)
 
             # Error trapping
@@ -133,8 +137,7 @@ def run(protocol: protocol_api.ProtocolContext):
             tc_mod.close_lid()
             tc_mod.set_lid_temperature(105)
             tc_mod.set_block_temperature(50, hold_time_minutes=45, block_max_volume=15)
-            tc_mod.set_block_temperature(4, hold_time_minutes=2, block_max_volume=30)           ##################### does this switch off or stay on????
-            # Increase the hold time at 4 C if necessary
+            tc_mod.set_block_temperature(8, block_max_volume=30)
             tc_mod.set_lid_temperature(37)
             # tc_mod.open_lid()                                     # leave lid shut to prevent evaporation
         

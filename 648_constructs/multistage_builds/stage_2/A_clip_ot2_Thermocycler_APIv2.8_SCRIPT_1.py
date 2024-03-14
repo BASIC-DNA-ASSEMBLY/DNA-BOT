@@ -11,9 +11,9 @@ metadata = {
 # opentrons_simulate.exe dnabot\template_ot2_scripts\clip_template_Thermocycler_module_APIv2.8.py --custom-labware-path 'labware\Labware definitions'
 
 # example dictionary produced by DNA-BOT for a single construct containing 5 parts, un-comment and run to test the template
-clips_dict={"prefixes_wells": ["A8", "A7", "C5", "C7", "C10"], "prefixes_plates": ["2", "2", "2", "2", "2"], "suffixes_wells": ["B7", "C1", "C2", "C3", "B8"], "suffixes_plates": ["2", "2", "2", "2", "2"], "parts_wells": ["E2", "F2", "C2", "B2", "D2"], "parts_plates": ["5", "5", "5", "5", "5"], "parts_vols": [1, 1, 1, 1, 1], "water_vols": [7.0, 7.0, 7.0, 7.0, 7.0]}
+clips_dict={"prefixes_wells": ["A8", "A7", "C5", "C7", "C10"], "prefixes_plates": ["2", "2", "2", "2", "2"], "suffixes_wells": ["B7", "C1", "C2", "C3", "B8"], "suffixes_plates": ["2", "2", "2", "2", "2"], "parts_wells": ["E2", "F2", "C2", "B2", "D2"], "parts_plates": ["1", "1", "1", "1", "1"], "parts_vols": [1, 1, 1, 1, 1], "water_vols": [7.0, 7.0, 7.0, 7.0, 7.0]}
 
-clips_dict={"prefixes_wells": ["G1", "G1", "G1", "G1", "G1", "G1", "G1", "G1", "G1", "G1", "G1", "G1", "G1", "G1", "G1", "G1", "G1", "G1", "G1", "G1", "G1", "G1", "G1", "G1", "G1", "G1", "G1", "G1", "G1", "G1", "G1", "G1", "G1", "G1", "G1", "G1", "G1", "G1", "G1", "G1", "G1", "G1", "G1", "G1", "G3", "H10", "H10", "H10"], "prefixes_plates": ["2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2"], "suffixes_wells": ["G4", "G4", "G4", "G4", "G4", "G4", "G4", "G4", "G4", "G4", "G4", "G4", "G4", "G4", "G4", "G4", "G4", "G4", "G4", "G4", "G4", "G4", "G4", "G4", "G4", "G4", "G4", "G4", "G4", "G4", "G4", "G4", "G4", "G4", "G4", "G4", "G4", "G4", "G4", "G4", "G4", "G4", "G4", "G4", "H9", "G2", "G2", "G2"], "suffixes_plates": ["2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2"], "parts_wells": ["F1", "F1", "F1", "F1", "F1", "F1", "F1", "F1", "F1", "F1", "F1", "F1", "F1", "F1", "F1", "F1", "F1", "F1", "F1", "F1", "F1", "F1", "F1", "F1", "F1", "F1", "F1", "F1", "F1", "F1", "F1", "F1", "F1", "F1", "F1", "F1", "F1", "F1", "F1", "F1", "F1", "F1", "F1", "F1", "B1", "D1", "D2", "D3"], "parts_plates": ["2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2"], "parts_vols": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], "water_vols": [7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0]}
+clips_dict={"prefixes_wells": ["G1", "G1", "G1", "G1", "G1", "G1", "G1", "G1", "G1", "G1", "G1", "G1", "G1", "G1", "G1", "G1", "G1", "G1", "G1", "G1", "G1", "G1", "G1", "G1", "G1", "G1", "G1", "G1", "G1", "G1", "G1", "G1", "G1", "G1", "G1", "G1", "G1", "G1", "G1", "G1", "G1", "G1", "G1", "G1", "G3", "H10", "H10", "H10"], "prefixes_plates": ["1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1"], "suffixes_wells": ["G4", "G4", "G4", "G4", "G4", "G4", "G4", "G4", "G4", "G4", "G4", "G4", "G4", "G4", "G4", "G4", "G4", "G4", "G4", "G4", "G4", "G4", "G4", "G4", "G4", "G4", "G4", "G4", "G4", "G4", "G4", "G4", "G4", "G4", "G4", "G4", "G4", "G4", "G4", "G4", "G4", "G4", "G4", "G4", "H9", "G2", "G2", "G2"], "suffixes_plates": ["1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1"], "parts_wells": ["F1", "F1", "F1", "F1", "F1", "F1", "F1", "F1", "F1", "F1", "F1", "F1", "F1", "F1", "F1", "F1", "F1", "F1", "F1", "F1", "F1", "F1", "F1", "F1", "F1", "F1", "F1", "F1", "F1", "F1", "F1", "F1", "F1", "F1", "F1", "F1", "F1", "F1", "F1", "F1", "F1", "F1", "F1", "F1", "B1", "D1", "D2", "D3"], "parts_plates": ["1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1"], "parts_vols": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], "water_vols": [7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0]}
 
 
 def run(protocol: protocol_api.ProtocolContext):
@@ -24,7 +24,7 @@ def run(protocol: protocol_api.ProtocolContext):
     #Tiprack
     tiprack_type="opentrons_96_tiprack_20ul"
     INITIAL_TIP = 'A1'
-    CANDIDATE_TIPRACK_SLOTS = ['3', '6', '9', '1']
+    CANDIDATE_TIPRACK_SLOTS = ['3', '6', '9', '5']
 
     # Pipettes - pipette instructions in a single location so redefining pipette type is simpler
     PIPETTE_TYPE = 'p20_single_gen2'
@@ -36,11 +36,18 @@ def run(protocol: protocol_api.ProtocolContext):
         exit()
 
     # Thermocycler Module
-    tc_mod = protocol.load_module('Thermocycler Module')
+    try:
+        tc_mod = protocol.load_module('Thermocycler Module')
+    except:
+        tc_mod = protocol.load_module('thermocyclerModuleV2')
+        
     # Destination Plates
     DESTINATION_PLATE_TYPE = '4ti0960rig_96_wellplate_200ul'
+
     # Loads destination plate onto Thermocycler Module
     destination_plate = tc_mod.load_labware(DESTINATION_PLATE_TYPE)
+    tc_mod.open_lid()
+    tc_mod.set_block_temperature(20)
 
     # Source Plates
     SOURCE_PLATE_TYPE = '4ti0960rig_96_wellplate_200ul'
@@ -99,8 +106,9 @@ def run(protocol: protocol_api.ProtocolContext):
         # Defines positions of master mix and water within the tube rack
         master_mix = tube_rack.wells(MASTER_MIX_WELL)
         water = tube_rack.wells(WATER_WELL)
+        protocol.pause(f'Place mastermix in pos {MASTER_MIX_WELL} and water is in pos {WATER_WELL} of tube rack in deck slot {TUBE_RACK_POSITION}')
 
-         ### Loading Source Plates
+        ### Loading Source Plates
         # Makes a source plate key for where prefixes, suffixes, and parts are located, according to the dictionary generated by the DNA-BOT
         source_plates = {}
         source_plates_keys = list(set((prefixes_plates + suffixes_plates + parts_plates)))
@@ -142,7 +150,6 @@ def run(protocol: protocol_api.ProtocolContext):
         {'temperature': 20, 'hold_time_minutes': 1}]
     tc_mod.execute_profile(steps=profile, repetitions=20, block_max_volume=30)
     tc_mod.set_block_temperature(60, hold_time_minutes=10, block_max_volume=30)
-    tc_mod.set_block_temperature(4, hold_time_minutes=2, block_max_volume=30)
-    #Q Does block_max_volume define total volume in block or individual wells?
+    tc_mod.set_block_temperature(8, block_max_volume=30)
     tc_mod.set_lid_temperature(37)
-    tc_mod.open_lid()
+    # tc_mod.open_lid()                                     # leave lid shut to prevent evaporation
