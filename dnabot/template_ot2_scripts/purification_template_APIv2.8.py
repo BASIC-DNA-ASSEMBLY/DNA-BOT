@@ -1,6 +1,8 @@
 from opentrons import protocol_api
 
-# Rename to 'purification_template' and paste into 'template_ot2_scripts' folder in DNA-BOT to use
+''' To Do
+     - explicitly code for tip change
+'''
 
 metadata = {
      'apiLevel': '2.8',

@@ -56,3 +56,7 @@ To Do:
     - check what max vol of reagents could hypothetically be required for 192 clips
     - ammend meta data to match new requirements
     - output all files into different folders for each version
+
+
+Final assembly
+    - find a way to allow the script to handle multiple clip plates

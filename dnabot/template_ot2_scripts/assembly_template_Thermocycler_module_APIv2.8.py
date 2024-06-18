@@ -80,41 +80,43 @@ def run(protocol: protocol_api.ProtocolContext):
 
             destination_wells = np.array([key for key, value in final_assembly_dict.items()])
             
-            pipette.pick_up_tip()
-            for x in unique_assemblies_lens: 
-                master_mix_well = tube_counter(x-2)    # select well in tube rack (-2 as one indexed and fewest clips possible is 2)
-                destination_inds = [i for i, lens in enumerate(final_assembly_lens) if lens == x]   # find all assemblies of length x
-                destination_wells_for_len = list(destination_wells[destination_inds])
+            ########################## commented out for this
+            # pipette.pick_up_tip()
+            # for x in unique_assemblies_lens: 
+            #     master_mix_well = tube_counter(x-2)    # select well in tube rack (-2 as one indexed and fewest clips possible is 2)
+            #     destination_inds = [i for i, lens in enumerate(final_assembly_lens) if lens == x]   # find all assemblies of length x
+            #     destination_wells_for_len = list(destination_wells[destination_inds])
 
-                # # Common backbones (up to 3, else complete original way)
-                # backbones = []
-                # for components in final_assembly_dict.values():
-                #     backbone = components[0][0]
-                #     backbones.append(backbone) 
-                # unique_backbones = list(set(backbones))             # NB contains multiple wells with same bb in - need method for combining 
-                # print(backbones)
+            #     # # Common backbones (up to 3, else complete original way)
+            #     # backbones = []
+            #     # for components in final_assembly_dict.values():
+            #     #     backbone = components[0][0]
+            #     #     backbones.append(backbone) 
+            #     # unique_backbones = list(set(backbones))             # NB contains multiple wells with same bb in - need method for combining 
+            #     # print(backbones)
 
-                # if len(unique_backbones) < 3:
-                #     print('finish this part')
-                #     ''''Notes
-                #         The idea here was to produce a master mix for each backbone and dilution combination.
-                #         I could do away with the user having to premix their own dilution of the assembly buffer
-                #         and have the robot make a series of master mixes for each unique number of parts (i.e. 
-                #         dilution) and backbone. This would save a lot of time and tips.
+            #     # if len(unique_backbones) < 3:
+            #     #     print('finish this part')
+            #     #     ''''Notes
+            #     #         The idea here was to produce a master mix for each backbone and dilution combination.
+            #     #         I could do away with the user having to premix their own dilution of the assembly buffer
+            #     #         and have the robot make a series of master mixes for each unique number of parts (i.e. 
+            #     #         dilution) and backbone. This would save a lot of time and tips.
 
-                #         This could be done by having the user make a stronger buffer and putting a limit on the 
-                #         max number of parts for an assembly, or possibly better would be to have the user make 
-                #         the assembly buffer tubes as required and then have the robot aliquot the master mixes 
-                #         and then add backbones to each individually
-                #     '''
+            #     #         This could be done by having the user make a stronger buffer and putting a limit on the 
+            #     #         max number of parts for an assembly, or possibly better would be to have the user make 
+            #     #         the assembly buffer tubes as required and then have the robot aliquot the master mixes 
+            #     #         and then add backbones to each individually
+            #     #     '''
                 
-                for destination_well in destination_wells_for_len: # make tube_rack_wells and destination_plate.wells in the same type
+            #     for destination_well in destination_wells_for_len: # make tube_rack_wells and destination_plate.wells in the same type
                     
-                    pipette.transfer(TOTAL_VOL - x * PART_VOL, tube_rack.wells(master_mix_well),
-                                     destination_plate.wells(destination_well), new_tip='never')    #transfer water and buffer in the pipette
+            #         pipette.transfer(TOTAL_VOL - x * PART_VOL, tube_rack.wells(master_mix_well),
+            #                          destination_plate.wells(destination_well), new_tip='never')    #transfer water and buffer in the pipette
 
-            pipette.return_tip()
-            pipette.reset_tipracks()
+            # pipette.return_tip()
+            # pipette.reset_tipracks()
+            #######################
 
             # Part transfers
             for key, values in list(final_assembly_dict.items()):
@@ -122,12 +124,15 @@ def run(protocol: protocol_api.ProtocolContext):
                     well  = values[0][i]
                     plate = values[1][i]
 
-                    mix = (0,0)
-                    if i == len(values[0])-1:                       # set to mix if on final clip transfer
-                        mix = MIX_SETTINGS
+                    mix = MIX_SETTINGS
+                    # mix = (0,0)
+                    # if i == len(values[0])-1:                       # set to mix if on final clip transfer
+                    #     mix = MIX_SETTINGS
 
                     pipette.transfer(PART_VOL, source_plates[plate].wells(well),
-                                     destination_plate.wells(key), mix_after=mix, new_tip='always')
+                                     destination_plate.wells(key), mix_after=mix, 
+                                     blow_out=True, blowout_location='destination well',
+                                     new_tip='always')
 
             # Thermocycler Module
             tc_mod.close_lid()

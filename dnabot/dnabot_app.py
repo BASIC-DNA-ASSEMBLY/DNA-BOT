@@ -83,7 +83,7 @@ MIN_VOL = 1
 MAX_CLIPS_PER_PLATE = 48            # Max clips per clip plate
 MAX_CLIPS_TOTAL = 96*2              # 48
 MAX_ASSEMBLIES_PER_PLATE = 96
-FINAL_ASSEMBLIES_PER_CLIP = 15
+FINAL_ASSEMBLIES_PER_CLIP = 13      ##### NB maybe lower better as clips evaporate? #15
 DEFAULT_PART_VOL = 1
 MAX_SOURCE_PLATES = 6
 MAX_FINAL_ASSEMBLY_TIPRACKS = 7
@@ -165,33 +165,33 @@ def __info_from_gui():
 
 def main():
     # Settings
-    # args = __cli()
+    args = __cli()
     
-    # if args.nogui:
-    #     etoh_well = args.etoh_well
-    #     soc_column = args.soc_column
-    #     construct_path = args.construct_path
-    #     sources_paths = args.source_paths
-    #     output_dir = args.output_dir
-    #     template_dir = args.template_dir
-    # else:
-    #     user_inputs = __info_from_gui()
-    #     etoh_well = user_inputs['etoh_well']
-    #     soc_column = user_inputs['soc_column']
-    #     construct_path = user_inputs['construct_path']
-    #     sources_paths = user_inputs['sources_paths']
-    #     output_dir = os.path.dirname(construct_path)
-    #     template_dir = None
+    if args.nogui:
+        etoh_well = args.etoh_well
+        soc_column = args.soc_column
+        construct_path = args.construct_path
+        sources_paths = args.source_paths
+        output_dir = args.output_dir
+        template_dir = args.template_dir
+    else:
+        user_inputs = __info_from_gui()
+        etoh_well = user_inputs['etoh_well']
+        soc_column = user_inputs['soc_column']
+        construct_path = user_inputs['construct_path']
+        sources_paths = user_inputs['sources_paths']
+        output_dir = os.path.dirname(construct_path)
+        template_dir = None
 
-    #### TEST FILES - TO BE DELETED ####
-    etoh_well = 'A11'
-    soc_column = 1
-    construct_path = 'C:\\Users\\ljh119\\OneDrive - Imperial College London\\648_build\\DNA-BOT\\648_constructs\\multistage_builds\\stage_2\\stage2_constructs.csv'
-    sources_paths = ['C:\\Users\\ljh119\\OneDrive - Imperial College London\\648_build\\DNA-BOT\\648_constructs\\multistage_builds\\stage_2\\stage2_parts.csv']
-    output_dir = 'C:\\Users\\ljh119\\OneDrive - Imperial College London\\648_build\\DNA-BOT\\648_constructs\\multistage_builds\\stage_2'
-    template_dir = None
+    # #### TEST FILES - TO BE DELETED ####
+    # etoh_well = 'A11'
+    # soc_column = 1
+    # construct_path = 'C:\\Users\\ljh119\\OneDrive - Imperial College London\\648_build\\DNA-BOT\\648_constructs\\multistage_builds\\stage_2\\stage2_constructs.csv'
+    # sources_paths = ['C:\\Users\\ljh119\\OneDrive - Imperial College London\\648_build\\DNA-BOT\\648_constructs\\multistage_builds\\stage_2\\stage2_parts.csv']
+    # output_dir = 'C:\\Users\\ljh119\\OneDrive - Imperial College London\\648_build\\DNA-BOT\\648_constructs\\multistage_builds\\stage_2'
+    # template_dir = None
 
-    ####################################
+    # ####################################
 
     # Args checking
     if len(sources_paths) > len(SOURCE_DECK_POS):
@@ -321,7 +321,7 @@ def main():
     with open(construct_base + '_' + FINAL_ASSEMBLIES_INFO_FNAME,
               'w', newline='') as csvfile:
         csvwriter = csv.writer(csvfile)
-        for final_assembly_well, construct_clips in final_assembly_dict.items():
+        for final_assembly_well, construct_clips in final_assembly_dict.items():            ##### ITERATE THROUGH FINAL ASSEMBLY DICTS LIST
             csvwriter.writerow([final_assembly_well, construct_clips])
     with open(construct_base + '_' + WELL_OUTPUT_FNAME, 'w') as f:
         f.write('Magbead ethanol well: {}'.format(etoh_well))

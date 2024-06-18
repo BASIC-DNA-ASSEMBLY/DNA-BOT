@@ -74,7 +74,7 @@ def run(protocol: protocol_api.ProtocolContext):
 
         ### Loading Tiprack
         # Calculates whether one, two, or three tipracks are needed, which are in slots 3, 6, and 9 respectively
-        total_tips = 4 * len(parts_wells)
+        total_tips = 4 * len(parts_wells) + 1
         letter_dict = {'A': 0, 'B': 1, 'C': 2,
                        'D': 3, 'E': 4, 'F': 5, 'G': 6, 'H': 7}
         tiprack_1_tips = (
@@ -114,17 +114,20 @@ def run(protocol: protocol_api.ProtocolContext):
         for key in source_plates_keys:
             source_plates[key]=protocol.load_labware(SOURCE_PLATE_TYPE, key)
 
-        ### Transfers
 
-        # transfer master mix into destination wells
-            # added blowout into destination wells ('blowout_location' only works for API 2.8 and above)
-        pipette.pick_up_tip()
-        pipette.transfer(MASTER_MIX_VOLUME, master_mix, destination_wells, blow_out=True, blowout_location='destination well', new_tip='never')
-        pipette.drop_tip()
+        ####################### commented out for this run
+        # ### Transfers
 
-        # transfer water into destination wells
-            # added blowout into destination wells ('blowout_location' only works for API 2.8 and above)
-        pipette.transfer(water_vols, water, destination_wells, blow_out=True, blowout_location='destination well', new_tip='always')
+        # # transfer master mix into destination wells
+        #     # added blowout into destination wells ('blowout_location' only works for API 2.8 and above)
+        # pipette.pick_up_tip()
+        # pipette.transfer(MASTER_MIX_VOLUME, master_mix, destination_wells, blow_out=True, blowout_location='destination well', new_tip='never')
+        # pipette.drop_tip()
+
+        # # transfer water into destination wells
+        #     # added blowout into destination wells ('blowout_location' only works for API 2.8 and above)
+        # pipette.transfer(water_vols, water, destination_wells, blow_out=True, blowout_location='destination well', new_tip='always')
+        ######################
 
         #transfer prefixes, suffixes, and parts into destination wells
             # added blowout into destination wells ('blowout_location' only works for API 2.8 and above)
