@@ -1,0 +1,44 @@
+from opentrons import protocol_api
+
+metadata = {
+    'protocolName': 'Mix Protocol with Differential Z Offset and Speeds',
+    'author': 'Your Name',
+    'description': 'A protocol that mixes samples with different z offsets for aspirate and dispense, and different speeds for each.',
+}
+requirements = {"robotType": "OT-2", "apiLevel": "2.15"}
+
+def run(protocol: protocol_api.ProtocolContext):
+    # Define labware and pipettes here
+    # For example:
+    # tiprack = protocol.load_labware('opentrons_96_tiprack_300ul', 1)
+    # plate = protocol.load_labware('corning_96_wellplate_360ul_flat', 2)
+    # pipette = protocol.load_instrument('p300_single_gen2', mount='left', tip_racks=[tiprack])
+
+    # Define differential z offsets for aspirate and dispense
+    aspirate_z_offset = 3  # mm above the bottom of the well
+    dispense_z_offset = -7  # mm from the top of the well
+
+    # Define differential speeds for aspirate and dispense
+    aspirate_speed = 0.5  # fraction of the default speed
+    dispense_speed = 0.5  # fraction of the default speed
+
+    # Pick up a new tip
+    pipette.pick_up_tip()
+
+    # Aspirate with z offset and speed
+    pipette.aspirate(20, source_well.bottom(aspirate_z_offset), rate=aspirate_speed)
+
+    # Dispense with z offset and speed
+    pipette.dispense(20, destination_well.top(dispense_z_offset), rate=dispense_speed)
+
+    # Mix with the same tip
+    pipette.mix(5, 40)
+
+    # Move out of the well slowly
+    pipette.move_to(destination_well.top(), speed=5)
+
+    # Drop the tip
+    pipette.drop_tip()
+
+# Note: Replace 'source_well' and 'destination_well' with the actual wells you intend to use.
+# Also, ensure that 'pipette' is defined with the correct pipette type you are using.

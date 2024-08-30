@@ -1,0 +1,56 @@
+from opentrons import protocol_api
+
+metadata = {
+    'protocolName': 'Example Protocol with Before Lambda',
+    'author': 'Your Name',
+    'description': 'An example protocol demonstrating the use of before=lambda',
+}
+requirements = {"robotType": "OT-2", "apiLevel": "2.15"}
+
+def run(protocol: protocol_api.ProtocolContext):
+    # Define labware and pipettes here
+    # ...
+
+    # Define a function to be called before each aspirate
+    def mix_before_aspirating():
+        # This function could contain commands to mix the contents of the well
+        pass
+
+    # Transfer with a lambda function calling mix_before_aspirating before each aspirate
+    pipette.transfer(
+        20,
+        source_wells,
+        destination_wells,
+        before=lambda: mix_before_aspirating(),
+        new_tip='always'
+    )
+
+
+CALLLING A FUNCTION AFTER DISPENSE
+from opentrons import protocol_api
+
+metadata = {
+    'protocolName': 'Custom After Action',
+    'author': 'Your Name',
+    'description': 'An example protocol with a custom action after dispensing',
+}
+requirements = {"robotType": "OT-2", "apiLevel": "2.15"}
+
+def run(protocol: protocol_api.ProtocolContext):
+    # Define labware and pipettes here
+    # ...
+
+    # Define a custom action to perform after dispensing
+    def custom_action():
+        # Custom code here
+        pass
+
+    # Transfer with a custom action after dispensing
+    pipette.transfer(
+        20,
+        source_wells,
+        destination_wells,
+        new_tip='always',
+        after_dispense=custom_action  # Perform the custom action here
+    )
+        

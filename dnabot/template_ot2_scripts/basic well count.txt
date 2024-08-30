@@ -1,0 +1,33 @@
+from opentrons import protocol_api
+
+metadata = {
+    'protocolName': 'Well Access Counter',
+    'author': 'Your Name',
+    'description': 'Counts each time a source plate well is accessed',
+}
+requirements = {"robotType": "OT-2", "apiLevel": "2.15"}
+
+def run(protocol: protocol_api.ProtocolContext):
+    # Define labware and pipettes here
+    # For example:
+    # source_plate = protocol.load_labware('source_plate_type', 'source_slot')
+    # destination_plate = protocol.load_labware('destination_plate_type', 'destination_slot')
+    # pipette = protocol.load_instrument('p300_multi_gen2', mount='left', tip_racks=[tiprack])
+
+    # Initialize well access counter
+    well_access_counter = {well: 0 for well in source_plate.wells()}
+
+    # Function to increment well access counter
+    def increment_well_access(well):
+        well_access_counter[well] += 1
+
+    # Transfer steps with well access counting
+    # Assuming you have a list of source wells and destination wells
+    pipette.transfer(20, source_wells, destination_wells, new_tip='always', before=lambda: increment_well_access(source_well))
+
+    # Print out the well access counts
+    for well, count in well_access_counter.items():
+        print(f"Well {well}: accessed {count} times")
+
+# Note: The above code assumes that 'source_plate', 'source_wells', 'destination_wells', and 'pipette' are defined.
+# You will need to replace these with your actual labware and pipette definitions.
