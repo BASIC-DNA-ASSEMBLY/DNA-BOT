@@ -6,7 +6,7 @@ import numpy as np
 
 #metadata
 metadata = {
-     'apiLevel': '2.8',
+     'apiLevel': '2.19',
      'protocolName': 'DNABOT Step 1: Clip Reaction with thermocycler',
      'description': 'Implements linker ligation reactions using an opentrons OT-2, including the thermocycler module.'
 }
