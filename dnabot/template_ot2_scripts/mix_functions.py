@@ -18,6 +18,8 @@ def mix_prefixes_suffixes_function(Mix_prefix_and_suffix, clips_dict, pipette_na
     high = 3
     normal = 1
     slow = 0.4
+    #Linker reagent volume - specify minimum volume in linker wells
+    linker_vol=20
     if Mix_prefix_and_suffix:
         #Extracts lists from clips_dict
         prefixes = []
@@ -40,20 +42,21 @@ def mix_prefixes_suffixes_function(Mix_prefix_and_suffix, clips_dict, pipette_na
             suffixes.append([loop_suffixes_wells[i], loop_suffixes_plates[i]])
 
         suffixes_unique = np.unique(np.array(suffixes), axis=0)
-        #Executes the mix 
+        #Execute the mix 
         # [clip_num,0] addresses the plate location
         # [clip_num,1] addresses the well location
         for clip_num in range(len(prefixes_unique)):
             pipette.pick_up_tip()
             pipette.well_bottom_clearance.aspirate = 2  # tip is 2 mm above well bottom
             pipette.well_bottom_clearance.dispense = 1  # tip is 1 mm above well bottom
-            pipette.aspirate(10, source_plates[prefixes_unique[clip_num, 0]].wells(prefixes_unique[clip_num, 1]), rate(normal))
-            pipette.dispense(10, source_plates[prefixes_unique[clip_num, 0]].wells(prefixes_unique[clip_num, 1]), rate(high))
-            pipette.aspirate(10, source_plates[prefixes_unique[clip_num, 0]].wells(prefixes_unique[clip_num, 1]), rate(normal))
-            pipette.dispense(10, source_plates[prefixes_unique[clip_num, 0]].wells(prefixes_unique[clip_num, 1]), rate(high))
-            pipette.aspirate(10, source_plates[prefixes_unique[clip_num, 0]].wells(prefixes_unique[clip_num, 1]), rate(slow))
+            pipette.aspirate(linker_vol/2, source_plates[prefixes_unique[clip_num, 0]].wells(prefixes_unique[clip_num, 1]), rate(normal))
+            pipette.dispense(linker_vol/2, source_plates[prefixes_unique[clip_num, 0]].wells(prefixes_unique[clip_num, 1]), rate(high))
+            pipette.aspirate(linker_vol/2, source_plates[prefixes_unique[clip_num, 0]].wells(prefixes_unique[clip_num, 1]), rate(normal))
+            pipette.dispense(linker_vol/2, source_plates[prefixes_unique[clip_num, 0]].wells(prefixes_unique[clip_num, 1]), rate(high))
+            pipette.aspirate(linker_vol/2, source_plates[prefixes_unique[clip_num, 0]].wells(prefixes_unique[clip_num, 1]), rate(slow))
             protocol.delay(seconds=1)
-            pipette.dispense(10, source_plates[prefixes_unique[clip_num, 0]].wells(prefixes_unique[clip_num, 1]), rate (slow), push_out=0.5)
+            pipette.dispense(linker_vol/2, source_plates[prefixes_unique[clip_num, 0]].wells(prefixes_unique[clip_num, 1]), rate (slow), push_out=linker_vol/20)
+            pipette.blow_out(well.top(-5))
             pipette.touch_tip(speed=10, radius=0.9, v_offset=-5)
             pipette.drop_tip()
 
@@ -61,12 +64,12 @@ def mix_prefixes_suffixes_function(Mix_prefix_and_suffix, clips_dict, pipette_na
             pipette.pick_up_tip()
             pipette.well_bottom_clearance.aspirate = 2  # tip is 2 mm above well bottom
             pipette.well_bottom_clearance.dispense = 1  # tip is 2 mm above well bottom
-            pipette.aspirate(10, source_plates[suffixes_unique[clip_num, 0]].wells(suffixes_unique[clip_num, 1]))
-            pipette.dispense(10, source_plates[suffixes_unique[clip_num, 0]].wells(suffixes_unique[clip_num, 1]))
-            pipette.aspirate(10, source_plates[suffixes_unique[clip_num, 0]].wells(suffixes_unique[clip_num, 1]))
-            pipette.dispense(10, source_plates[suffixes_unique[clip_num, 0]].wells(suffixes_unique[clip_num, 1]))
-            pipette.aspirate(10, source_plates[suffixes_unique[clip_num, 0]].wells(suffixes_unique[clip_num, 1]))
-            pipette.dispense(10, source_plates[suffixes_unique[clip_num, 0]].wells(suffixes_unique[clip_num, 1]))
+            pipette.aspirate(linker_vol/2, source_plates[suffixes_unique[clip_num, 0]].wells(suffixes_unique[clip_num, 1]))
+            pipette.dispense(linker_vol/2, source_plates[suffixes_unique[clip_num, 0]].wells(suffixes_unique[clip_num, 1]))
+            pipette.aspirate(linker_vol/2, source_plates[suffixes_unique[clip_num, 0]].wells(suffixes_unique[clip_num, 1]))
+            pipette.dispense(linker_vol/2, source_plates[suffixes_unique[clip_num, 0]].wells(suffixes_unique[clip_num, 1]))
+            pipette.aspirate(linker_vol/2, source_plates[suffixes_unique[clip_num, 0]].wells(suffixes_unique[clip_num, 1]))
+            pipette.dispense(linker_vol/2, source_plates[suffixes_unique[clip_num, 0]].wells(suffixes_unique[clip_num, 1]))
             pipette.drop_tip()
     else:
         pass
@@ -89,12 +92,12 @@ def mix_parts_function(Mix_parts_plate, clips_dict, pipette_name):
             pipette.pick_up_tip()
             pipette.well_bottom_clearance.aspirate = 2  # tip is 2 mm above well bottom
             pipette.well_bottom_clearance.dispense = 1  # tip is 2 mm above well bottom
-            pipette.aspirate(10, source_plates[parts_unique[clip_num, 0]].wells(parts_unique[clip_num, 1]))
-            pipette.dispense(10, source_plates[parts_unique[clip_num, 0]].wells(parts_unique[clip_num, 1]))
-            pipette.aspirate(10, source_plates[parts_unique[clip_num, 0]].wells(parts_unique[clip_num, 1]))
-            pipette.dispense(10, source_plates[parts_unique[clip_num, 0]].wells(parts_unique[clip_num, 1]))
-            pipette.aspirate(10, source_plates[parts_unique[clip_num, 0]].wells(parts_unique[clip_num, 1]))
-            pipette.dispense(10, source_plates[parts_unique[clip_num, 0]].wells(parts_unique[clip_num, 1]))
+            pipette.aspirate(linker_vol/2, source_plates[parts_unique[clip_num, 0]].wells(parts_unique[clip_num, 1]))
+            pipette.dispense(linker_vol/2, source_plates[parts_unique[clip_num, 0]].wells(parts_unique[clip_num, 1]))
+            pipette.aspirate(linker_vol/2, source_plates[parts_unique[clip_num, 0]].wells(parts_unique[clip_num, 1]))
+            pipette.dispense(linker_vol/2, source_plates[parts_unique[clip_num, 0]].wells(parts_unique[clip_num, 1]))
+            pipette.aspirate(linker_vol/2, source_plates[parts_unique[clip_num, 0]].wells(parts_unique[clip_num, 1]))
+            pipette.dispense(linker_vol/2, source_plates[parts_unique[clip_num, 0]].wells(parts_unique[clip_num, 1]))
             pipette.drop_tip()
         else:
             pass
