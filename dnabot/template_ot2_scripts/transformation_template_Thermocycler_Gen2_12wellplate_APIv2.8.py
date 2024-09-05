@@ -134,7 +134,7 @@ def run(protocol: protocol_api.ProtocolContext):
         MIX_SETTINGS = (4, 5)  # Mix after setting during final assembly transfers.
         INCUBATION_TIME = __PARAMETERS['transfo_incubation_time']['value']  # Cells and final assembly incubation time.
 
-        #Thermocycler Module
+        #thermocycler module gen2
         tc_mod.set_block_temperature(TEMP, block_max_volume=50)
         protocol.pause(f'Place the competent cells on thermocycler when temperature is {TEMP}°C and resume run')
 
@@ -383,7 +383,7 @@ def run(protocol: protocol_api.ProtocolContext):
 
     assembly_plate = protocol.load_labware(ASSEMBLY_PLATE_TYPE, ASSEMBLY_PLATE_SLOT)
         # changed to protocol.load_labware for API version 2
-    tc_mod = protocol.load_module('Thermocycler Module')
+    tc_mod = protocol.load_module('thermocycler module gen2')
     transformation_plate = tc_mod.load_labware(TRANSFORMATION_PLATE_TYPE)
         # changed to protocol.load_labware for API version 2
         # removed share=True, not required in API version 2

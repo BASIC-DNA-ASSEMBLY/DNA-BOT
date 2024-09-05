@@ -11,11 +11,32 @@ metadata = {
 
 
 # example dictionary produced by DNA-BOT for a single construct containing 5 parts, un-comment and run to test the template
-#clips_dict={"prefixes_wells": ["A8", "A7", "C5", "C7", "C10"], "prefixes_plates": ["2", "2", "2", "2", "2"], "suffixes_wells": ["B7", "C1", "C2", "C3", "B8"], "suffixes_plates": ["2", "2", "2", "2", "2"], "parts_wells": ["E2", "F2", "C2", "B2", "D2"], "parts_plates": ["5", "5", "5", "5", "5"], "parts_vols": [1, 1, 1, 1, 1], "water_vols": [7.0, 7.0, 7.0, 7.0, 7.0]}
+#clips_dict={
+#   "prefixes_wells": ["A8", "A7", "C5", "C7", "C10"], 
+#   "prefixes_plates": ["2", "2", "2", "2", "2"], 
+#   "suffixes_wells": ["B7", "C1", "C2", "C3", "B8"], 
+#   "suffixes_plates": ["2", "2", "2", "2", "2"], 
+#   "parts_wells": ["E2", "F2", "C2", "B2", "D2"], 
+#   "parts_plates": ["5", "5", "5", "5", "5"], 
+#   "parts_vols": [1, 1, 1, 1, 1], 
+#   "water_vols": [7.0, 7.0, 7.0, 7.0, 7.0]
+# }
 
 # __LABWARES is expected to be redefined by "generate_ot2_script" method
 # Test dict
-# __LABWARES={"p20_single": {"id": "p20_single_gen2"}, "p300_multi": {"id": "p300_multi_gen2"}, "mag_deck": {"id": "magdeck"}, "96_tiprack_20ul": {"id": "opentrons_96_tiprack_20ul"}, "96_tiprack_300ul": {"id": "opentrons_96_tiprack_300ul"}, "24_tuberack_1500ul": {"id": "e14151500starlab_24_tuberack_1500ul"}, "96_wellplate_200ul_pcr_step_14": {"id": "4ti0960rig_96_wellplate_200ul"}, "96_wellplate_200ul_pcr_step_23": {"id": "4ti0960rig_96_wellplate_200ul"}, "agar_plate_step_4": {"id": "4ti0960rig_96_wellplate_200ul"}, "12_reservoir_21000ul": {"id": "4ti0131_12_reservoir_21000ul"}, "96_deepwellplate_2ml": {"id": "4ti0136_96_wellplate_2200ul"}}
+# __LABWARES={
+#   "p20_single": {"id": "p20_single_gen2"}, 
+#   "p300_multi": {"id": "p300_multi_gen2"}, 
+#   "mag_deck": {"id": "magdeck"}, 
+#   "96_tiprack_20ul": {"id": "opentrons_96_tiprack_20ul"}, 
+#   "96_tiprack_300ul": {"id": "opentrons_96_tiprack_300ul"}, 
+#   "24_tuberack_1500ul": {"id": "e14151500starlab_24_tuberack_1500ul"}, 
+#   "96_wellplate_200ul_pcr_step_14": {"id": "4ti0960rig_96_wellplate_200ul"}, 
+#   "96_wellplate_200ul_pcr_step_23": {"id": "4ti0960rig_96_wellplate_200ul"}, 
+#   "agar_plate_step_4": {"id": "4ti0960rig_96_wellplate_200ul"}, 
+#   "12_reservoir_21000ul": {"id": "4ti0131_12_reservoir_21000ul"}, 
+#   "96_deepwellplate_2ml": {"id": "4ti0136_96_wellplate_2200ul"}
+# }
 
 def run(protocol: protocol_api.ProtocolContext):
 # added run function for API 2.8
@@ -35,8 +56,10 @@ def run(protocol: protocol_api.ProtocolContext):
     if PIPETTE_TYPE != 'p20_single_gen2':
         print('Define labware must be changed to use', PIPETTE_TYPE)
         exit()
-    #Thermocycler Module
-    tc_mod = protocol.load_module('Thermocycler Module')
+    #thermocycler module gen2 - turn off lid and cool plate to reduce evaporation
+    tc_mod = protocol.load_module('thermocycler module gen2')
+    tc_mod.deactivate_lid()
+    tc_mod.set_block_temperature(temperature=4) 
     # Destination Plates
     DESTINATION_PLATE_TYPE = __LABWARES['clip_plate']['id']
     # Loads destination plate onto Thermocycler Module
@@ -44,11 +67,9 @@ def run(protocol: protocol_api.ProtocolContext):
 
     # Source Plates
     SOURCE_PLATE_TYPE = __LABWARES['clip_source_plate']['id']
-            # modified from custom labware as API 2 doesn't support labware.create anymore, so the old add_labware script can't be used
-
+   
     # Tube Rack
     TUBE_RACK_TYPE = __LABWARES['24_tuberack_1500ul']['id']
-            # modified from custom labware as API 2 doesn't support labware.create anymore, so the old add_labware script can't be used
     TUBE_RACK_POSITION = '4'
     MASTER_MIX_WELL = 'A1'
     WATER_WELL = 'A2'
@@ -116,12 +137,12 @@ def run(protocol: protocol_api.ProtocolContext):
         # transfer master mix into destination wells
             # added blowout into destination wells ('blowout_location' only works for API 2.8 and above)
         pipette.pick_up_tip()
-        pipette.transfer(MASTER_MIX_VOLUME, master_mix, destination_wells, blow_out=True, blowout_location='destination well', new_tip='never')
+        pipette.distribute(MASTER_MIX_VOLUME, master_mix, destination_wells, blow_out=True, blowout_location='source well', new_tip='never')
         pipette.drop_tip()
 
         # transfer water into destination wells
             # added blowout into destination wells ('blowout_location' only works for API 2.8 and above)
-        pipette.transfer(water_vols, water, destination_wells, blow_out=True, blowout_location='destination well', new_tip='always')
+        pipette.distribute(water_vols, water, destination_wells, blow_out=True, blowout_location='source well', new_tip='always')
 
         #transfer prefixes, suffixes, and parts into destination wells
             # added blowout into destination wells ('blowout_location' only works for API 2.8 and above)

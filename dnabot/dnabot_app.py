@@ -28,37 +28,45 @@ import slots
 
 # Constant str
 TEMPLATE_DIR_NAME = 'template_ot2_scripts'
-CLIP_TEMP_FNAME_1 = 'clip_template_APIv1.py'
+CLIP_TEMP_FNAME_1 = 'clip_template_FLEX.py'
 CLIP_TEMP_FNAME_2 = 'clip_template_APIv2.8.py'
-CLIP_TEMP_FNAME_3 = 'clip_template_Thermocycler_module_APIv2.8.py'
+CLIP_TEMP_FNAME_3 = 'clip_template_Thermocycler_Gen1_APIv2.8.py'
+CLIP_TEMP_FNAME_4 = 'clip_template_Thermocycler_Gen2_APIv2.8.py'
 
-MAGBEAD_TEMP_FNAME_1 = 'purification_template_APIv1.py'
+MAGBEAD_TEMP_FNAME_1 = 'purification_template_FLEX.py'
 MAGBEAD_TEMP_FNAME_2 = 'purification_template_APIv2.8.py'
 
-F_ASSEMBLY_TEMP_FNAME_1 = 'assembly_template_APIv1.py'
+F_ASSEMBLY_TEMP_FNAME_1 = 'assembly_template_FLEX.py'
 F_ASSEMBLY_TEMP_FNAME_2 = 'assembly_template_APIv2.8.py'
-F_ASSEMBLY_TEMP_FNAME_3 = 'assembly_template_Thermocycler_module_APIv2.8.py'
+F_ASSEMBLY_TEMP_FNAME_3 = 'assembly_template_Thermocycler_Gen1_APIv2.8.py'
+F_ASSEMBLY_TEMP_FNAME_4 = 'assembly_template_Thermocycler_Gen2_APIv2.8.py'
 
-TRANS_SPOT_TEMP_FNAME_1 = 'transformation_template_APIv1.py'
+TRANS_SPOT_TEMP_FNAME_1 = 'transformation_template_FLEX.py'
 TRANS_SPOT_TEMP_FNAME_2 = 'transformation_template_APIv2.8.py'
-TRANS_SPOT_TEMP_FNAME_3 = 'transformation_template_Thermocycler_module_APIv2.8.py'
-TRANS_SPOT_TEMP_FNAME_4 = 'transformation_template_Thermocycler_module_12wellplate_APIv2.8.py'
+TRANS_SPOT_TEMP_FNAME_3 = 'transformation_template_Thermocycler_Gen1_APIv2.8.py'
+TRANS_SPOT_TEMP_FNAME_4 = 'transformation_template_Thermocycler_Gen2_APIv2.8.py'
+TRANS_SPOT_TEMP_FNAME_5 = 'transformation_template_Thermocycler_Gen1_12wellplate_APIv2.8.py'
+TRANS_SPOT_TEMP_FNAME_6 = 'transformation_template_Thermocycler_Gen2_12wellplate_APIv2.8.py'
 
-CLIP_FNAME_1 = '1_clip_ot2_APIv1.py'
+CLIP_FNAME_1 = '1_clip_ot2_FLEX.py'
 CLIP_FNAME_2 = '1_clip_ot2_APIv2.8.py'
 CLIP_FNAME_3 = '1_clip_ot2_Thermocycler_APIv2.8.py'
+CLIP_FNAME_4 = 'clip_template_Thermocycler_Gen2_APIv2.8.py'
 
-MAGBEAD_FNAME_1 = '2_purification_ot2_APIv1.py'
+MAGBEAD_FNAME_1 = '2_purification_ot2_FLEX.py'
 MAGBEAD_FNAME_2 = '2_purification_ot2_APIv2.8.py'
 
-F_ASSEMBLY_FNAME_1 = '3_assembly_ot2_APIv1.py'
+F_ASSEMBLY_FNAME_1 = '3_assembly_ot2_FLEX.py'
 F_ASSEMBLY_FNAME_2 = '3_assembly_ot2_APIv2.8.py'
 F_ASSEMBLY_FNAME_3 = '3_assembly_ot2_Thermocycler_APIv2.8.py'
+F_ASSEMBLY_FNAME_4 = 'assembly_template_Thermocycler_Gen2_APIv2.8.py'
 
-TRANS_SPOT_FNAME_1 = '4_transformation_ot2_APIv1.py'
+TRANS_SPOT_FNAME_1 = '4_transformation_ot2_FLEX.py'
 TRANS_SPOT_FNAME_2 = '4_transformation_ot2_APIv2.8.py'
 TRANS_SPOT_FNAME_3 = '4_transformation_ot2_Thermocycler_APIv2.8.py'
 TRANS_SPOT_FNAME_4 = '4_transformation_ot2_Thermocycler_12wellplate_APIv2.8.py'
+TRANS_SPOT_FNAME_5 = 'transformation_template_Thermocycler_Gen1_12wellplate_APIv2.8.py'
+TRANS_SPOT_FNAME_6 = 'transformation_template_Thermocycler_Gen2_12wellplate_APIv2.8.py'
 
 CLIPS_INFO_FNAME = 'clip_run_info.csv'
 FINAL_ASSEMBLIES_INFO_FNAME = 'final_assembly_run_info.csv'
@@ -291,6 +299,12 @@ def main():
         clips_dict=clips_dict,
         __LABWARES=labware_settings,
         __PARAMETERS=parameter_settings)
+    generate_ot2_script(
+        CLIP_FNAME_4,
+        os.path.join(template_dir_path, CLIP_TEMP_FNAME_4),
+        clips_dict=clips_dict,
+        __LABWARES=labware_settings,
+        __PARAMETERS=parameter_settings)
        
     generate_ot2_script(
         MAGBEAD_FNAME_1,
@@ -322,6 +336,12 @@ def main():
         final_assembly_dict=final_assembly_dict,
         tiprack_num=final_assembly_tipracks,
         __LABWARES=labware_settings)
+    generate_ot2_script(
+        F_ASSEMBLY_FNAME_4,
+        os.path.join(template_dir_path, F_ASSEMBLY_TEMP_FNAME_4),
+        final_assembly_dict=final_assembly_dict,
+        tiprack_num=final_assembly_tipracks,
+        __LABWARES=labware_settings)
     
     generate_ot2_script(
         TRANS_SPOT_FNAME_1,
@@ -345,6 +365,20 @@ def main():
     generate_ot2_script(
         TRANS_SPOT_FNAME_4,
         os.path.join(template_dir_path, TRANS_SPOT_TEMP_FNAME_4),
+        spotting_tuples=spotting_tuples_12,
+        soc_well=f"A{soc_column}",
+        __LABWARES=labware_settings,
+        __PARAMETERS=parameter_settings)
+    generate_ot2_script(
+        TRANS_SPOT_FNAME_5,
+        os.path.join(template_dir_path, TRANS_SPOT_TEMP_FNAME_5),
+        spotting_tuples=spotting_tuples_12,
+        soc_well=f"A{soc_column}",
+        __LABWARES=labware_settings,
+        __PARAMETERS=parameter_settings)
+    generate_ot2_script(
+        TRANS_SPOT_FNAME_6,
+        os.path.join(template_dir_path, TRANS_SPOT_TEMP_FNAME_6),
         spotting_tuples=spotting_tuples_12,
         soc_well=f"A{soc_column}",
         __LABWARES=labware_settings,

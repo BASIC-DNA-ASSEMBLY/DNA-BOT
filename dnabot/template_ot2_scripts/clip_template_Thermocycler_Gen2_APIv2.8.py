@@ -1,6 +1,4 @@
 from opentrons import protocol_api
-from mix_functions import mix_prefixes_suffixes_function, mix_parts_function
-import numpy as np
 
 # Rename to 'clip_template' and paste into 'template_ot2_scripts' folder in DNA-BOT to use
 
@@ -8,21 +6,16 @@ import numpy as np
 metadata = {
      'apiLevel': '2.19',
      'protocolName': 'DNABOT Step 1: Clip Reaction with thermocycler',
-     'description': 'Implements linker ligation reactions using an opentrons OT-2, including the thermocycler module.'
+     'description': 'Implements linker ligation reactions using an opentrons OT-2, including the thermocycler module gen2.'
 }
-#Define if Prefixes/Suffixes and Parts should be mixed
-#True or False
-Mix_prefix_and_suffix = True
-Mix_parts_plate = True
+
 
 # example dictionary produced by DNA-BOT for a single construct containing 5 parts, un-comment and run to test the template
-clips_dict={"prefixes_wells": ["A8", "A7", "C5", "C7", "C10"], "prefixes_plates": ["2", "2", "2", "2", "2"], "suffixes_wells": ["B7", "C1", "C2", "C3", "B8"], "suffixes_plates": ["2", "2", "2", "2", "2"], "parts_wells": ["E2", "F2", "C2", "B2", "D2"], "parts_plates": ["5", "5", "5", "5", "5"], "parts_vols": [1, 1, 1, 1, 1], "water_vols": [7.0, 7.0, 7.0, 7.0, 7.0]}
+#clips_dict={"prefixes_wells": ["A8", "A7", "C5", "C7", "C10"], "prefixes_plates": ["2", "2", "2", "2", "2"], "suffixes_wells": ["B7", "C1", "C2", "C3", "B8"], "suffixes_plates": ["2", "2", "2", "2", "2"], "parts_wells": ["E2", "F2", "C2", "B2", "D2"], "parts_plates": ["5", "5", "5", "5", "5"], "parts_vols": [1, 1, 1, 1, 1], "water_vols": [7.0, 7.0, 7.0, 7.0, 7.0]}
 
 # __LABWARES is expected to be redefined by "generate_ot2_script" method
 # Test dict
 # __LABWARES={"p20_single": {"id": "p20_single_gen2"}, "p300_multi": {"id": "p300_multi_gen2"}, "mag_deck": {"id": "magdeck"}, "96_tiprack_20ul": {"id": "opentrons_96_tiprack_20ul"}, "96_tiprack_300ul": {"id": "opentrons_96_tiprack_300ul"}, "24_tuberack_1500ul": {"id": "e14151500starlab_24_tuberack_1500ul"}, "96_wellplate_200ul_pcr_step_14": {"id": "4ti0960rig_96_wellplate_200ul"}, "96_wellplate_200ul_pcr_step_23": {"id": "4ti0960rig_96_wellplate_200ul"}, "agar_plate_step_4": {"id": "4ti0960rig_96_wellplate_200ul"}, "12_reservoir_21000ul": {"id": "4ti0131_12_reservoir_21000ul"}, "96_deepwellplate_2ml": {"id": "4ti0136_96_wellplate_2200ul"}}
-
-
 
 def run(protocol: protocol_api.ProtocolContext):
 # added run function for API 2.8
@@ -42,11 +35,13 @@ def run(protocol: protocol_api.ProtocolContext):
     if PIPETTE_TYPE != 'p20_single_gen2':
         print('Define labware must be changed to use', PIPETTE_TYPE)
         exit()
-    #Thermocycler Module
-    tc_mod = protocol.load_module('Thermocycler Module')
+    #thermocycler module gen2 - turn off lid and cool plate to reduce evaporation
+    tc_mod = protocol.load_module('thermocycler module gen2')
+    tc_mod.deactivate_lid()
+    tc_mod.set_block_temperature(temperature=4) 
     # Destination Plates
     DESTINATION_PLATE_TYPE = __LABWARES['clip_plate']['id']
-    # Loads destination plate onto Thermocycler Module
+    # Loads destination plate onto thermocycler module gen2
     destination_plate = tc_mod.load_labware(DESTINATION_PLATE_TYPE)
 
     # Source Plates
@@ -74,11 +69,7 @@ def run(protocol: protocol_api.ProtocolContext):
             parts_plates,
             parts_vols,
             water_vols):
-        
-        # Sets thermocycler to 4C to reduce evaporation
-        tc_mod.deactivate_lid()
-        tc_mod.set_block_temperature(temperature=4)  
-     
+
         ### Loading Tiprack
         # Calculates whether one, two, or three tipracks are needed, which are in slots 3, 6, and 9 respectively
         total_tips = 4 * len(parts_wells)
@@ -122,11 +113,8 @@ def run(protocol: protocol_api.ProtocolContext):
         for key in source_plates_keys:
             source_plates[key]=protocol.load_labware(SOURCE_PLATE_TYPE, key)
 
-        ## Optional pre-mix execution
-        mix_prefixes_suffixes_function(Mix_prefix_and_suffix, clips_dict, pipette)
-        mix_parts_function(Mix_parts_plate, clips_dict, pipette)
-        
         ### Transfers
+
         # transfer master mix into destination wells
             # added blowout into destination wells ('blowout_location' only works for API 2.8 and above)
         pipette.pick_up_tip()
