@@ -21,7 +21,15 @@ metadata = {
 # __LABWARES is expected to be redefined by "generate_ot2_script" method
 # Test dict
 # __LABWARES={"p20_single": {"id": "p20_single_gen2"}, "p300_multi": {"id": "p300_multi_gen2"}, "mag_deck": {"id": "magdeck"}, "96_tiprack_20ul": {"id": "opentrons_96_tiprack_20ul"}, "96_tiprack_300ul": {"id": "opentrons_96_tiprack_300ul"}, "24_tuberack_1500ul": {"id": "e14151500starlab_24_tuberack_1500ul"}, "96_wellplate_200ul_pcr_step_14": {"id": "4ti0960rig_96_wellplate_200ul"}, "96_wellplate_200ul_pcr_step_23": {"id": "4ti0960rig_96_wellplate_200ul"}, "agar_plate_step_4": {"id": "4ti0960rig_96_wellplate_200ul"}, "12_reservoir_21000ul": {"id": "4ti0131_12_reservoir_21000ul"}, "96_deepwellplate_2ml": {"id": "4ti0136_96_wellplate_2200ul"}}
-# __PARAMETERS={"purif_magdeck_height": {"value": 20.0}, "purif_wash_time": {"value": 0.5}, "purif_bead_ratio": {"value": 1.8}, "purif_incubation_time": {"value": 5.0}, "purif_settling_time": {"value": 2.0}, "purif_drying_time": {"value": 5.0}, "purif_elution_time": {"value": 2.0}, "transfo_incubation_temp": {"value": 4.0}, "transfo_incubation_time": {"value": 20.0}}
+# __PARAMETERS={"purif_magdeck_height": {"value": 20.0}, 
+# "purif_wash_time": {"value": 0.5}, 
+# "purif_bead_ratio": {"value": 1.8}, 
+# "purif_incubation_time": {"value": 5.0}, 
+# "purif_settling_time": {"value": 2.0}, 
+# "purif_drying_time": {"value": 5.0}, 
+# "purif_elution_time": {"value": 2.0}, 
+# "transfo_incubation_temp": {"value": 4.0}, 
+# "transfo_incubation_time": {"value": 20.0}}
 
 def run(protocol: protocol_api.ProtocolContext):
 # added run function for API version 2
@@ -391,8 +399,8 @@ def run(protocol: protocol_api.ProtocolContext):
     assembly_plate = protocol.load_labware(ASSEMBLY_PLATE_TYPE, ASSEMBLY_PLATE_SLOT)
         # changed to protocol.load_labware for API version 2
     
-    #Thermocycler Module
-    tc_mod = protocol.load_module('Thermocycler Module')
+    #thermocycler module gen2
+    tc_mod = protocol.load_module('thermocycler module gen2')
 
     transformation_plate = tc_mod.load_labware(TRANSFORMATION_PLATE_TYPE)
         # changed to protocol.load_labware for API version 2

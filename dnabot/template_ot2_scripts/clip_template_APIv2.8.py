@@ -38,14 +38,17 @@ def run(protocol: protocol_api.ProtocolContext):
 
     # Source Plates
     SOURCE_PLATE_TYPE = __LABWARES['clip_source_plate']['id']
-            # modified from custom labware as API 2 doesn't support labware.create anymore, so the old add_labware script can't be used
 
     # Destination Plates
     DESTINATION_PLATE_TYPE = __LABWARES['clip_plate']['id']
     DESTINATION_PLATE_POSITION = "7"
             # INITIAL_DESTINATION_WELL constant removed, as destination_plate.wells() automatically starts from A1
 
-    # Tube Rack
+    # Tube Rack on temperature module UNFINISHED CODE BELOW
+    #temp_mod = protocol.load_module(module_name="temperature module", location="3")
+    #temp_adapter = temp_mod.load_adapter("opentrons_24_well_aluminum_block")
+    #TUBE_RACK_TYPE = temp_mod.load_adapter("opentrons_24_well_aluminum_block")
+    
     TUBE_RACK_TYPE = __LABWARES['24_tuberack_1500ul']['id']
     TUBE_RACK_POSITION = '4'
     MASTER_MIX_WELL = 'A1'

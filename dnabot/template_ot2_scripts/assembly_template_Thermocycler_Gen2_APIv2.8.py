@@ -8,7 +8,7 @@ metadata = {
 }
 
 # It is possible to run 88 assemblies with this new module. The heat block module is removed. 
-# Assembly reactions is set up on thermocycler module.
+# Assembly reactions is set up on thermocycler module gen2.
 
 
 # test dictionary can be used for simulation 3 or 88 assemblies
@@ -56,8 +56,8 @@ def run(protocol: protocol_api.ProtocolContext):
             tube_rack = protocol.load_labware(TUBE_RACK_TYPE, TUBE_RACK_POSITION)
             
             
-            #Thermocycler Module
-            tc_mod = protocol.load_module('Thermocycler Module')
+            #thermocycler module gen2
+            tc_mod = protocol.load_module('thermocycler module gen2')
             destination_plate = tc_mod.load_labware(DESTINATION_PLATE_TYPE)
             tc_mod.set_block_temperature(20)
 
@@ -92,7 +92,7 @@ def run(protocol: protocol_api.ProtocolContext):
 
 
 
-            #Thermocycler Module
+            #thermocycler module gen2
             tc_mod.close_lid()
             tc_mod.set_lid_temperature(105)
             tc_mod.set_block_temperature(50, hold_time_minutes=45, block_max_volume=15)
