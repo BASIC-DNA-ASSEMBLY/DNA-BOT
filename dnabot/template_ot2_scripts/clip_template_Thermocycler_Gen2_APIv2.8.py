@@ -1,4 +1,5 @@
 from opentrons import protocol_api
+import numpy as np
 
 # Rename to 'clip_template' and paste into 'template_ot2_scripts' folder in DNA-BOT to use
 
@@ -11,11 +12,26 @@ metadata = {
 
 
 # example dictionary produced by DNA-BOT for a single construct containing 5 parts, un-comment and run to test the template
-#clips_dict={"prefixes_wells": ["A8", "A7", "C5", "C7", "C10"], "prefixes_plates": ["2", "2", "2", "2", "2"], "suffixes_wells": ["B7", "C1", "C2", "C3", "B8"], "suffixes_plates": ["2", "2", "2", "2", "2"], "parts_wells": ["E2", "F2", "C2", "B2", "D2"], "parts_plates": ["5", "5", "5", "5", "5"], "parts_vols": [1, 1, 1, 1, 1], "water_vols": [7.0, 7.0, 7.0, 7.0, 7.0]}
+clips_dict={"prefixes_wells": ["A8", "A7", "C5", "C7", "C10"], "prefixes_plates": ["2", "2", "2", "2", "2"], "suffixes_wells": ["B7", "C1", "C2", "C3", "B8"], "suffixes_plates": ["2", "2", "2", "2", "2"], "parts_wells": ["E2", "F2", "C2", "B2", "D2"], "parts_plates": ["5", "5", "5", "5", "5"], "parts_vols": [1, 1, 1, 1, 1], "water_vols": [7.0, 7.0, 7.0, 7.0, 7.0]}
 
 # __LABWARES is expected to be redefined by "generate_ot2_script" method
 # Test dict
-# __LABWARES={"p20_single": {"id": "p20_single_gen2"}, "p300_multi": {"id": "p300_multi_gen2"}, "mag_deck": {"id": "magdeck"}, "96_tiprack_20ul": {"id": "opentrons_96_tiprack_20ul"}, "96_tiprack_300ul": {"id": "opentrons_96_tiprack_300ul"}, "24_tuberack_1500ul": {"id": "e14151500starlab_24_tuberack_1500ul"}, "96_wellplate_200ul_pcr_step_14": {"id": "4ti0960rig_96_wellplate_200ul"}, "96_wellplate_200ul_pcr_step_23": {"id": "4ti0960rig_96_wellplate_200ul"}, "agar_plate_step_4": {"id": "4ti0960rig_96_wellplate_200ul"}, "12_reservoir_21000ul": {"id": "4ti0131_12_reservoir_21000ul"}, "96_deepwellplate_2ml": {"id": "4ti0136_96_wellplate_2200ul"}}
+
+__LABWARES={
+    "p20_single": {"id": "p20_single_gen2"}, 
+    "p300_multi": {"id": "p300_multi_gen2"}, 
+    "mag_deck": {"id": "magdeck"}, 
+    "96_tiprack_20ul": {"id": "opentrons_96_tiprack_20ul"}, 
+    "96_tiprack_300ul": {"id": "opentrons_96_tiprack_300ul"}, 
+    "24_tuberack_1500ul": {"id": "e14151500starlab_24_tuberack_1500ul"}, 
+    "96_wellplate_200ul_pcr_step_14": {"id": "4ti0960rig_96_wellplate_200ul"}, 
+    "96_wellplate_200ul_pcr_step_23": {"id": "4ti0960rig_96_wellplate_200ul"}, 
+    "clip_plate": {"id": "4ti0960rig_96_wellplate_200ul"},
+    "mix_plate": {"id": "4ti0960rig_96_wellplate_200ul"},
+    "clip_source_plate": {"id": "4ti0960rig_96_wellplate_200ul"},
+    "agar_plate_step_4": {"id": "4ti0960rig_96_wellplate_200ul"}, 
+    "12_reservoir_21000ul": {"id": "4ti0131_12_reservoir_21000ul"}, 
+    "96_deepwellplate_2ml": {"id": "4ti0136_96_wellplate_2200ul"}}
 
 def run(protocol: protocol_api.ProtocolContext):
 # added run function for API 2.8
@@ -59,6 +75,9 @@ def run(protocol: protocol_api.ProtocolContext):
     # Mix settings
     LINKER_MIX_SETTINGS = (1, 3)
     PART_MIX_SETTINGS = (4, 5)
+    #choose to enable pre-mix for prefixes/suffixes and parts plate
+    #Mix_prefix_and_suffix_bool = True
+    #Mix_parts_plate_bool = True
 
     def clip(
             prefixes_wells,
@@ -112,6 +131,11 @@ def run(protocol: protocol_api.ProtocolContext):
         # Loads plates according to the source plate key
         for key in source_plates_keys:
             source_plates[key]=protocol.load_labware(SOURCE_PLATE_TYPE, key)
+
+        ###Pre-Mixing of Prefixes and Suffixes or Parts
+
+        mix_prefixes_suffixes_function(Mix_prefix_and_suffix_bool, clips_dict, pipette)
+        mix_parts_function(Mix_parts_plate_bool, clips_dict, pipette)
 
         ### Transfers
 

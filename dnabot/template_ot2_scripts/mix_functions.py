@@ -1,18 +1,25 @@
 import numpy as np
-#from opentrons import protocol_api
+from opentrons import protocol_api
 
-# clips_dict={
-#     "prefixes_wells": ["A8", "A8", "C7", "C7", "C10"], 
-#     "prefixes_plates": ["2", "2", "2", "2", "3"], 
-#     "suffixes_wells": ["B7", "C1", "C1", "C1", "B8"], 
-#     "suffixes_plates": ["2", "3", "3", "3", "2"], 
-#     "parts_wells": ["E2", "F2", "C2", "B2", "D2"], 
-#     "parts_plates": ["5", "5", "5", "5", "5"], 
-#     "parts_vols": [1, 1, 1, 1, 1], 
-#     "water_vols": [7.0, 7.0, 7.0, 7.0, 7.0]
-#     }
+#metadata
+metadata = {
+     'apiLevel': '2.19',
+     'protocolName': 'DNABOT Step 1: Clip Reaction with thermocycler',
+     'description': 'Implements linker ligation reactions using an opentrons OT-2, including the thermocycler module gen2.'
+}
 
-def mix_prefixes_suffixes_function(Mix_prefix_and_suffix, clips_dict, pipette_name):
+clips_dict={
+    "prefixes_wells": ["A8", "A8", "C7", "C7", "C10"], 
+    "prefixes_plates": ["2", "2", "2", "2", "3"], 
+    "suffixes_wells": ["B7", "C1", "C1", "C1", "B8"], 
+    "suffixes_plates": ["2", "3", "3", "3", "2"], 
+    "parts_wells": ["E2", "F2", "C2", "B2", "D2"], 
+    "parts_plates": ["5", "5", "5", "5", "5"], 
+    "parts_vols": [1, 1, 1, 1, 1], 
+    "water_vols": [7.0, 7.0, 7.0, 7.0, 7.0]
+    }
+
+def mix_prefixes_suffixes_function(Mix_prefix_and_suffix_bool, clips_dict, pipette_name):
     pipette = pipette_name
     #pipetting speeds - expressed as multiple of default
     high = 3
@@ -20,7 +27,7 @@ def mix_prefixes_suffixes_function(Mix_prefix_and_suffix, clips_dict, pipette_na
     slow = 0.4
     #Linker reagent volume - specify minimum volume in linker wells
     linker_vol=20
-    if Mix_prefix_and_suffix:
+    if Mix_prefix_and_suffix_bool:
         #Extracts lists from clips_dict
         prefixes = []
         loop_prefixes_wells = clips_dict["prefixes_wells"]
@@ -75,9 +82,9 @@ def mix_prefixes_suffixes_function(Mix_prefix_and_suffix, clips_dict, pipette_na
         pass
 
 
-def mix_parts_function(Mix_parts_plate, clips_dict, pipette_name):
+def mix_parts_function(Mix_parts_plate_bool, clips_dict, pipette_name):
     pipette = pipette_name
-    if Mix_parts_plate:
+    if Mix_parts_plate_bool:
         parts = []
         loop_parts_wells = clips_dict["parts_wells"]
         loop_parts_plates = clips_dict["parts_plates"]
