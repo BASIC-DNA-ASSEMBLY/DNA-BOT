@@ -51,7 +51,7 @@ TRANS_SPOT_TEMP_FNAME_6 = 'transformation_template_Thermocycler_Gen2_12wellplate
 CLIP_FNAME_1 = '1_clip_ot2_FLEX.py'
 CLIP_FNAME_2 = '1_clip_ot2_APIv2.8.py'
 CLIP_FNAME_3 = '1_clip_ot2_Thermocycler_APIv2.8.py'
-CLIP_FNAME_4 = 'clip_template_Thermocycler_Gen2_APIv2.8.py'
+CLIP_FNAME_4 = 'clip_template_Thermocycler_Gen2_APIv2.19.py'
 
 MAGBEAD_FNAME_1 = '2_purification_ot2_FLEX.py'
 MAGBEAD_FNAME_2 = '2_purification_ot2_APIv2.8.py'

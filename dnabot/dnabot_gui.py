@@ -263,19 +263,19 @@ class GUI:
             width=600,
             anchor='w')
         message_3.grid(row=irow, columnspan=2, padx=5, pady=10, sticky='w')
-        irow += 1
-        self.param_clip_thermo_lid_closed = self.__make_parameter_entry(
-            label="Keep the thermocycler lid closed at 4°C at the end of execution? \n (1 for yes, 0 for no)",
-            parameter_id="clip_keep_thermo_lid_closed",
-            irow=irow)
-         self.param_premix_linkers = self.__make_parameter_entry(
-            label="Premix the linker plate? (TRUE or FALSE)",
-            parameter_id="premix_linkers",
-            irow=irow)
-         self.param_premix_linkers = self.__make_parameter_entry(
-            label="Premix the part plate? (TRUE or FALSE)",
-            parameter_id="premix_parts",
-            irow=irow)
+        # irow += 1
+        # self.param_clip_thermo_lid_closed = self.__make_parameter_entry(
+        #     label="Keep the thermocycler lid closed at 4°C at the end of execution? \n (1 for yes, 0 for no)",
+        #     parameter_id="clip_keep_thermo_lid_closed",
+        #     irow=irow)
+        # self.param_premix_linkers = self.__make_parameter_entry(
+        #     label="Premix the linker plate? (TRUE or FALSE)",
+        #     parameter_id="premix_linkers",
+        #     irow=irow)
+        # self.param_premix_linkers = self.__make_parameter_entry(
+        #     label="Premix the part plate? (TRUE or FALSE)",
+        #     parameter_id="premix_parts",
+        #     irow=irow)
 
         # Sep =================================================================
         irow += 1
