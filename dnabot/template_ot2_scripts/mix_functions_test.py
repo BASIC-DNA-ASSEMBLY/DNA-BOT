@@ -171,7 +171,7 @@ def run(protocol: protocol_api.ProtocolContext):
                 pipette.dispense(linker_vol/2, source_plates[suffixes_unique[clip_num, 0]][suffixes_unique[clip_num, 1]], rate=high)
                 pipette.aspirate(linker_vol/2, source_plates[suffixes_unique[clip_num, 0]][suffixes_unique[clip_num, 1]], rate=normal)
                 protocol.delay(seconds=1)
-                pipette.dispense(linker_vol/2, source_plates[suffixes_unique[clip_num, 0]][prefixes_unique[clip_num, 1]], rate=slow, push_out=linker_vol/20)
+                pipette.dispense(linker_vol/2, source_plates[suffixes_unique[clip_num, 0]][suffixes_unique[clip_num, 1]], rate=slow, push_out=linker_vol/20)
                 pipette.move_to(source_plates[suffixes_unique[clip_num, 0]][suffixes_unique[clip_num, 1]].top(-2)) # move to 2mm below the top of current well
                 pipette.blow_out()
                 pipette.touch_tip(speed=10, radius=0.9, v_offset=-5)
@@ -226,9 +226,37 @@ def run(protocol: protocol_api.ProtocolContext):
             parts_vols,
             water_vols):
 
-        ### Loading Tiprack
+        ### Calculating number of unique linkers and parts (again) for tip# calculation
+        prefixes = []
+        loop_prefixes_wells = clips_dict["prefixes_wells"]
+        loop_prefixes_plates = clips_dict["prefixes_plates"]
+        len_prefixes = len(clips_dict["prefixes_wells"])
+        #Creates 2d array of wells and plates
+        for i in range(len_prefixes):
+            prefixes.append([loop_prefixes_plates[i], loop_prefixes_wells[i]])
+        #Prunes to unique sets of well/plate so duplicates are removed
+        #This means any well/plate combination will only be mixed once
+        prefixes_unique = np.unique(np.array(prefixes), axis=0)
+
+        suffixes = []
+        loop_suffixes_wells = clips_dict["suffixes_wells"]
+        loop_suffixes_plates = clips_dict["suffixes_plates"]
+        len_suffixes = len(clips_dict["suffixes_wells"])
+        for i in range(len_suffixes):
+            suffixes.append([loop_suffixes_plates[i], loop_suffixes_wells[i]])
+        suffixes_unique = np.unique(np.array(suffixes), axis=0)
+
+        parts = []
+        loop_parts_wells = clips_dict["parts_wells"]
+        loop_parts_plates = clips_dict["parts_plates"]
+        len_parts = len(clips_dict["parts_wells"])
+        for i in range(len_parts):
+            parts.append([loop_parts_plates[i], loop_parts_wells[i]])
+        parts_unique = np.unique(np.array(parts), axis=0)
+        
         # Calculates whether one, two, or three tipracks are needed, which are in slots 3, 6, and 9 respectively
-        total_tips = 4 * len(parts_wells)
+        # loads tipracks
+        total_tips = (4 * len(parts_wells)) + len(prefixes_unique) + len(suffixes_unique) + len(parts_unique)
         letter_dict = {'A': 0, 'B': 1, 'C': 2,
                        'D': 3, 'E': 4, 'F': 5,
                        'G': 6, 'H': 7
@@ -273,12 +301,14 @@ def run(protocol: protocol_api.ProtocolContext):
         mix_prefixes_suffixes_function(Mix_prefix_and_suffix_bool, clips_dict, pipette, source_plates)
         mix_parts_function(Mix_parts_plate_bool, clips_dict, pipette, source_plates)
 
-        ### Transfers
-
+        ### Reset pipette clearance for setting up clip reactions - pipetting small volume into larger volume
+        pipette.well_bottom_clearance.aspirate = 0.5  # tip is 2 mm above well bottom
+        pipette.well_bottom_clearance.dispense = 2  # tip is 1 mm above well bottom
+        
         # transfer master mix into destination wells
             # added blowout into destination wells ('blowout_location' only works for API 2.8 and above)
         pipette.pick_up_tip()
-        pipette.transfer(MASTER_MIX_VOLUME, master_mix, destination_wells, blow_out=True, blowout_location='destination well', new_tip='never')
+        pipette.dispense(MASTER_MIX_VOLUME, master_mix, destination_wells, blow_out=True, blowout_location='source well', new_tip='never')
         pipette.drop_tip()
 
         # transfer water into destination wells
