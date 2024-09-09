@@ -1,5 +1,5 @@
 from opentrons import protocol_api
-#from mix_functions import mix_prefixes_suffixes_function, mix_parts_function
+#from mix_functions import mix_linkers_function, mix_parts_function
 import numpy as np
 
 # Rename to 'clip_template' and paste into 'template_ot2_scripts' folder in DNA-BOT to use
@@ -77,7 +77,7 @@ def run(protocol: protocol_api.ProtocolContext):
     PIPETTE_TYPE = __LABWARES['p20_single']['id']
     PIPETTE_MOUNT = 'right'
         ### Load Pipette
-        # checks if it's a P10 Single pipette
+        # checks if it's a P20 Single pipette
     if PIPETTE_TYPE != 'p20_single_gen2':
         print('Define labware must be changed to use', PIPETTE_TYPE)
         exit()
@@ -110,9 +110,12 @@ def run(protocol: protocol_api.ProtocolContext):
     Mix_linkers_bool = True
     Mix_parts_bool = True
 
-    def mix_prefixes_suffixes_function(Mix_linkers_bool, clips_dict, pipette_name, source_plates):
+    def mix_linkers_function(Mix_linkers_bool, clips_dict, pipette_name, source_plates):
         pipette = pipette_name
         #pipetting speeds - expressed as multiple of default
+        pipette.flow_rate.aspirate = 6
+        pipette.flow_rate.dispense = 6
+        pipette.flow_rate.blow_out = 15
         high = 3
         normal = 1
         slow = 0.4
@@ -182,6 +185,9 @@ def run(protocol: protocol_api.ProtocolContext):
     def mix_parts_function(Mix_parts_bool, clips_dict, pipette_name, source_plates):
         pipette = pipette_name
         #pipetting speeds - expressed as multiple of default
+        pipette.flow_rate.aspirate = 6
+        pipette.flow_rate.dispense = 6
+        pipette.flow_rate.blow_out = 15
         high = 3
         normal = 1
         slow = 0.4
@@ -260,7 +266,10 @@ def run(protocol: protocol_api.ProtocolContext):
             if Mix_parts_bool:             
                 total_tips = (4 * len(parts_wells)) + len(prefixes_unique) + len(suffixes_unique) + len(parts_unique)
             else: total_tips = (4 * len(parts_wells)) + len(prefixes_unique) + len(suffixes_unique)
-        else: total_tips = (4 * len(parts_wells))
+        else: 
+            if Mix_parts_bool:
+                total_tips = (4 * len(parts_wells)) + len(parts_unique)
+            else: total_tips = (4 * len(parts_wells))
 
         letter_dict = {'A': 0, 'B': 1, 'C': 2,
                        'D': 3, 'E': 4, 'F': 5,
@@ -303,12 +312,19 @@ def run(protocol: protocol_api.ProtocolContext):
         
         ###Pre-Mixing of Prefixes and Suffixes or Parts
 
-        mix_prefixes_suffixes_function(Mix_linkers_bool, clips_dict, pipette, source_plates)
+        mix_linkers_function(Mix_linkers_bool, clips_dict, pipette, source_plates)
         mix_parts_function(Mix_parts_bool, clips_dict, pipette, source_plates)
 
         ### Reset pipette clearance for setting up clip reactions - pipetting small volume into larger volume
-        pipette.well_bottom_clearance.aspirate = 1  # tip is 2 mm above well bottom
-        pipette.well_bottom_clearance.dispense = 1  # tip is 1 mm above well bottom
+        pipette.flow_rate.aspirate = 6
+        pipette.flow_rate.dispense = 6
+        pipette.flow_rate.blow_out = 15
+        high = 3
+        normal = 1
+        med_slow = 0.6
+        slow = 0.4
+        pipette.well_bottom_clearance.aspirate = 1  # tip is x mm above well bottom
+        pipette.well_bottom_clearance.dispense = 1  # tip is y mm above well bottom
         
         # transfer master mix into destination wells
             # added blowout into destination wells ('blowout_location' only works for API 2.8 and above)
