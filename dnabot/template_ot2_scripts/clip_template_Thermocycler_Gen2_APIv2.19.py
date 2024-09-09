@@ -339,6 +339,9 @@ def run(protocol: protocol_api.ProtocolContext):
 
         #transfer prefixes, suffixes, and parts into destination wells
             # added blowout into destination wells ('blowout_location' only works for API 2.8 and above)
+        pipette.well_bottom_clearance.aspirate = 1  # tip is x mm above well bottom
+        pipette.well_bottom_clearance.dispense = 2  # tip is y mm above well bottom
+        
         for clip_num in range(len(parts_wells)):
             pipette.transfer(1, source_plates[prefixes_plates[clip_num]].wells(prefixes_wells[clip_num]), destination_wells[clip_num], blow_out=True, blowout_location='destination well', new_tip='always', mix_after=LINKER_MIX_SETTINGS)
             pipette.transfer(1, source_plates[suffixes_plates[clip_num]].wells(suffixes_wells[clip_num]), destination_wells[clip_num], blow_out=True, blowout_location='destination well', new_tip='always', mix_after=LINKER_MIX_SETTINGS)
