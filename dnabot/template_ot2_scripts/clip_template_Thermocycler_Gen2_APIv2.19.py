@@ -107,10 +107,10 @@ def run(protocol: protocol_api.ProtocolContext):
     LINKER_MIX_SETTINGS = (1, 3)
     PART_MIX_SETTINGS = (4, 5)
     #choose to enable pre-mix for prefixes/suffixes and parts plate
-    Mix_prefix_and_suffix_bool = True
-    Mix_parts_plate_bool = True
+    Mix_linkers_bool = True
+    Mix_parts_bool = True
 
-    def mix_prefixes_suffixes_function(Mix_prefix_and_suffix_bool, clips_dict, pipette_name, source_plates):
+    def mix_prefixes_suffixes_function(Mix_linkers_bool, clips_dict, pipette_name, source_plates):
         pipette = pipette_name
         #pipetting speeds - expressed as multiple of default
         high = 3
@@ -118,7 +118,7 @@ def run(protocol: protocol_api.ProtocolContext):
         slow = 0.4
         #Linker reagent volume - specify minimum volume in linker wells
         linker_vol=20
-        if Mix_prefix_and_suffix_bool:
+        if Mix_linkers_bool:
             #Extracts lists from clips_dict
             prefixes = []
             loop_prefixes_wells = clips_dict["prefixes_wells"]
@@ -158,7 +158,7 @@ def run(protocol: protocol_api.ProtocolContext):
                 pipette.dispense(linker_vol/2, source_plates[prefixes_unique[clip_num, 0]][prefixes_unique[clip_num, 1]], rate=slow, push_out=linker_vol/20)
                 pipette.move_to(source_plates[prefixes_unique[clip_num, 0]][prefixes_unique[clip_num, 1]].top(-2)) # move to 2mm below the top of current well
                 pipette.blow_out()
-                pipette.touch_tip(speed=10, radius=0.9, v_offset=-5)
+                pipette.touch_tip(radius=0.9, v_offset=-5, speed=10)
                 pipette.drop_tip()
 
             for clip_num in range(len(suffixes_unique)):
@@ -174,12 +174,12 @@ def run(protocol: protocol_api.ProtocolContext):
                 pipette.dispense(linker_vol/2, source_plates[suffixes_unique[clip_num, 0]][suffixes_unique[clip_num, 1]], rate=slow, push_out=linker_vol/20)
                 pipette.move_to(source_plates[suffixes_unique[clip_num, 0]][suffixes_unique[clip_num, 1]].top(-2)) # move to 2mm below the top of current well
                 pipette.blow_out()
-                pipette.touch_tip(speed=10, radius=0.9, v_offset=-5)
+                pipette.touch_tip(radius=0.9, v_offset=-5, speed=10)
                 pipette.drop_tip()
         else:
             pass
 
-    def mix_parts_function(Mix_parts_plate_bool, clips_dict, pipette_name, source_plates):
+    def mix_parts_function(Mix_parts_bool, clips_dict, pipette_name, source_plates):
         pipette = pipette_name
         #pipetting speeds - expressed as multiple of default
         high = 3
@@ -187,7 +187,7 @@ def run(protocol: protocol_api.ProtocolContext):
         slow = 0.4
         #Linker reagent volume - specify minimum volume in linker wells
         linker_vol=20
-        if Mix_parts_plate_bool:
+        if Mix_parts_bool:
             parts = []
             loop_parts_wells = clips_dict["parts_wells"]
             loop_parts_plates = clips_dict["parts_plates"]
@@ -211,7 +211,7 @@ def run(protocol: protocol_api.ProtocolContext):
                 pipette.dispense(linker_vol/2, source_plates[parts_unique[clip_num, 0]][parts_unique[clip_num, 1]], rate=slow, push_out=linker_vol/20)
                 pipette.move_to(source_plates[parts_unique[clip_num, 0]][parts_unique[clip_num, 1]].top(-2)) # move to 2mm below the top of current well
                 pipette.blow_out()
-                pipette.touch_tip(speed=10, radius=0.9, v_offset=-5)
+                pipette.touch_tip(radius=0.9, v_offset=-5, speed=10)
                 pipette.drop_tip()
             else:
                 pass
@@ -256,7 +256,12 @@ def run(protocol: protocol_api.ProtocolContext):
         
         # Calculates whether one, two, or three tipracks are needed, which are in slots 3, 6, and 9 respectively
         # loads tipracks
-        total_tips = (4 * len(parts_wells)) + len(prefixes_unique) + len(suffixes_unique) + len(parts_unique)
+        if Mix_linkers_bool: 
+            if Mix_parts_bool:             
+                total_tips = (4 * len(parts_wells)) + len(prefixes_unique) + len(suffixes_unique) + len(parts_unique)
+            else: total_tips = (4 * len(parts_wells)) + len(prefixes_unique) + len(suffixes_unique)
+        else: total_tips = (4 * len(parts_wells))
+
         letter_dict = {'A': 0, 'B': 1, 'C': 2,
                        'D': 3, 'E': 4, 'F': 5,
                        'G': 6, 'H': 7
@@ -298,15 +303,16 @@ def run(protocol: protocol_api.ProtocolContext):
         
         ###Pre-Mixing of Prefixes and Suffixes or Parts
 
-        mix_prefixes_suffixes_function(Mix_prefix_and_suffix_bool, clips_dict, pipette, source_plates)
-        mix_parts_function(Mix_parts_plate_bool, clips_dict, pipette, source_plates)
+        mix_prefixes_suffixes_function(Mix_linkers_bool, clips_dict, pipette, source_plates)
+        mix_parts_function(Mix_parts_bool, clips_dict, pipette, source_plates)
 
         ### Reset pipette clearance for setting up clip reactions - pipetting small volume into larger volume
-        pipette.well_bottom_clearance.aspirate = 0.5  # tip is 2 mm above well bottom
-        pipette.well_bottom_clearance.dispense = 2  # tip is 1 mm above well bottom
+        pipette.well_bottom_clearance.aspirate = 1  # tip is 2 mm above well bottom
+        pipette.well_bottom_clearance.dispense = 1  # tip is 1 mm above well bottom
         
         # transfer master mix into destination wells
             # added blowout into destination wells ('blowout_location' only works for API 2.8 and above)
+        
         pipette.pick_up_tip()
         pipette.dispense(MASTER_MIX_VOLUME, master_mix, destination_wells, blow_out=True, blowout_location='source well', new_tip='never')
         pipette.drop_tip()
