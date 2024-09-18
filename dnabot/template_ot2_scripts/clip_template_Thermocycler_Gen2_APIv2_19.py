@@ -29,13 +29,13 @@ __LABWARES={
     "mag_deck": {"id": "magdeck"}, 
     "96_tiprack_20ul": {"id": "opentrons_96_tiprack_20ul"}, 
     "96_tiprack_300ul": {"id": "opentrons_96_tiprack_300ul"}, 
-    "24_tuberack_1500ul": {"id": "e14151500starlab_24_tuberack_1500ul"}, 
-    "96_wellplate_200ul_pcr_step_14": {"id": "4ti0960rig_96_wellplate_200ul"}, 
-    "96_wellplate_200ul_pcr_step_23": {"id": "4ti0960rig_96_wellplate_200ul"}, 
-    "clip_plate": {"id": "4ti0960rig_96_wellplate_200ul"},
-    "mix_plate": {"id": "4ti0960rig_96_wellplate_200ul"},
-    "clip_source_plate": {"id": "4ti0960rig_96_wellplate_200ul"},
-    "agar_plate_step_4": {"id": "4ti0960rig_96_wellplate_200ul"}, 
+    "24_tuberack_1500ul": {"id": "opentrons_24_tuberack_nest_1.5ml_snapcap"}, 
+    "96_wellplate_200ul_pcr_step_14": {"id": "nest_96_wellplate_100ul_pcr_full_skirt"}, 
+    "96_wellplate_200ul_pcr_step_23": {"id": "nest_96_wellplate_100ul_pcr_full_skirt"}, 
+    "clip_plate": {"id": "nest_96_wellplate_100ul_pcr_full_skirt"},
+    "mix_plate": {"id": "nest_96_wellplate_100ul_pcr_full_skirt"},
+    "clip_source_plate": {"id": "nest_96_wellplate_100ul_pcr_full_skirt"},
+    "agar_plate_step_4": {"id": "nest_96_wellplate_100ul_pcr_full_skirt"}, 
     "12_reservoir_21000ul": {"id": "4ti0131_12_reservoir_21000ul"}, 
     "96_deepwellplate_2ml": {"id": "4ti0136_96_wellplate_2200ul"}}
 
@@ -330,7 +330,7 @@ def run(protocol: protocol_api.ProtocolContext):
             # added blowout into destination wells ('blowout_location' only works for API 2.8 and above)
         
         pipette.pick_up_tip()
-        pipette.dispense(MASTER_MIX_VOLUME, master_mix, destination_wells, blow_out=True, blowout_location='source well', new_tip='never')
+        pipette.transfer(MASTER_MIX_VOLUME, master_mix, destination_wells, blow_out=True, blowout_location='source well', new_tip='never')
         pipette.drop_tip()
 
         # transfer water into destination wells
@@ -371,3 +371,5 @@ def run(protocol: protocol_api.ProtocolContext):
     else:
         tc_mod.set_lid_temperature(37)
         tc_mod.open_lid()
+        for line in protocol.commands(): 
+            print(line)
