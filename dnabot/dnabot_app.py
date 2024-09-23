@@ -31,7 +31,7 @@ TEMPLATE_DIR_NAME = 'template_ot2_scripts'
 CLIP_TEMP_FNAME_1 = 'clip_template_FLEX.py'
 CLIP_TEMP_FNAME_2 = 'clip_template_APIv2.8.py'
 CLIP_TEMP_FNAME_3 = 'clip_template_Thermocycler_Gen1_APIv2.8.py'
-CLIP_TEMP_FNAME_4 = 'clip_template_Thermocycler_Gen2_APIv2.8.py'
+CLIP_TEMP_FNAME_4 = 'clip_template_Thermocycler_Gen2_APIv2_19.py'
 
 MAGBEAD_TEMP_FNAME_1 = 'purification_template_FLEX.py'
 MAGBEAD_TEMP_FNAME_2 = 'purification_template_APIv2.8.py'
@@ -39,7 +39,7 @@ MAGBEAD_TEMP_FNAME_2 = 'purification_template_APIv2.8.py'
 F_ASSEMBLY_TEMP_FNAME_1 = 'assembly_template_FLEX.py'
 F_ASSEMBLY_TEMP_FNAME_2 = 'assembly_template_APIv2.8.py'
 F_ASSEMBLY_TEMP_FNAME_3 = 'assembly_template_Thermocycler_Gen1_APIv2.8.py'
-F_ASSEMBLY_TEMP_FNAME_4 = 'assembly_template_Thermocycler_Gen2_APIv2.8.py'
+F_ASSEMBLY_TEMP_FNAME_4 = 'assembly_template_Thermocycler_Gen2_APIv2_19.py'
 
 TRANS_SPOT_TEMP_FNAME_1 = 'transformation_template_FLEX.py'
 TRANS_SPOT_TEMP_FNAME_2 = 'transformation_template_APIv2.8.py'
@@ -51,7 +51,7 @@ TRANS_SPOT_TEMP_FNAME_6 = 'transformation_template_Thermocycler_Gen2_12wellplate
 CLIP_FNAME_1 = '1_clip_ot2_FLEX.py'
 CLIP_FNAME_2 = '1_clip_ot2_APIv2.8.py'
 CLIP_FNAME_3 = '1_clip_ot2_Thermocycler_APIv2.8.py'
-CLIP_FNAME_4 = 'clip_template_Thermocycler_Gen2_APIv2.19.py'
+CLIP_FNAME_4 = 'clip_template_Thermocycler_Gen2_APIv2_19.py'
 
 MAGBEAD_FNAME_1 = '2_purification_ot2_FLEX.py'
 MAGBEAD_FNAME_2 = '2_purification_ot2_APIv2.8.py'
@@ -59,7 +59,7 @@ MAGBEAD_FNAME_2 = '2_purification_ot2_APIv2.8.py'
 F_ASSEMBLY_FNAME_1 = '3_assembly_ot2_FLEX.py'
 F_ASSEMBLY_FNAME_2 = '3_assembly_ot2_APIv2.8.py'
 F_ASSEMBLY_FNAME_3 = '3_assembly_ot2_Thermocycler_APIv2.8.py'
-F_ASSEMBLY_FNAME_4 = 'assembly_template_Thermocycler_Gen2_APIv2.8.py'
+F_ASSEMBLY_FNAME_4 = 'assembly_template_Thermocycler_Gen2_APIv2_19.py'
 
 TRANS_SPOT_FNAME_1 = '4_transformation_ot2_FLEX.py'
 TRANS_SPOT_FNAME_2 = '4_transformation_ot2_APIv2.8.py'
@@ -634,11 +634,11 @@ def calculate_final_assembly_tipracks(final_assembly_dict):
     no more than MAX_FINAL_ASSEMBLY_TIPRACKS are used.
 
     """
-    final_assembly_lens = []
+    final_assembly_lengths = []
     for values in final_assembly_dict.values():
-        final_assembly_lens.append(len(values))
-    master_mix_tips = len(list(set(final_assembly_lens)))
-    total_tips = master_mix_tips + sum(final_assembly_lens)
+        final_assembly_lengths.append(len(values))
+    master_mix_tips = len(list(set(final_assembly_lengths)))
+    total_tips = master_mix_tips + sum(final_assembly_lengths)
     final_assembly_tipracks = total_tips // 96 + (
         1 if total_tips % 96 > 0 else 0)
     if final_assembly_tipracks > MAX_FINAL_ASSEMBLY_TIPRACKS:
