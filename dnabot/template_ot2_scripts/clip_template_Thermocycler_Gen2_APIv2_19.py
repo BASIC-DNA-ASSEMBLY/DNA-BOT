@@ -24,6 +24,7 @@ clips_dict={"prefixes_wells": ["A1", "B1", "C1", "D1", "E1"],
 # __LABWARES is expected to be redefined by "generate_ot2_script" method
 # Test dict - values used here for simulation use generic Opentrons definitions to avoid
 # specifying custom labware in simulate, which is not straightforward
+# custom labware currently commented out
 __LABWARES={
     "p20_single": {"id": "p20_single_gen2"}, 
     "p300_multi": {"id": "p300_multi_gen2"}, 
@@ -33,8 +34,10 @@ __LABWARES={
     "24_tuberack_1500ul": {"id": "opentrons_24_tuberack_nest_1.5ml_snapcap"}, 
     "96_wellplate_200ul_pcr_step_14": {"id": "nest_96_wellplate_100ul_pcr_full_skirt"}, 
     "96_wellplate_200ul_pcr_step_23": {"id": "nest_96_wellplate_100ul_pcr_full_skirt"}, 
-    "clip_plate": {"id": "nest_96_wellplate_100ul_pcr_full_skirt"},
-    "mix_plate": {"id": "nest_96_wellplate_100ul_pcr_full_skirt"},
+    #"clip_plate": {"id": "nest_96_wellplate_100ul_pcr_full_skirt"},
+    #"mix_plate": {"id": "nest_96_wellplate_100ul_pcr_full_skirt"},
+    "clip_plate": {"id": "4ti0960rig_96_wellplate_200ul"},
+    "mix_plate": {"id": "4ti0960rig_96_wellplate_200ul"},
     "clip_source_plate": {"id": "nest_96_wellplate_100ul_pcr_full_skirt"},
     "agar_plate_step_4": {"id": "nest_96_wellplate_100ul_pcr_full_skirt"}, 
     "12_reservoir_21000ul": {"id": "4ti0131_12_reservoir_21000ul"}, 
@@ -330,13 +333,13 @@ def run(protocol: protocol_api.ProtocolContext):
         # transfer master mix into destination wells
                 
         pipette.pick_up_tip()
-        pipette.dispense(MASTER_MIX_VOLUME, master_mix, destination_wells, blow_out=True, blowout_location='source well', new_tip='never', rate=slow)
+        pipette.transfer(MASTER_MIX_VOLUME, master_mix, destination_wells, blow_out=True, blowout_location='destination well', new_tip='never', rate=slow)
         pipette.drop_tip()
 
         # transfer water into destination wells
         pipette.well_bottom_clearance.aspirate = 1  # tip is x mm above well bottom
         pipette.well_bottom_clearance.dispense = 3  # tip is y mm above well bottom
-        pipette.transfer(water_vols, water, destination_wells, blow_out=True, blowout_location='destination well', new_tip='never', rate=slow)
+        pipette.distribute(water_vols, water, destination_wells, blow_out=True, blowout_location='source well', new_tip='never', rate=slow)
 
         # OLD transfer prefixes, suffixes, and parts into destination wells     
         #for clip_num in range(len(parts_wells)):
