@@ -155,14 +155,14 @@ def run(protocol: protocol_api.ProtocolContext):
             # [clip_num,1] addresses the well location
             for clip_num in range(len(prefixes_unique)):
                 pipette.pick_up_tip()
-                pipette.aspirate(linker_vol/2, source_plates[prefixes_unique[clip_num, 0]][prefixes_unique[clip_num, 1]].bottom(2), rate=normal)
+                pipette.aspirate(linker_vol/2, source_plates[prefixes_unique[clip_num, 0]][prefixes_unique[clip_num, 1]].bottom(linker_vol/10), rate=normal)
                 pipette.dispense(linker_vol/2, source_plates[prefixes_unique[clip_num, 0]][prefixes_unique[clip_num, 1]].bottom(1), rate=high)
-                pipette.aspirate(linker_vol/2, source_plates[prefixes_unique[clip_num, 0]][prefixes_unique[clip_num, 1]].bottom(2), rate=normal)
+                pipette.aspirate(linker_vol/2, source_plates[prefixes_unique[clip_num, 0]][prefixes_unique[clip_num, 1]].bottom(linker_vol/10), rate=normal)
                 pipette.dispense(linker_vol/2, source_plates[prefixes_unique[clip_num, 0]][prefixes_unique[clip_num, 1]].bottom(1), rate=normal)
                 pipette.aspirate(linker_vol/2, source_plates[prefixes_unique[clip_num, 0]][prefixes_unique[clip_num, 1]].bottom(1.5), rate=slow)
                 protocol.delay(seconds=1)
-                pipette.dispense(linker_vol/2, source_plates[prefixes_unique[clip_num, 0]][prefixes_unique[clip_num, 1]].bottom(2), rate=vslow, push_out=linker_vol/20)
-                pipette.move_to(source_plates[prefixes_unique[clip_num, 0]][prefixes_unique[clip_num, 1]].top(-2)) # move to 2mm below the top of current well
+                pipette.dispense(linker_vol/2, source_plates[prefixes_unique[clip_num, 0]][prefixes_unique[clip_num, 1]].bottom(linker_vol/10), rate=vslow, push_out=linker_vol/20)
+                pipette.move_to(source_plates[prefixes_unique[clip_num, 0]][prefixes_unique[clip_num, 1]].top(-5)) # move to 2mm below the top of current well
                 pipette.blow_out()
                 pipette.touch_tip(radius=0.9, v_offset=-5, speed=10)
                 pipette.drop_tip()
@@ -171,14 +171,14 @@ def run(protocol: protocol_api.ProtocolContext):
                 pipette.pick_up_tip()
                 pipette.well_bottom_clearance.aspirate = 2  # tip is x mm above well bottom
                 pipette.well_bottom_clearance.dispense = 1  # tip is y mm above well bottom
-                pipette.aspirate(linker_vol/2, source_plates[suffixes_unique[clip_num, 0]][suffixes_unique[clip_num, 1]].bottom(2), rate=normal)
+                pipette.aspirate(linker_vol/2, source_plates[suffixes_unique[clip_num, 0]][suffixes_unique[clip_num, 1]].bottom(linker_vol/10), rate=normal)
                 pipette.dispense(linker_vol/2, source_plates[suffixes_unique[clip_num, 0]][suffixes_unique[clip_num, 1]].bottom(1), rate=high)
-                pipette.aspirate(linker_vol/2, source_plates[suffixes_unique[clip_num, 0]][suffixes_unique[clip_num, 1]].bottom(2), rate=normal)
+                pipette.aspirate(linker_vol/2, source_plates[suffixes_unique[clip_num, 0]][suffixes_unique[clip_num, 1]].bottom(linker_vol/10), rate=normal)
                 pipette.dispense(linker_vol/2, source_plates[suffixes_unique[clip_num, 0]][suffixes_unique[clip_num, 1]].bottom(1), rate=normal)
                 pipette.aspirate(linker_vol/2, source_plates[suffixes_unique[clip_num, 0]][suffixes_unique[clip_num, 1]].bottom(1.5), rate=slow)
                 protocol.delay(seconds=1)
-                pipette.dispense(linker_vol/2, source_plates[suffixes_unique[clip_num, 0]][suffixes_unique[clip_num, 1]].bottom(2), rate=vslow, push_out=linker_vol/20)
-                pipette.move_to(source_plates[suffixes_unique[clip_num, 0]][suffixes_unique[clip_num, 1]].top(-2)) # move to 2mm below the top of current well
+                pipette.dispense(linker_vol/2, source_plates[suffixes_unique[clip_num, 0]][suffixes_unique[clip_num, 1]].bottom(linker_vol/10), rate=vslow, push_out=linker_vol/20)
+                pipette.move_to(source_plates[suffixes_unique[clip_num, 0]][suffixes_unique[clip_num, 1]].top(-5)) # move to 2mm below the top of current well
                 pipette.blow_out()
                 pipette.touch_tip(radius=0.9, v_offset=-5, speed=10)
                 pipette.drop_tip()
@@ -212,14 +212,14 @@ def run(protocol: protocol_api.ProtocolContext):
                 pipette.pick_up_tip()
                 pipette.well_bottom_clearance.aspirate = 2  # tip is 2 mm above well bottom
                 pipette.well_bottom_clearance.dispense = 1  # tip is 2 mm above well bottom
-                pipette.aspirate(linker_vol/2, source_plates[parts_unique[clip_num, 0]][parts_unique[clip_num, 1]].bottom(2), rate=normal)
+                pipette.aspirate(linker_vol/2, source_plates[parts_unique[clip_num, 0]][parts_unique[clip_num, 1]].bottom(linker_vol/10), rate=normal)
                 pipette.dispense(linker_vol/2, source_plates[parts_unique[clip_num, 0]][parts_unique[clip_num, 1]].bottom(1), rate=high)
-                pipette.aspirate(linker_vol/2, source_plates[parts_unique[clip_num, 0]][parts_unique[clip_num, 1]].bottom(2), rate=normal)
+                pipette.aspirate(linker_vol/2, source_plates[parts_unique[clip_num, 0]][parts_unique[clip_num, 1]].bottom(linker_vol/10), rate=normal)
                 pipette.dispense(linker_vol/2, source_plates[parts_unique[clip_num, 0]][parts_unique[clip_num, 1]].bottom(1), rate=normal)
                 pipette.aspirate(linker_vol/2, source_plates[parts_unique[clip_num, 0]][parts_unique[clip_num, 1]].bottom(1.5), rate=slow)
                 protocol.delay(seconds=1)
-                pipette.dispense(linker_vol/2, source_plates[parts_unique[clip_num, 0]][parts_unique[clip_num, 1]].bottom(2), rate=vslow, push_out=linker_vol/20)
-                pipette.move_to(source_plates[parts_unique[clip_num, 0]][parts_unique[clip_num, 1]].top(-2)) # move to 2mm below the top of current well
+                pipette.dispense(linker_vol/2, source_plates[parts_unique[clip_num, 0]][parts_unique[clip_num, 1]].bottom(linker_vol/10), rate=vslow, push_out=linker_vol/20)
+                pipette.move_to(source_plates[parts_unique[clip_num, 0]][parts_unique[clip_num, 1]].top(-5)) # move to 5mm below the top of current well
                 pipette.blow_out()
                 pipette.touch_tip(radius=0.9, v_offset=-5, speed=10)
                 pipette.drop_tip()
@@ -329,6 +329,18 @@ def run(protocol: protocol_api.ProtocolContext):
         vslow = 0.2
         pipette.well_bottom_clearance.aspirate = 1  # tip is x mm above well bottom
         pipette.well_bottom_clearance.dispense = 1  # tip is y mm above well bottom
+        
+        # get the location at the center of well A1
+        # center_location = plate["A1"].center()
+
+        # # get a location 1 mm right, 1 mm back, and 1 mm up from the center of well A1
+        # adjusted_location = center_location.move(types.Point(x=1, y=1, z=1))
+
+        # # aspirate 1 mm right, 1 mm back, and 1 mm up from the center of well A1
+        # pipette.aspirate(50, adjusted_location)
+
+        # # dispense at the same location
+        # pipette.dispense(50, center_location.move(types.Point(x=1, y=1, z=1)))
         
         # transfer master mix into destination wells
                 
