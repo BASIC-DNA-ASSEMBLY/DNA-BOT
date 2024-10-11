@@ -1,0 +1,19 @@
+labware 4Ti0960RIG
+
+5ul     2mm
+10ul    3mm
+15ul    3.5 mm
+20ul    4 mm
+25ul    4.5 mm
+30ul    4.5 mm
+35ul    5.0 mm
+40ul    5.5 mm
+
+Total well depth ~15 mm
+Internal well diameter 5mm; radius = 2.5
+Offset from centre approximately 1 mm for each 5mm well depth - it is a smooth transition
+top -5 mm should have an x offset of 2 mm to touch side (radius )
+    diameter = 4 mm; radius = 2 mm; 2/2.5 = 0.8; 80% of diameter
+top - 10 mm should have an x offset of 1 mm to touch side
+    diameter = 3 mm; radius = 1.5 mm; 1.5/2.5 = 0.6; 60% of diameter
+Over a 3h period at room temperature liquid loss due to evaporation is approximately 1-2 ul.
