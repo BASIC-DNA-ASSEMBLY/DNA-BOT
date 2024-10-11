@@ -10,6 +10,7 @@ metadata = {
      'protocolName': 'DNABOT Step 1: Clip Reaction with thermocycler',
      'description': 'Implements linker ligation reactions using an opentrons OT-2, including the thermocycler module gen2.'
 }
+linker_volume=20
 
 # example dictionary produced by DNA-BOT for a single construct containing 4 parts, un-comment and run to test the template
 clips_dict={"prefixes_wells": ["A1", "B1", "C1", "D1"],
@@ -107,7 +108,7 @@ def run(protocol: protocol_api.ProtocolContext):
     WATER_WELL = 'A2'
     MASTER_MIX_VOLUME = 20
 
-    # Mix settings
+    # Old Mix settings
     LINKER_MIX_SETTINGS = (2, 3)
     PART_MIX_SETTINGS = (2, 5)
     #choose to enable pre-mix for prefixes/suffixes and parts plate
@@ -116,16 +117,24 @@ def run(protocol: protocol_api.ProtocolContext):
 
     def mix_linkers_function(Mix_linkers_bool, clips_dict, pipette_name, source_plates):
         pipette = pipette_name
-        #pipetting speeds - expressed as multiple of default
+        #pipetting speeds - default rates in ul /s
         pipette.flow_rate.aspirate = 6
         pipette.flow_rate.dispense = 6
         pipette.flow_rate.blow_out = 15
+        #pipetting rates below - expressed as multiple of default 
         high = 2.5
         normal = 1
         slow = 0.5
         vslow = 0.2
         #Linker reagent volume - specify minimum volume in linker wells
-        linker_vol=20
+        #linker_volume=20
+        #set maximum volume for mixing calculations as 40 as P20 pipette being used
+        #maximum linker mix is set as linker_vol/2
+        if linker_volume>40:
+            linker_vol=40
+        else:
+            linker_vol=linker_volume
+
         if Mix_linkers_bool:
             #Extracts lists from clips_dict
             prefixes = []
@@ -196,7 +205,14 @@ def run(protocol: protocol_api.ProtocolContext):
         slow = 0.5
         vslow = 0.2
         #Linker reagent volume - specify minimum volume in linker wells
-        linker_vol=20
+        #linker_volume=20
+        #set maximum volume for mixing calculations as 40 as P20 pipette being used
+        #maximum linker mix is set as linker_vol/2
+        if linker_volume>40:
+            linker_vol=40
+        else:
+            linker_vol=linker_volume
+        
         if Mix_parts_bool:
             parts = []
             loop_parts_wells = clips_dict["parts_wells"]
