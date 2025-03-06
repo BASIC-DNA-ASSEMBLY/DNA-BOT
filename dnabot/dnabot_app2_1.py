@@ -72,12 +72,12 @@ T4_BUFF_VOL = 3
 BSAI_VOL = 1
 T4_LIG_VOL = 0.5
 CLIP_MAST_WATER = 15.5
-ngDNA_PART_PER_CLIP = 200
+#ngDNA_PART_PER_CLIP = 200
 MIN_VOL = 1
 MAX_CONSTRUCTS = 96
 MAX_CLIPS = 48
 FINAL_ASSEMBLIES_PER_CLIP = 15
-DEFAULT_PART_VOL = 1
+#DEFAULT_PART_VOL = 1
 MAX_SOURCE_PLATES = 6
 MAX_FINAL_ASSEMBLY_TIPRACKS = 7
 
@@ -538,43 +538,51 @@ def generate_clips_dict(clips_df, sources_dict):
 
     # Generate clips_dict from args
     try:
+        # Iterate through each row in the clips dataframe
         for _, clip_info in clips_df.iterrows():
+            # Extract prefix linker and store corresponding well and plate information
             prefix_linker = clip_info['prefixes']
-            clips_dict['prefixes_wells'].append([sources_dict[prefix_linker][0]]
-                                                * clip_info['number'])
-            clips_dict['prefixes_plates'].append(
-                [handle_2_columns(sources_dict[prefix_linker])[2]] * clip_info['number'])
+            clips_dict['prefixes_wells'].append([sources_dict[prefix_linker][0]] * clip_info['number'])
+            clips_dict['prefixes_plates'].append([handle_2_columns(sources_dict[prefix_linker])[2]] * clip_info['number'])
+            
+            # Extract suffix linker and store corresponding well and plate information
             suffix_linker = clip_info['suffixes']
-            clips_dict['suffixes_wells'].append([sources_dict[suffix_linker][0]]
-                                                * clip_info['number'])
-            clips_dict['suffixes_plates'].append(
-                [handle_2_columns(sources_dict[suffix_linker])[2]] * clip_info['number'])
+            clips_dict['suffixes_wells'].append([sources_dict[suffix_linker][0]] * clip_info['number'])
+            clips_dict['suffixes_plates'].append([handle_2_columns(sources_dict[suffix_linker])[2]] * clip_info['number'])
+            
+            # Extract part and store corresponding well and plate information
             part = clip_info['parts']
-            clips_dict['parts_wells'].append([sources_dict[part][0]]
-                                             * clip_info['number'])
-            clips_dict['parts_plates'].append([handle_2_columns(sources_dict[part])[2]]
-                                              * clip_info['number'])
-            if not sources_dict[part][1]:
-                clips_dict['parts_vols'].append([DEFAULT_PART_VOL] *
-                                                clip_info['number'])
-                clips_dict['water_vols'].append([max_part_vol - DEFAULT_PART_VOL]
-                                                * clip_info['number'])
+            clips_dict['parts_wells'].append([sources_dict[part][0]] * clip_info['number'])
+            clips_dict['parts_plates'].append([handle_2_columns(sources_dict[part])[2]] * clip_info['number'])
+            
+            # Check if the concentration or part size is missing in sources_dict
+            if not sources_dict[part][1] or not sources_dict[part][2]:
+                sys.exit(f'Error: Missing values for part {part}. Both concentration and part_size are required.')
             else:
-                part_vol = round(
-                    ngDNA_PART_PER_CLIP / float(sources_dict[part][1]), 1)
+                # Calculate part volume using part size and concentration
+                part_vol = round((float(sources_dict[part][2]) * 50) / float(sources_dict[part][1]), 1)
+                
+                # Ensure part_vol is within the allowed range
                 if part_vol < MIN_VOL:
-                    part_vol = MIN_VOL
+                    raise ValueError("Part concentration is too high, you need 50 ng per kb of plasmid and final volumes must be between 1 and 8 µL.")
                 elif part_vol > max_part_vol:
-                    part_vol = max_part_vol
-                water_vol = max_part_vol - part_vol
-                clips_dict['parts_vols'].append(
-                    [part_vol] * clip_info['number'])
-                clips_dict['water_vols'].append(
-                    [water_vol] * clip_info['number'])
+                    raise ValueError("Part concentration is too low, you need 50 ng per kb of plasmid and final part volumes must be between 1 and 8 µL.")
+                
+                # Calculate the required water volume to reach the total volume
+                water_vol = max_part_vol - part_vol +2
+                
+                # Store calculated part volume and water volume in clips_dict
+                clips_dict['parts_vols'].append([part_vol] * clip_info['number'])
+                clips_dict['water_vols'].append([water_vol] * clip_info['number'])
     except KeyError:
+        # Handle missing part or linker in sources.csv
         sys.exit('likely part/linker not listed in sources.csv')
+
+    # Flatten the lists in clips_dict to remove nested lists
     for key, value in clips_dict.items():
         clips_dict[key] = [item for sublist in value for item in sublist]
+
+    # Return the final dictionary containing all clip information
     return clips_dict
 
 
