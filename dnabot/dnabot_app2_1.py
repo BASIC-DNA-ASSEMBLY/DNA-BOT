@@ -41,7 +41,7 @@ F_ASSEMBLY_TEMP_FNAME_1 = '3_Flex_assembly_template_APIv2_21.py'
 #F_ASSEMBLY_TEMP_FNAME_3 = 'assembly_template_Thermocycler_Gen1_APIv2.8.py'
 #F_ASSEMBLY_TEMP_FNAME_4 = 'assembly_template_Thermocycler_Gen2_APIv2.8.py'
 
-#TRANSFORMATION_TEMP_FNAME_1 = '4_Flex_transformation_template_12wellplate_APIv2_21.py'
+TRANSFORMATION_TEMP_FNAME_1 = '4_Flex_transformation_template_12wellplate_APIv2_21.py'
 TRANSFORMATION_TEMP_FNAME_2 = '4_OT-2_transformation_template_12wellplate_APIv2_21.py'
 #TRANSFORMATION_TEMP_FNAME_3 = 'transformation_template_Thermocycler_Gen1_APIv2.8.py'
 #TRANSFORMATION_TEMP_FNAME_4 = 'transformation_template_Thermocycler_Gen2_APIv2.8.py'
@@ -56,7 +56,7 @@ F_ASSEMBLY_FNAME_1 = '3_Flex_assembly_APIv2_21.py'
 F_ASSEMBLY_FNAME_2 = '3_OT-2_assembly_APIv2_21.py'
 
 TRANSFORMATION_FNAME_1 = '4_Flex_transformation_12wellplate_APIv2_21.py'
-TRANSFORMATION_FNAME_2 = '4_OT-2_transformation_12wellplate_APIv2_21.py.py'
+TRANSFORMATION_FNAME_2 = '4_OT-2_transformation_12wellplate_APIv2_21.py'
 #TRANSFORMATION_FNAME_3 = '4_transformation_ot2_Thermocycler_APIv2.8.py'
 #TRANSFORMATION_FNAME_4 = '4_transformation_ot2_Thermocycler_12wellplate_APIv2.8.py'
 
@@ -86,8 +86,7 @@ SPOTTING_VOLS_DICT = {2: 5, 3: 5, 4: 5, 5: 5, 6: 5, 7: 5}
 SPOTTING_VOLS_DICT_12 = {2: 40, 3: 40, 4: 40, 5: 40, 6: 40, 7: 40}
 
 # Constant lists
-    # What are these used for?
-SOURCE_DECK_POS = ['2', '5', '8', '7', '10', '11']
+
 
 # Settings
 DEFAULT_SETTINGS_FILE = Path(__file__).resolve().parent / 'default_settings_2_1.yaml'
@@ -226,6 +225,17 @@ def main():
         output_dir = os.path.dirname(construct_path)
         template_dir = None
 
+    # Select deck positions based on robot type
+    robot_type = user_settings['hardware']['robot_type']['id']
+    if robot_type=='OT-2':
+        SOURCE_DECK_POS = ['2', '5', '1']
+    elif robot_type=='Flex':
+        SOURCE_DECK_POS = ["D2", "C2", "D1"]
+    else:
+        raise ValueError("Invalid robot type. Must be 'OT-2' or 'Flex'.")
+    print(robot_type)
+    print(SOURCE_DECK_POS)
+
     # Args checking
     if len(sources_paths) > len(SOURCE_DECK_POS):
         raise ValueError('Number of source plates exceeds deck positions.')
@@ -259,7 +269,7 @@ def main():
     print('Processing input csv files...')
     constructs_list = generate_constructs_list(construct_path)
     clips_df = generate_clips_df(constructs_list)
-    sources_dict = generate_sources_dict(sources_paths)
+    sources_dict = generate_sources_dict(sources_paths, SOURCE_DECK_POS)
 
     # Calculate OT-2 script variables
     print('Calculating OT-2 variables...')
@@ -502,26 +512,17 @@ def generate_clips_df(constructs_list):
     return clips_df
 
 
-def generate_sources_dict(paths):
+def generate_sources_dict(paths, SOURCE_DECK_POS):
     """Imports csvs files containing a series of parts/linkers with
     corresponding information into a dictionary where the key corresponds with
     part/linker and the value contains a tuple of corresponding information.
+    Makes sure there are at least 5 columns (4 indexes) of information
+    Deck position is added as the 5th column.
 
     Args:
         paths (list): list of strings each corresponding to a path for a
                       sources csv file.
-
     """
-    # sources_dict = {}
-    # for deck_index, path in enumerate(paths):
-    #     with open(path, 'r') as csvfile:
-    #         csv_reader = csv.reader(csvfile)
-    #         for index, source in enumerate(csv_reader):
-    #             if index != 0:
-    #                 csv_values = source[1:]
-    #                 csv_values.append(SOURCE_DECK_POS[deck_index])
-    #                 sources_dict[str(source[0])] = tuple(csv_values)
-    # return sources_dict
 
     sources_dict = {}
     for deck_index, path in enumerate(paths):
@@ -539,9 +540,9 @@ def generate_sources_dict(paths):
                     csv_values.insert(4, SOURCE_DECK_POS[deck_index])
                     
                     sources_dict[str(source[0])] = tuple(csv_values)
-
+    print(sources_dict)
     return sources_dict
-
+    
 def generate_clips_dict(clips_df, sources_dict):
     """Using clips_df and sources_dict, returns a clips_dict which acts as the
     sole variable for the opentrons script "clip.ot2.py".
@@ -561,16 +562,16 @@ def generate_clips_dict(clips_df, sources_dict):
             # Extract prefix linker and store corresponding well and plate information
             prefix_linker = clip_info['prefixes']
             clips_dict['prefixes_wells'].append([sources_dict[prefix_linker][0]] * clip_info['number'])
-            clips_dict['prefixes_plates'].append((sources_dict[prefix_linker])[4] * clip_info['number'])
+            clips_dict['prefixes_plates'].append([sources_dict[prefix_linker][4]] * clip_info['number'])
             
             # Extract suffix linker and store corresponding well and plate information
             suffix_linker = clip_info['suffixes']
             clips_dict['suffixes_wells'].append([sources_dict[suffix_linker][0]] * clip_info['number'])
-            clips_dict['suffixes_plates'].append((sources_dict[suffix_linker])[4] * clip_info['number'])
+            clips_dict['suffixes_plates'].append([sources_dict[suffix_linker][4]] * clip_info['number'])
             # Extract part and store corresponding well and plate information
             part = clip_info['parts']
             clips_dict['parts_wells'].append([sources_dict[part][0]] * clip_info['number'])
-            clips_dict['parts_plates'].append((sources_dict[part])[4] * clip_info['number'])
+            clips_dict['parts_plates'].append([sources_dict[part][4]] * clip_info['number'])
             
             # Check if the concentration or part size is missing in sources_dict
             if not sources_dict[part][1] or not sources_dict[part][2]:
@@ -746,6 +747,44 @@ def generate_opentrons_script(opentrons_script_path, template_path, **kwargs):
                 if index >= function_start - 1:
                     wf.write(line)
 
+# NEW code to write before requirements so robot type in requirements can be specified from __hardware definition
+# def generate_opentrons_script(opentrons_script_path, template_path, **kwargs):
+#     """Generates an ot2 script named 'opentrons_script_path', where kwargs are
+#     written as global variables at the top of the script. For each kwarg, the
+#     keyword defines the variable name while the value defines the name of the
+#     variable. The remainder of template file is subsequently written below.
+
+#     """
+#     with open(opentrons_script_path, 'w') as wf:
+#         with open(template_path, 'r') as rf:
+#             lines = rf.readlines()
+        
+#         # Find the line that starts with 'requirements'
+#         requirements_index = None
+#         for index, line in enumerate(lines):
+#             if line.strip().startswith('requirements'):
+#                 requirements_index = index
+#                 break
+        
+#         # Write lines before 'requirements'
+#         for line in lines[:requirements_index]:
+#             wf.write(line)
+        
+#         # Write the kwargs as global variables
+#         for key, value in kwargs.items():
+#             wf.write('{}='.format(key))
+#             if isinstance(value, dict):
+#                 wf.write(json.dumps(value))
+#             elif isinstance(value, str):
+#                 wf.write("'{}'".format(value))
+#             else:
+#                 wf.write(str(value))
+#             wf.write('\n')
+#         wf.write('\n')
+        
+#         # Write the remaining lines including and after 'requirements'
+#         for line in lines[requirements_index:]:
+#             wf.write(line)
 
 def generate_master_mix_df(clip_number):
     """Generates a dataframe detailing the components required in the clip

@@ -81,7 +81,7 @@ __PARAMETERS={"clip_keep_thermo_lid_closed": {"value": "No", "id": "No"},
               "transfo_incubation_time": {"value": 20}}
 
 
-clips_dict={"prefixes_wells": ["B8", "B7", "C5", "C7", "C10", "C12", "C9", "B7", "C10", "C5", "C12", "C6"], "prefixes_plates": [], "suffixes_wells": ["A7", "C1", "C2", "C3", "A8", "A8", "C3", "C2", "C1", "A8", "C1", "C2"], "suffixes_plates": ["2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2"], "parts_wells": ["E2", "F2", "C2", "B2", "D2", "D2", "B2", "F2", "D2", "C2", "D2", "C2"], "parts_plates": ["5", "5", "5", "5", "5", "5", "5", "5", "5", "5", "5", "5"], "parts_vols": [2.5, 1.0, 1.0, 1.0, 1.25, 1.25, 1.0, 1.0, 1.25, 1.0, 1.25, 1.0], "water_vols": [7.5, 9.0, 9.0, 9.0, 8.75, 8.75, 9.0, 9.0, 8.75, 9.0, 8.75, 9.0]}
+clips_dict={"prefixes_wells": ["B8", "B7", "C5", "C7", "C10", "C12", "C9", "B7", "C10", "C5", "C12", "C6"], "prefixes_plates": ["D2", "D2", "D2", "D2", "D2", "D2", "D2", "D2", "D2", "D2", "D2", "D2"], "suffixes_wells": ["A7", "C1", "C2", "C3", "A8", "A8", "C3", "C2", "C1", "A8", "C1", "C2"], "suffixes_plates": ["D2", "D2", "D2", "D2", "D2", "D2", "D2", "D2", "D2", "D2", "D2", "D2"], "parts_wells": ["E2", "F2", "C2", "B2", "D2", "D2", "B2", "F2", "D2", "C2", "D2", "C2"], "parts_plates": ["C2", "C2", "C2", "C2", "C2", "C2", "C2", "C2", "C2", "C2", "C2", "C2"], "parts_vols": [2.5, 1.0, 1.0, 1.0, 1.25, 1.25, 1.0, 1.0, 1.25, 1.0, 1.25, 1.0], "water_vols": [7.5, 9.0, 9.0, 9.0, 8.75, 8.75, 9.0, 9.0, 8.75, 9.0, 8.75, 9.0]}
 __HARDWARE={"robot_type": {"id": "Flex"}, "single_pipette": {"id": "p20_single_gen2"}, "single_pipette_mount": {"id": "right"}, "multi_pipette": {"id": "p300_multi_gen2"}, "multi_pipette_mount": {"id": "left"}, "thermocycler": {"id": "thermocyclerModuleV2"}, "mag_deck": {"id": "magnetic module gen1"}}
 __LABWARES={"96_tiprack_20ul": {"id": "opentrons_96_tiprack_20ul"}, "96_tiprack_300ul": {"id": "opentrons_96_tiprack_300ul"}, "24_tuberack_1500ul": {"id": "e14151500starlab_24_tuberack_1500ul"}, "clip_source_plate": {"id": "nest_96_wellplate_100ul_pcr_full_skirt"}, "clip_plate": {"id": "nest_96_wellplate_100ul_pcr_full_skirt"}, "mix_plate": {"id": "nest_96_wellplate_100ul_pcr_full_skirt"}, "final_assembly_plate": {"id": "nest_96_wellplate_100ul_pcr_full_skirt"}, "transform_plate": {"id": "nest_96_wellplate_100ul_pcr_full_skirt"}, "agar_plate": {"id": "nest_96_wellplate_100ul_pcr_full_skirt"}, "12_reservoir_21000ul": {"id": "nest_12_reservoir_15ml"}, "96_deepwellplate_2ml": {"id": "nest_96_wellplate_2ml_deep"}, "12_corning_wellplate": {"id": "corning_12_wellplate_6.9ml_flat"}}
 __PARAMETERS={"clip_keep_thermo_lid_closed": {"value": "No", "id": "No"}, "premix_linkers": {"value": "Yes", "id": "Yes"}, "premix_parts": {"value": "Yes", "id": "Yes"}, "linkers_volume": {"value": 20}, "parts_volume": {"value": 20}, "thermo_temp": {"value": 4}, "purif_magdeck_height": {"value": 10.8}, "purif_wash_time": {"value": 0.5}, "purif_bead_ratio": {"value": 1.8}, "purif_incubation_time": {"value": 5}, "purif_settling_time": {"value": 2}, "purif_drying_time": {"value": 5}, "purif_elution_time": {"value": 2}, "transform_incubation_temp": {"value": 4}, "transform_incubation_time": {"value": 20}}
@@ -99,10 +99,14 @@ def run(protocol: protocol_api.ProtocolContext):
     #Tiprack
     tiprack_type=__LABWARES['96_tiprack_20ul']['id']
     INITIAL_TIP = 'A1'
-    #CANDIDATE_TIPRACK_SLOTS = ['3', '6', '9']
-    #Does this need modifying to Flex deck assignments D3, C3, B3
-    CANDIDATE_TIPRACK_SLOTS = ['3', '6', '9']
-
+    # Candidate Tiprack Slots according to robot type
+    if robot_type == 'OT-2':
+        CANDIDATE_TIPRACK_SLOTS = ['3', '6', '9']
+    elif robot_type == 'Flex':
+        CANDIDATE_TIPRACK_SLOTS = ["D3", "C3", "B3"]
+    else:
+        raise ValueError("Invalid robot type. Must be 'OT-2' or 'Flex'.")
+    
     # Pipettes - pipette instructions in a single location so redefining pipette type is simpler
     PIPETTE_TYPE = __HARDWARE['single_pipette']['id']
     #PIPETTE_TYPE = 'flex_1channel_50'

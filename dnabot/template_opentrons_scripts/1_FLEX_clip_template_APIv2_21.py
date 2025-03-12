@@ -12,7 +12,8 @@ metadata = {
      'description': 'Implements linker ligation reactions using an opentrons Flex, including the thermocycler module gen1 or gen2.'
 }
 
-requirements = {"robotType": "Flex", "apiLevel": "2.20"}
+requirements = {"robotType": "Flex", "apiLevel": "2.21"}
+
 
 clips_dict={"prefixes_wells": ["A1", "B1", "C1", "D1", "E1", "F1"], 
             #"prefixes_plates": ["2", "2", "2", "2", "2", "2"], 
@@ -80,12 +81,10 @@ __PARAMETERS={"clip_keep_thermo_lid_closed": {"value": "No", "id": "No"},
               "transfo_incubation_temp": {"value": 4}, 
               "transfo_incubation_time": {"value": 20}}
 
-
+requirements = {"robotType": __HARDWARE['robot_type']['id'], "apiLevel": "2.21"}
 def run(protocol: protocol_api.ProtocolContext):
 
-    ### Constants - these have been moved out of the def clip() for clarity
-
-    #flex need trash bin
+    #Flex requires trash bin assignment
     if __HARDWARE['robot_type']['id']=='Flex':
         trash = protocol.load_trash_bin("A3")
     else:
@@ -93,10 +92,14 @@ def run(protocol: protocol_api.ProtocolContext):
     #Tiprack
     tiprack_type=__LABWARES['96_tiprack_20ul']['id']
     INITIAL_TIP = 'A1'
-    #CANDIDATE_TIPRACK_SLOTS = ['3', '6', '9']
-    #Does this need modifying to Flex deck assignments D3, C3, B3
-    CANDIDATE_TIPRACK_SLOTS = ['3', '6', '9']
-
+    # Candidate Tiprack Slots according to robot type
+    if __HARDWARE['robot_type']['id']=='OT-2':
+        CANDIDATE_TIPRACK_SLOTS = ['3', '6', '9']
+    elif __HARDWARE['robot_type']['id']=='Flex':
+        CANDIDATE_TIPRACK_SLOTS = ["D3", "C3", "B3"]
+    else:
+        raise ValueError("Invalid robot type. Must be 'OT-2' or 'Flex'.")
+    
     # Pipettes - pipette instructions in a single location so redefining pipette type is simpler
     PIPETTE_TYPE = __HARDWARE['single_pipette']['id']
     #PIPETTE_TYPE = 'flex_1channel_50'
