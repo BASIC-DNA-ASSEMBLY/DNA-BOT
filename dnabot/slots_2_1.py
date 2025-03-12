@@ -44,7 +44,7 @@ FLEX_DECK_SLOTS = ["A1", "A2", "A3", "B1", "B2", "B3", "C1", "C2", "C3", "D1", "
 FLEX_TRASH_SLOT = "A3"  # Fixed trash position
 FLEX_THERMO_SLOT = "B1"  # Fixed thermocycler position
 
-def get_positions_from_clip(fpath: Path, robot_type="OT-2") -> dict:
+def get_positions_from_clip(fpath: Path, robot_type) -> dict:
     """Get labware slots from a clip reaction script"""
     DEFAULT_CLIP_PLATE_SLOT = "7" if robot_type == "OT-2" else "B3"
     deck = {}
@@ -88,7 +88,7 @@ def get_positions_from_clip(fpath: Path, robot_type="OT-2") -> dict:
 
 # Similar modifications would be applied to other functions
 
-def format_deck_info(deck: dict, robot_type="OT-2", section="Deck info") -> str:
+def format_deck_info(deck: dict, robot_type, section="Deck info") -> str:
     """Format deck info"""
     data = {"Plate": [], "Positions": []}
     for plate, position in deck.items():

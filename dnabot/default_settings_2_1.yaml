@@ -1,8 +1,8 @@
 hardware:
   # Opentrons low volume Single-Channel Electronic Pipette
   robot_type:
-    id: FLEX
-    #id:OT2
+    id: Flex
+    #id:OT-2
   single_pipette:
     id: p20_single_gen2
     #id: flex_1channel_50 #FLEX
@@ -20,8 +20,8 @@ hardware:
 
   # Thermocycler is required for the clip and transformation step
   thermocycler:
-  id: "thermocyclerModuleV2"
-  #id: "thermocyclerModuleV1"
+    id: "thermocyclerModuleV2"
+    #id: "thermocyclerModuleV1"
 
   # Magnetic module or block is required for the purification step
   mag_deck:

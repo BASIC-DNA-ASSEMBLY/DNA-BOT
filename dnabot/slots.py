@@ -11,6 +11,7 @@ MAXLEN_PLATE_NAME = 25
 def get_positions_from_clip(fpath: Path) -> dict:
     """Get labware slots from a clip reaction script
 
+    
     Parameters
     ----------
     fpath : Path

@@ -24,7 +24,7 @@ sys.path.insert(0, abs_path)
 
 import dnabot_gui2_1 as gui
 import mplates
-import slots
+import slots_2_1 as slots 
 
 # Constant str
 TEMPLATE_DIR_NAME = 'template_opentrons_scripts'
@@ -34,14 +34,14 @@ CLIP_TEMP_FNAME_2 = '1_OT-2_clip_template_APIv2_21.py'
 #CLIP_TEMP_FNAME_4 = 'clip_template_Thermocycler_Gen2_APIv2_19.py'
 
 MAGBEAD_TEMP_FNAME_1 = '2_Flex_purification_template_APIv2_21.py'
-MAGBEAD_TEMP_FNAME_2 = '2_OT-2_purification_template_APIv2_21.py'
+#MAGBEAD_TEMP_FNAME_2 = '2_OT-2_purification_template_APIv2_21.py'
 
 F_ASSEMBLY_TEMP_FNAME_1 = '3_Flex_assembly_template_APIv2_21.py'
-F_ASSEMBLY_TEMP_FNAME_2 = '3_OT-2_assembly_template_APIv2_21.py'
+#F_ASSEMBLY_TEMP_FNAME_2 = '3_OT-2_assembly_template_APIv2_21.py'
 #F_ASSEMBLY_TEMP_FNAME_3 = 'assembly_template_Thermocycler_Gen1_APIv2.8.py'
 #F_ASSEMBLY_TEMP_FNAME_4 = 'assembly_template_Thermocycler_Gen2_APIv2.8.py'
 
-TRANSFORMATION_TEMP_FNAME_1 = '4_Flex_transformation_template_12wellplate_APIv2_21.py'
+#TRANSFORMATION_TEMP_FNAME_1 = '4_Flex_transformation_template_12wellplate_APIv2_21.py'
 TRANSFORMATION_TEMP_FNAME_2 = '4_OT-2_transformation_template_12wellplate_APIv2_21.py'
 #TRANSFORMATION_TEMP_FNAME_3 = 'transformation_template_Thermocycler_Gen1_APIv2.8.py'
 #TRANSFORMATION_TEMP_FNAME_4 = 'transformation_template_Thermocycler_Gen2_APIv2.8.py'
@@ -512,17 +512,35 @@ def generate_sources_dict(paths):
                       sources csv file.
 
     """
+    # sources_dict = {}
+    # for deck_index, path in enumerate(paths):
+    #     with open(path, 'r') as csvfile:
+    #         csv_reader = csv.reader(csvfile)
+    #         for index, source in enumerate(csv_reader):
+    #             if index != 0:
+    #                 csv_values = source[1:]
+    #                 csv_values.append(SOURCE_DECK_POS[deck_index])
+    #                 sources_dict[str(source[0])] = tuple(csv_values)
+    # return sources_dict
+
     sources_dict = {}
     for deck_index, path in enumerate(paths):
         with open(path, 'r') as csvfile:
             csv_reader = csv.reader(csvfile)
             for index, source in enumerate(csv_reader):
                 if index != 0:
-                    csv_values = source[1:]
-                    csv_values.append(SOURCE_DECK_POS[deck_index])
+                    csv_values = source[1:]  # Extract values excluding the first column
+                    
+                    # Ensure the list has at least 5 columns before inserting
+                    while len(csv_values) < 4:
+                        csv_values.append("")  # Fill missing columns with empty strings
+                    
+                    # Insert SOURCE_DECK_POS[deck_index] at index 4 (column 5)
+                    csv_values.insert(4, SOURCE_DECK_POS[deck_index])
+                    
                     sources_dict[str(source[0])] = tuple(csv_values)
-    return sources_dict
 
+    return sources_dict
 
 def generate_clips_dict(clips_df, sources_dict):
     """Using clips_df and sources_dict, returns a clips_dict which acts as the
@@ -543,24 +561,23 @@ def generate_clips_dict(clips_df, sources_dict):
             # Extract prefix linker and store corresponding well and plate information
             prefix_linker = clip_info['prefixes']
             clips_dict['prefixes_wells'].append([sources_dict[prefix_linker][0]] * clip_info['number'])
-            clips_dict['prefixes_plates'].append([handle_2_columns(sources_dict[prefix_linker])[2]] * clip_info['number'])
+            clips_dict['prefixes_plates'].append((sources_dict[prefix_linker])[4] * clip_info['number'])
             
             # Extract suffix linker and store corresponding well and plate information
             suffix_linker = clip_info['suffixes']
             clips_dict['suffixes_wells'].append([sources_dict[suffix_linker][0]] * clip_info['number'])
-            clips_dict['suffixes_plates'].append([handle_2_columns(sources_dict[suffix_linker])[2]] * clip_info['number'])
-            
+            clips_dict['suffixes_plates'].append((sources_dict[suffix_linker])[4] * clip_info['number'])
             # Extract part and store corresponding well and plate information
             part = clip_info['parts']
             clips_dict['parts_wells'].append([sources_dict[part][0]] * clip_info['number'])
-            clips_dict['parts_plates'].append([handle_2_columns(sources_dict[part])[2]] * clip_info['number'])
+            clips_dict['parts_plates'].append((sources_dict[part])[4] * clip_info['number'])
             
             # Check if the concentration or part size is missing in sources_dict
             if not sources_dict[part][1] or not sources_dict[part][2]:
                 sys.exit(f'Error: Missing values for part {part}. Both concentration and part_size are required.')
             else:
                 # Calculate part volume using part size and concentration
-                part_vol = round((float(sources_dict[part][2]) * 50) / float(sources_dict[part][1]), 1)
+                part_vol = round((float(sources_dict[part][2]) * 50) / float(sources_dict[part][1]), 2)
                 
                 # Ensure part_vol is within the allowed range
                 if part_vol < MIN_VOL:
@@ -777,29 +794,6 @@ def dfs_to_csv(path, index=True, **kw_dfs):
             value.to_csv(csvfile, index=index)
             csvwriter.writerow('')
 
-def handle_2_columns(datalist):
-    """This function has the intent of changing:
-    ('A8', '2') => ('A8', '', '2')
-    ('A8', '', '2') => ('A8', '', '2')
-    [('E2', '5')] => [('E2', '', '5')]
-    [('G1', '', '5')] => [('G1', '', '5')]
-    with the purpose of handling 2 column csv part file inputs,
-    as at times when 2 column csv files are input it creates tuples
-    of length 2 instead of 3
-    """
-    return_list = 0
-    if isinstance(datalist,list):
-        datalist = datalist[0]
-        return_list = 1
-    if len(datalist) == 2:
-        datalist = list(datalist)
-        datalist.insert(1,"")
-        datalist = tuple(datalist)
-    if return_list:
-        mylist = [""]
-        mylist[0] = datalist
-        return mylist
-    return datalist
 
 if __name__ == '__main__':
     main()

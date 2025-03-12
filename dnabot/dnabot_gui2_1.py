@@ -189,7 +189,7 @@ class GUI:
         multi_pipette_mount_x.config(font=GUI.__APP_FONT)
 
         irow += 1
-        thermocycler_label = tk.Label(self.frame, text='Thermocylcer Module: Gen1 or Gen2', font=('Arial', 12,))
+        thermocycler_label = tk.Label(self.frame, text='Thermocycler Module: Gen1 or Gen2', font=('Arial', 12,))
         thermocycler_label.grid(row=irow, column=0, sticky='e')
         self.thermocycler = tk.StringVar(self.frame)
         self.thermocycler.set("thermocyclerModuleV2")
@@ -197,7 +197,7 @@ class GUI:
         thermocycler_x=tk.OptionMenu(self.frame, self.thermocycler, *thermocycler_choice)
         thermocycler_x.grid(row=irow, column=1, sticky=tk.W)
         thermocycler_x.config(font=GUI.__APP_FONT)
-
+        
         irow += 1
         mag_deck_label = tk.Label(self.frame, text='OT-2 Magnetic Module or Flex Block', font=('Arial', 12,))
         mag_deck_label.grid(row=irow, column=0, sticky='e')
