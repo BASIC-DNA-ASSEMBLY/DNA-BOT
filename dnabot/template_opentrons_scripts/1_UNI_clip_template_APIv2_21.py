@@ -15,72 +15,6 @@ metadata = {
 
 requirements = {"robotType": __HARDWARE['robot_type']['id'], "apiLevel": "2.21"}
 
-clips_dict={"prefixes_wells": ["A1", "B1", "C1", "D1", "E1", "F1"], 
-            #"prefixes_plates": ["2", "2", "2", "2", "2", "2"], 
-            "prefixes_plates": ["D2", "D2", "D2", "D2", "D2", "D2"], 
-            "suffixes_wells": ["A2", "B2", "C2", "D2", "E2", "F2"], 
-            #"suffixes_plates": ["2", "2", "2", "2", "2", "2"], 
-            "suffixes_plates": ["D2", "D2", "D2", "D2", "D2", "D2"], 
-            "parts_wells": ["A3", "B3", "C3", "D3", "E3", "F3"], 
-            #"parts_plates": ["2", "2", "2", "2", "2", "2"], 
-            "parts_plates": ["D2", "D2", "D2", "D2", "D2", "D2"], 
-            "parts_vols": [1, 1, 1, 1, 1, 1], 
-            "water_vols": [7.0, 7.0, 7.0, 7.0, 7.0, 7.0]}
-
-__HARDWARE={"robot_type": {"id": "Flex"},
-            "thermocycler": {"id": "thermocyclerModuleV2"},
-            "single_pipette": {"id": "flex_1channel_50"},
-            "single_pipette_mount":{"id":"right"},
-            "multi_pipette":  {"id": "flex_8channel_1000"},
-            "multi_pipette_mount":{"id":"left"},
-            "mag_deck": {"id":"magneticBlockV1"},
-            #"mag_deck": {"id": "magneticModuleV1"}, 
-            #             
-            #"single_pipette": {"id": "p20_single_gen2"}
-            #"p20_single": {"id": "flex_1channel_50"},
-            #"p300_multi": {"id": "p300_multi_gen2"}, 
-            #"p300_multi": {"id": "flex_8channel_50"},  
-            }
-
-__LABWARES={
-
-            #"mag_deck": {"id": "magneticBlockV1"},
-            #"96_tiprack_20ul": {"id": "opentrons_96_tiprack_20ul"},
-            "96_tiprack_20ul": {"id": "opentrons_flex_96_tiprack_50ul"}, 
-            #"96_tiprack_300ul": {"id": "opentrons_96_tiprack_300ul"},
-            "96_tiprack_300ul": {"id": "opentrons_flex_96_tiprack_1000ul"}, 
-            #"24_tuberack_1500ul": {"id": "e14151500starlab_24_tuberack_1500ul"}, 
-            "24_tuberack_1500ul": {"id": "opentrons_24_tuberack_nest_1.5ml_snapcap"},
-            "final_assembly_plate": {"id": "nest_96_wellplate_100ul_pcr_full_skirt"}, 
-            "transfo_plate": {"id": "nest_96_wellplate_100ul_pcr_full_skirt"}, 
-            "transfo_plate_wo_thermo": {"id": "nest_96_wellplate_100ul_pcr_full_skirt"}, 
-            "agar_plate": {"id": "nest_96_wellplate_100ul_pcr_full_skirt"}, 
-            "12_reservoir_21000ul": {"id": "nest_12_reservoir_15ml"}, 
-            "96_deepwellplate_2ml": {"id": "nest_96_wellplate_2ml_deep"}, 
-            "12_corning_wellplate": {"id": "corning_12_wellplate_6.9ml_flat"},
-            #"clip_plate": {"id": "4ti0960rig_96_wellplate_200ul"},
-            #"mix_plate": {"id": "4ti0960rig_96_wellplate_200ul"},
-            #"clip_source_plate": {"id": "4ti0960rig_96_wellplate_200ul"}
-            "clip_plate": {"id": "nest_96_wellplate_100ul_pcr_full_skirt"},
-            "mix_plate": {"id": "nest_96_wellplate_100ul_pcr_full_skirt"},
-            "clip_source_plate": {"id": "nest_96_wellplate_100ul_pcr_full_skirt"}
-            }
-__PARAMETERS={"clip_keep_thermo_lid_closed": {"value": "No", "id": "No"}, 
-              "premix_linkers": {"value": "Yes", "id": "Yes"}, 
-              "premix_parts": {"value": "Yes", "id": "Yes"},
-              "linkers_volume": {"value": 120}, 
-              "parts_volume": {"value": 60}, 
-              "thermo_temp": {"value": 4}, 
-              #"purif_magdeck_height": {"value": 10.8}, 
-              "purif_wash_time": {"value": 0.5}, 
-              "purif_bead_ratio": {"value": 1.8}, 
-              "purif_incubation_time": {"value": 5}, 
-              "purif_settling_time": {"value": 2}, 
-              "purif_drying_time": {"value": 5}, 
-              "purif_elution_time": {"value": 2}, 
-              "transfo_incubation_temp": {"value": 4}, 
-              "transfo_incubation_time": {"value": 20}}
-
 def run(protocol: protocol_api.ProtocolContext):
 
     #Flex requires trash bin assignment
@@ -103,14 +37,7 @@ def run(protocol: protocol_api.ProtocolContext):
     PIPETTE_TYPE = __HARDWARE['single_pipette']['id']
     #PIPETTE_TYPE = 'flex_1channel_50'
     PIPETTE_MOUNT = __HARDWARE['single_pipette_mount']['id']
-    #Pipette_mount = 'right'
-        ### Load Pipette
-        # checks if it's a P20 Single pipette - pipette and robot validation are done by Opentrons
-    # if PIPETTE_TYPE != 'flex_1channel_50':
-    #     print('Define labware must be changed to use', PIPETTE_TYPE)
-    #     exit()
-    #thermocycler module - turn off lid and cool plate to reduce evaporation
-    #load thermoname from HARDWARE profile in user_settings
+
     if __HARDWARE['robot_type']['id']=='Flex':
         tc_mod = protocol.load_module(module_name=__HARDWARE['thermocycler']['id'], location = "B1")
     else:

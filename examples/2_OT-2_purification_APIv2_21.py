@@ -11,14 +11,65 @@ metadata = {
 
 
 # requirements
-requirements = {"robotType": __HARDWARE['robot_type']['id'], "apiLevel": "2.21"}
+sample_number=12
+ethanol_well='A11'
+__HARDWARE={"robot_type": {"id": "OT-2"}, "single_pipette": {"id": "p20_single_gen2"}, "single_pipette_mount": {"id": "right"}, "multi_pipette": {"id": "p300_multi_gen2"}, "multi_pipette_mount": {"id": "left"}, "thermocycler": {"id": "thermocyclerModuleV2"}, "mag_deck": {"id": "magnetic module gen1"}}
+__LABWARES={"96_tiprack_20ul": {"id": "opentrons_96_tiprack_20ul"}, "96_tiprack_300ul": {"id": "opentrons_96_tiprack_300ul"}, "24_tuberack_1500ul": {"id": "e14151500starlab_24_tuberack_1500ul"}, "clip_source_plate": {"id": "nest_96_wellplate_100ul_pcr_full_skirt"}, "clip_plate": {"id": "nest_96_wellplate_100ul_pcr_full_skirt"}, "mix_plate": {"id": "nest_96_wellplate_100ul_pcr_full_skirt"}, "final_assembly_plate": {"id": "nest_96_wellplate_100ul_pcr_full_skirt"}, "transform_plate": {"id": "nest_96_wellplate_100ul_pcr_full_skirt"}, "agar_plate": {"id": "nest_96_wellplate_100ul_pcr_full_skirt"}, "12_reservoir_21000ul": {"id": "nest_12_reservoir_15ml"}, "96_deepwellplate_2ml": {"id": "nest_96_wellplate_2ml_deep"}, "12_corning_wellplate": {"id": "corning_12_wellplate_6.9ml_flat"}}
+__PARAMETERS={"clip_keep_thermo_lid_closed": {"value": "No", "id": "No"}, "premix_linkers": {"value": "Yes", "id": "Yes"}, "premix_parts": {"value": "Yes", "id": "Yes"}, "linkers_volume": {"value": 20}, "parts_volume": {"value": 20}, "thermo_temp": {"value": 4}, "purif_magdeck_height": {"value": 10.8}, "purif_wash_time": {"value": 0.5}, "purif_bead_ratio": {"value": 1.8}, "purif_incubation_time": {"value": 5}, "purif_settling_time": {"value": 2}, "purif_drying_time": {"value": 5}, "purif_elution_time": {"value": 2}, "transform_incubation_temp": {"value": 4}, "transform_incubation_time": {"value": 20}}
 
+requirements = {"robotType": "Flex", "apiLevel": "2.20"}
+
+# example values produced by DNA-BOT for a single construct containing 5 parts, un-comment and run to test the template:
+#sample_number=8
+#ethanol_well='A3'
+
+# __LABWARES and __PARAMETERS are expected to be redefined by "generate_ot2_script" method
+# Test dict
+# __LABWARES={"p20_single": {"id": "p20_single_gen2"}, "p300_multi": {"id": "p300_multi_gen2"}, "mag_deck": {"id": "magneticModuleV1"}, "96_tiprack_20ul": {"id": "opentrons_96_tiprack_20ul"}, "96_tiprack_300ul": {"id": "opentrons_96_tiprack_300ul"}, "24_tuberack_1500ul": {"id": "e14151500starlab_24_tuberack_1500ul"}, "96_wellplate_200ul_pcr_step_14": {"id": "4ti0960rig_96_wellplate_200ul"}, "96_wellplate_200ul_pcr_step_23": {"id": "4ti0960rig_96_wellplate_200ul"}, "agar_plate_step_4": {"id": "4ti0960rig_96_wellplate_200ul"}, "12_reservoir_21000ul": {"id": "4ti0131_12_reservoir_21000ul"}, "96_deepwellplate_2ml": {"id": "4ti0136_96_wellplate_2200ul"}}
+# __PARAMETERS={"purif_magdeck_height": {"value": 20.0}, "purif_wash_time": {"value": 0.5}, "purif_bead_ratio": {"value": 1.8}, "purif_incubation_time": {"value": 5.0}, "purif_settling_time": {"value": 2.0}, "purif_drying_time": {"value": 5.0}, "purif_elution_time": {"value": 2.0}, "transfo_incubation_temp": {"value": 4.0}, "transfo_incubation_time": {"value": 20.0}}
+
+sample_number=6 # Vary from 0 ~ 48
+ethanol_well='A11'
+
+__LABWARES={"p50_single": {"id": "flex_1channel_50"},
+            "p50_multi": {"id": "flex_8channel_50"}, 
+            "p1000_single": {"id": "flex_1channel_1000"}, 
+            "p1000_multi": {"id": "flex_8channel_1000"},
+            "mag_block": {"id": "magneticBlockV1"},
+            "mag_plate": {"id": "nest_96_wellplate_100ul_pcr_full_skirt"}, 
+            "flex_96_tiprack_50ul": {"id": "opentrons_flex_96_tiprack_50ul"}, 
+            "flex_96_tiprack_200ul": {"id": "opentrons_flex_96_tiprack_200ul"},
+            "flex_96_tiprack_1000ul": {"id": "opentrons_flex_96_tiprack_1000ul"}, 
+            "24_tuberack_1500ul": {"id": "e14151500starlab_24_tuberack_1500ul"}, 
+            "clip_source_plate": {"id": "nest_96_wellplate_100ul_pcr_full_skirt"}, 
+            "clip_plate": {"id": "nest_96_wellplate_100ul_pcr_full_skirt"}, 
+            "mix_plate": {"id": "nest_96_wellplate_100ul_pcr_full_skirt"}, 
+            "final_assembly_plate": {"id": "nest_96_wellplate_100ul_pcr_full_skirt"}, 
+            "transfo_plate": {"id": "nest_96_wellplate_100ul_pcr_full_skirt"}, 
+            "transfo_plate_wo_thermo": {"id": "nest_96_wellplate_100ul_pcr_full_skirt"}, 
+            "agar_plate": {"id": "nest_96_wellplate_100ul_pcr_full_skirt"}, 
+            "12_reservoir_21000ul": {"id": "nest_12_reservoir_15ml"}, 
+            "96_deepwellplate_2ml": {"id": "nest_96_wellplate_2ml_deep"}, 
+            "12_corning_wellplate": {"id": "corning_12_wellplate_6.9ml_flat"}}
+
+__PARAMETERS={"clip_keep_thermo_lid_closed": {"value": "No", "id": "No"}, 
+              "premix_linkers": {"value": "Yes", "id": "No"}, 
+              "premix_parts": {"value": "Yes", "id": "Yes"}, 
+              "linkers_volume": {"value": 20}, 
+              "parts_volume": {"value": 20}, 
+              "thermo_temp": {"value": 4}, 
+              #"purif_magdeck_height": {"value": 10.8}, 
+              "purif_wash_time": {"value": 0.5}, 
+              "purif_bead_ratio": {"value": 1.8}, 
+              "purif_incubation_time": {"value": 5}, 
+              "purif_settling_time": {"value": 2}, 
+              "purif_drying_time": {"value": 5}, 
+              "purif_elution_time": {"value": 2}, 
+              "transfo_incubation_temp": {"value": 4}, 
+              "transfo_incubation_time": {"value": 20}}
 
 def run(protocol: protocol_api.ProtocolContext):
-    if __HARDWARE['robot_type']['id']=='Flex':
-        trash = protocol.load_trash_bin("A3")
-    else:
-        pass
+    trash = protocol.load_trash_bin(location="A3")# Trash defination for Flex
     
 # added run function for API verison 2
 
@@ -64,19 +115,14 @@ def run(protocol: protocol_api.ProtocolContext):
         TIPS_WASH = 2
 
         #PIPETTE_TYPE = __LABWARES['p300_multi']['id']
-        PIPETTE_TYPE = __LABWARES['multi_pipette']['id']
+        PIPETTE_TYPE = __LABWARES['p1000_multi']['id']
 
-          # Tiprack
+            # new constant for easier swapping between pipette types
+
+        # Tiprack
         #CANDIDATE_TIPRACK_SLOTS = ['3', '6', '9', '2', '5']
         #CANDIDATE_TIPRACK_SLOTS_200 = ['D3', 'C3', 'B3']
         #CANDIDATE_TIPRACK_SLOT_1000 = 'C2'
-        if __HARDWARE['robot_type']['id']=='OT-2':
-            CANDIDATE_TIPRACK_SLOTS = ['3', '6', '9', '2', '5']
-        elif __HARDWARE['robot_type']['id']=='Flex':
-            CANDIDATE_TIPRACK_SLOTS_200 = ["D3", "C3", "B3"]
-            CANDIDATE_TIPRACK_SLOT_1000 = "C2"
-        else:
-            raise ValueError("Invalid robot type. Must be 'OT-2' or 'Flex'.")
         tiprack_200_1= protocol.load_labware(tiprack_200, 'D3')
         tiprack_200_2= protocol.load_labware(tiprack_200, 'C3')
         tiprack_200_3= protocol.load_labware(tiprack_200, 'B3')  # 200  ul tip used for Asperation, Transfer, Elusion and so on.
@@ -129,6 +175,9 @@ def run(protocol: protocol_api.ProtocolContext):
         total_tips = sample_number * TIPS_PER_SAMPLE
         tiprack_num = total_tips // 96 + (1 if total_tips % 96 > 0 else 0)
         print(str(tiprack_num) + 'of 200ul tipboxs is needed')
+
+
+            # changed to protocol.load_labware for API version 2
             
         wash_tips = sample_number * TIPS_WASH
         tiprack_wash = wash_tips // 96 + (1 if total_tips % 96 > 0 else 0)
