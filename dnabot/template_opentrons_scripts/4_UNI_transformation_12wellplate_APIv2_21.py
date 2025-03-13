@@ -18,15 +18,53 @@ metadata = {
      'description': 'Transformation reactions using an opentrons OT-2 for BASIC assembly.'}
 
 
+requirements = {"robotType": __HARDWARE['robot_type']['id'], "apiLevel": "2.21"}
+
 # Example output produced by DNA-BOT for 88 constructs, uncomment and run to test the template
 #spotting_tuples=[(('A1', 'B1', 'C1', 'D1', 'E1', 'F1', 'G1', 'H1', 'A2', 'B2', 'C2', 'D2'), ('A1', 'B1', 'C1', 'A2', 'B2', 'C2', 'A3', 'B3', 'C3', 'A4', 'B4', 'C4'), (40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40)), (('E2', 'F2', 'G2', 'H2', 'A3', 'B3', 'C3', 'D3', 'E3', 'F3', 'G3', 'H3'), ('A1', 'B1', 'C1', 'A2', 'B2', 'C2', 'A3', 'B3', 'C3', 'A4', 'B4', 'C4'), (40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40)), (('A4', 'B4', 'C4', 'D4', 'E4', 'F4', 'G4', 'H4', 'A5', 'B5', 'C5', 'D5'), ('A1', 'B1', 'C1', 'A2', 'B2', 'C2', 'A3', 'B3', 'C3', 'A4', 'B4', 'C4'), (40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40)), (('E5', 'F5', 'G5', 'H5', 'A6', 'B6', 'C6', 'D6', 'E6', 'F6', 'G6', 'H6'), ('A1', 'B1', 'C1', 'A2', 'B2', 'C2', 'A3', 'B3', 'C3', 'A4', 'B4', 'C4'), (40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40)), (('A7', 'B7', 'C7', 'D7', 'E7', 'F7', 'G7', 'H7', 'A8', 'B8', 'C8', 'D8'), ('A1', 'B1', 'C1', 'A2', 'B2', 'C2', 'A3', 'B3', 'C3', 'A4', 'B4', 'C4'), (40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40)), (('E8', 'F8', 'G8', 'H8', 'A9', 'B9', 'C9', 'D9', 'E9', 'F9', 'G9', 'H9'), ('A1', 'B1', 'C1', 'A2', 'B2', 'C2', 'A3', 'B3', 'C3', 'A4', 'B4', 'C4'), (40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40)), (('A10', 'B10', 'C10', 'D10', 'E10', 'F10', 'G10', 'H10', 'A11', 'B11', 'C11', 'D11'), ('A1', 'B1', 'C1', 'A2', 'B2', 'C2', 'A3', 'B3', 'C3', 'A4', 'B4', 'C4'), (40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40)), (('E11', 'F11', 'G11', 'H11'), ('A1', 'B1', 'C1', 'A2'), (40, 40, 40, 40))]
 #soc_well='A1'
 
-
-spotting_tuples=[(('A1', 'B1', 'C1', 'D1'), ('A1', 'B1', 'C1', 'D1'), (5, 5, 5, 5))]
+#Old example dict
+spotting_tuples=[
+    (('A1', 'B1', 'C1', 'D1'), 
+     ('A1', 'B1', 'C1', 'D1'), 
+     (5, 5, 5, 5))]
 soc_well='A1'
-__LABWARES={"p20_single": {"id": "p20_single_gen2"}, "p300_multi": {"id": "p300_multi_gen2"}, "mag_deck": {"id": "magneticModuleV1"}, "96_tiprack_20ul": {"id": "opentrons_96_tiprack_20ul"}, "96_tiprack_300ul": {"id": "opentrons_96_tiprack_300ul"}, "24_tuberack_1500ul": {"id": "e14151500starlab_24_tuberack_1500ul"}, "clip_source_plate": {"id": "nest_96_wellplate_100ul_pcr_full_skirt"}, "clip_plate": {"id": "nest_96_wellplate_100ul_pcr_full_skirt"}, "mix_plate": {"id": "nest_96_wellplate_100ul_pcr_full_skirt"}, "final_assembly_plate": {"id": "nest_96_wellplate_100ul_pcr_full_skirt"}, "transfo_plate": {"id": "nest_96_wellplate_100ul_pcr_full_skirt"}, "transfo_plate_wo_thermo": {"id": "nest_96_wellplate_100ul_pcr_full_skirt"}, "agar_plate": {"id": "nest_96_wellplate_100ul_pcr_full_skirt"}, "12_reservoir_21000ul": {"id": "nest_12_reservoir_15ml"}, "96_deepwellplate_2ml": {"id": "nest_96_wellplate_2ml_deep"}, "12_corning_wellplate": {"id": "corning_12_wellplate_6.9ml_flat"}}
-__PARAMETERS={"clip_keep_thermo_lid_closed": {"value": "No", "id": "No"}, "premix_linkers": {"value": "Yes", "id": "No"}, "premix_parts": {"value": "Yes", "id": "Yes"}, "linkers_volume": {"value": 20}, "parts_volume": {"value": 20}, "thermo_temp": {"value": 4}, "purif_magdeck_height": {"value": 10.8}, "purif_wash_time": {"value": 0.5}, "purif_bead_ratio": {"value": 1.8}, "purif_incubation_time": {"value": 5}, "purif_settling_time": {"value": 2}, "purif_drying_time": {"value": 5}, "purif_elution_time": {"value": 2}, "transfo_incubation_temp": {"value": 4}, "transfo_incubation_time": {"value": 20}}
+__LABWARES={
+    "p20_single": {"id": "p20_single_gen2"}, 
+    "p300_multi": {"id": "p300_multi_gen2"}, 
+    "mag_deck": {"id": "magneticModuleV1"}, 
+    "96_tiprack_20ul": {"id": "opentrons_96_tiprack_20ul"}, 
+    "96_tiprack_300ul": {"id": "opentrons_96_tiprack_300ul"}, 
+    "24_tuberack_1500ul": {"id": "e14151500starlab_24_tuberack_1500ul"}, 
+    "clip_source_plate": {"id": "nest_96_wellplate_100ul_pcr_full_skirt"}, 
+    "clip_plate": {"id": "nest_96_wellplate_100ul_pcr_full_skirt"}, 
+    "mix_plate": {"id": "nest_96_wellplate_100ul_pcr_full_skirt"}, 
+    "final_assembly_plate": {"id": "nest_96_wellplate_100ul_pcr_full_skirt"}, 
+    "transfo_plate": {"id": "nest_96_wellplate_100ul_pcr_full_skirt"}, 
+    "transfo_plate_wo_thermo": {"id": "nest_96_wellplate_100ul_pcr_full_skirt"}, 
+    "agar_plate": {"id": "nest_96_wellplate_100ul_pcr_full_skirt"}, 
+    "12_reservoir_21000ul": {"id": "nest_12_reservoir_15ml"}, 
+    "96_deepwellplate_2ml": {"id": "nest_96_wellplate_2ml_deep"}, 
+    "12_corning_wellplate": {"id": "corning_12_wellplate_6.9ml_flat"}
+    }
+__PARAMETERS={
+    "clip_keep_thermo_lid_closed": {"value": "No", "id": "No"}, 
+    "premix_linkers": {"value": "Yes", "id": "No"}, 
+    "premix_parts": {"value": "Yes", "id": "Yes"}, 
+    "linkers_volume": {"value": 20}, 
+    "parts_volume": {"value": 20}, 
+    "thermo_temp": {"value": 4}, 
+    "purif_magdeck_height": {"value": 10.8}, 
+    "purif_wash_time": {"value": 0.5}, 
+    "purif_bead_ratio": {"value": 1.8}, 
+    "purif_incubation_time": {"value": 5}, 
+    "purif_settling_time": {"value": 2}, 
+    "purif_drying_time": {"value": 5}, 
+    "purif_elution_time": {"value": 2}, 
+    "transfo_incubation_temp": {"value": 4}, 
+    "transfo_incubation_time": {"value": 20}
+    }
 
 
 def run(protocol: protocol_api.ProtocolContext):

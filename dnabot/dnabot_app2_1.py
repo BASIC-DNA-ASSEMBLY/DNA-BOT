@@ -29,8 +29,8 @@ import slots_2_1 as slots
 # Constant str
 TEMPLATE_DIR_NAME = 'template_opentrons_scripts'
 
-CLIP_TEMP_FNAME_1 = '1_Flex_clip_template_APIv2_21.py'
-CLIP_TEMP_FNAME_2 = '1_OT-2_clip_template_APIv2_21.py'
+CLIP_TEMP_FNAME_1 = '1_UNI_clip_template_APIv2_21.py'
+#CLIP_TEMP_FNAME_2 = '1_OT-2_clip_template_APIv2_21.py'
 #CLIP_TEMP_FNAME_4 = 'clip_template_Thermocycler_Gen2_APIv2_19.py'
 
 MAGBEAD_TEMP_FNAME_1 = '2_Flex_purification_template_APIv2_21.py'
@@ -293,25 +293,85 @@ def main():
         constructs_list,
         SPOTTING_VOLS_DICT_12
         )
-
+# Write OT-2 scripts
     print('Writing files...')
-    # Write OT-2 scripts
 
+    if robot_type == 'Flex':
+        generate_opentrons_script(
+            '1_Flex_clip_APIv2_21.py',
+            os.path.join(template_dir_path, '1_UNI_clip_template_APIv2_21.py'),            clips_dict=clips_dict,
+            __HARDWARE=hardware_settings,
+            __LABWARES=labware_settings,
+            __PARAMETERS=parameter_settings)
+        generate_opentrons_script(
+            '2_Flex_purification_APIv2_21.py',
+            os.path.join(template_dir_path, '2_UNI_purification_template_APIv2_21.py'),            sample_number=magbead_sample_number,
+            ethanol_well=etoh_well,
+            __HARDWARE=hardware_settings,
+            __LABWARES=labware_settings,
+            __PARAMETERS=parameter_settings)
+        generate_opentrons_script(
+            '3_Flex_assembly_APIv2_21.py',
+            os.path.join(template_dir_path, '3_UNI_assembly_template_APIv2_21.py'),            final_assembly_dict=final_assembly_dict,
+            tiprack_num=final_assembly_tipracks,
+            __HARDWARE=hardware_settings,
+            __LABWARES=labware_settings,
+            __PARAMETERS=parameter_settings)
+        generate_opentrons_script(
+            '4_Flex_transformation_12wellplate_APIv2_21.py',
+            os.path.join(template_dir_path, '4_UNI_transformation_template_12wellplate_APIv2_21.py'),
+            spotting_tuples=spotting_tuples,
+            soc_well=f"A{soc_column}",
+            __HARDWARE=hardware_settings,
+            __LABWARES=labware_settings,
+            __PARAMETERS=parameter_settings)
+    
+    elif robot_type == 'OT-2':
+        generate_opentrons_script(
+            '1_OT-2_clip_APIv2_21.py',
+            os.path.join(template_dir_path, '1_UNI_clip_template_APIv2_21.py'),            clips_dict=clips_dict,
+            __HARDWARE=hardware_settings,
+            __LABWARES=labware_settings,
+            __PARAMETERS=parameter_settings)
+         generate_opentrons_script(
+            '2_OT-2_purification_APIv2_21.py',
+            os.path.join(template_dir_path, '2_UNI_purification_template_APIv2_21.py'),            sample_number=magbead_sample_number,
+            ethanol_well=etoh_well,
+            __HARDWARE=hardware_settings,
+            __LABWARES=labware_settings,
+            __PARAMETERS=parameter_settings)
+        generate_opentrons_script(
+            '3_OT-2_assembly_APIv2_21.py',
+            os.path.join(template_dir_path, '3_UNI_assembly_template_APIv2_21.py'),            final_assembly_dict=final_assembly_dict,
+            tiprack_num=final_assembly_tipracks,
+            __HARDWARE=hardware_settings,
+            __LABWARES=labware_settings,
+            __PARAMETERS=parameter_settings)
+        generate_opentrons_script(
+            '4_OT-2_transformation_12wellplate_APIv2_21.py',
+            os.path.join(template_dir_path, '4_UNI_transformation_template_12wellplate_APIv2_21.py'),
+            spotting_tuples=spotting_tuples,
+            soc_well=f"A{soc_column}",
+            __HARDWARE=hardware_settings,
+            __LABWARES=labware_settings,
+            __PARAMETERS=parameter_settings)   
+    else:
+        pass
 
-    generate_opentrons_script(
-        CLIP_FNAME_1,
-        os.path.join(template_dir_path, CLIP_TEMP_FNAME_1),
-        clips_dict=clips_dict,
-        __HARDWARE=hardware_settings,
-        __LABWARES=labware_settings,
-        __PARAMETERS=parameter_settings)
-    generate_opentrons_script(
-        CLIP_FNAME_2,
-        os.path.join(template_dir_path, CLIP_TEMP_FNAME_2),
-        clips_dict=clips_dict,
-        __HARDWARE=hardware_settings,
-        __LABWARES=labware_settings,
-        __PARAMETERS=parameter_settings)
+    # generate_opentrons_script(
+    #     CLIP_FNAME_1,
+    #     os.path.join(template_dir_path, CLIP_TEMP_FNAME_1),
+    #     clips_dict=clips_dict,
+    #     __HARDWARE=hardware_settings,
+    #     __LABWARES=labware_settings,
+    #     __PARAMETERS=parameter_settings)
+    # generate_opentrons_script(
+    #     CLIP_FNAME_2,
+    #     os.path.join(template_dir_path, CLIP_TEMP_FNAME_2),
+    #     clips_dict=clips_dict,
+    #     __HARDWARE=hardware_settings,
+    #     __LABWARES=labware_settings,
+    #     __PARAMETERS=parameter_settings)
 
        
     generate_opentrons_script(
@@ -716,38 +776,7 @@ def generate_spotting_tuples_12(constructs_list, spotting_vols_dict):
         spotting_tuples_12.append((tuple_wells, tuple_spot_wells, tuple_vols))
     return spotting_tuples_12
 
-
-def generate_opentrons_script(opentrons_script_path, template_path, **kwargs):
-    """Generates an ot2 script named 'opentrons_script_path', where kwargs are
-    written as global variables at the top of the script. For each kwarg, the
-    keyword defines the variable name while the value defines the name of the
-    variable. The remainder of template file is subsequently written below.
-
-    """
-    with open(opentrons_script_path, 'w') as wf:
-        with open(template_path, 'r') as rf:
-            for index, line in enumerate(rf):
-                if line[:3] == 'def':
-                    function_start = index
-                    break
-                else:
-                    wf.write(line)
-            for key, value in kwargs.items():
-                wf.write('{}='.format(key))
-                if type(value) == dict:
-                    wf.write(json.dumps(value))
-                elif type(value) == str:
-                    wf.write("'{}'".format(value))
-                else:
-                    wf.write(str(value))
-                wf.write('\n')
-            wf.write('\n')
-        with open(template_path, 'r') as rf:
-            for index, line in enumerate(rf):
-                if index >= function_start - 1:
-                    wf.write(line)
-
-# NEW code to write before requirements so robot type in requirements can be specified from __hardware definition
+#OLD write code
 # def generate_opentrons_script(opentrons_script_path, template_path, **kwargs):
 #     """Generates an ot2 script named 'opentrons_script_path', where kwargs are
 #     written as global variables at the top of the script. For each kwarg, the
@@ -757,34 +786,65 @@ def generate_opentrons_script(opentrons_script_path, template_path, **kwargs):
 #     """
 #     with open(opentrons_script_path, 'w') as wf:
 #         with open(template_path, 'r') as rf:
-#             lines = rf.readlines()
-        
-#         # Find the line that starts with 'requirements'
-#         requirements_index = None
-#         for index, line in enumerate(lines):
-#             if line.strip().startswith('requirements'):
-#                 requirements_index = index
-#                 break
-        
-#         # Write lines before 'requirements'
-#         for line in lines[:requirements_index]:
-#             wf.write(line)
-        
-#         # Write the kwargs as global variables
-#         for key, value in kwargs.items():
-#             wf.write('{}='.format(key))
-#             if isinstance(value, dict):
-#                 wf.write(json.dumps(value))
-#             elif isinstance(value, str):
-#                 wf.write("'{}'".format(value))
-#             else:
-#                 wf.write(str(value))
+#             for index, line in enumerate(rf):
+#                 if line[:3] == 'def':
+#                     function_start = index
+#                     break
+#                 else:
+#                     wf.write(line)
+#             for key, value in kwargs.items():
+#                 wf.write('{}='.format(key))
+#                 if type(value) == dict:
+#                     wf.write(json.dumps(value))
+#                 elif type(value) == str:
+#                     wf.write("'{}'".format(value))
+#                 else:
+#                     wf.write(str(value))
+#                 wf.write('\n')
 #             wf.write('\n')
-#         wf.write('\n')
+#         with open(template_path, 'r') as rf:
+#             for index, line in enumerate(rf):
+#                 if index >= function_start - 1:
+#                     wf.write(line)
+
+# NEW code to write before requirements={} so robot type in requirements can be specified from __hardware definition
+def generate_opentrons_script(opentrons_script_path, template_path, **kwargs):
+    """Generates an ot2 script named 'opentrons_script_path', where kwargs are
+    written as global variables at the top of the script. For each kwarg, the
+    keyword defines the variable name while the value defines the name of the
+    variable. The remainder of template file is subsequently written below.
+
+    """
+    with open(opentrons_script_path, 'w') as wf:
+        with open(template_path, 'r') as rf:
+            lines = rf.readlines()
         
-#         # Write the remaining lines including and after 'requirements'
-#         for line in lines[requirements_index:]:
-#             wf.write(line)
+        # Find the line that starts with 'requirements'
+        requirements_index = None
+        for index, line in enumerate(lines):
+            if line.strip().startswith('requirements'):
+                requirements_index = index
+                break
+        
+        # Write lines before 'requirements'
+        for line in lines[:requirements_index]:
+            wf.write(line)
+        
+        # Write the kwargs as global variables
+        for key, value in kwargs.items():
+            wf.write('{}='.format(key))
+            if isinstance(value, dict):
+                wf.write(json.dumps(value))
+            elif isinstance(value, str):
+                wf.write("'{}'".format(value))
+            else:
+                wf.write(str(value))
+            wf.write('\n')
+        wf.write('\n')
+        
+        # Write the remaining lines including and after 'requirements'
+        for line in lines[requirements_index:]:
+            wf.write(line)
 
 def generate_master_mix_df(clip_number):
     """Generates a dataframe detailing the components required in the clip
