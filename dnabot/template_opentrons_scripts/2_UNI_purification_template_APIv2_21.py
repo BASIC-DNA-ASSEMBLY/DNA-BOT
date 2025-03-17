@@ -17,90 +17,97 @@ requirements = {"robotType": __HARDWARE['robot_type']['id'], "apiLevel": "2.21"}
 def run(protocol: protocol_api.ProtocolContext):
     if __HARDWARE['robot_type']['id']=='Flex':
         trash = protocol.load_trash_bin("A3")
+        tc_mod = protocol.load_module(module_name=__HARDWARE['thermocycler']['id'], location = "B1")
+        robot_type = 'Flex'
+    elif __HARDWARE['robot_type']['id']=='OT-2':
+        robot_type = 'OT-2'
     else:
-        pass
-    
-# added run function for API verison 2
+        raise ValueError("Invalid robot type. Must be 'OT-2' or 'Flex'.")
+   
+   
+    def magbead(sample_number, ethanol_well):
+        # sample_number,
+        # ethanol_well,
+        elution_buffer_well='A1',
+        sample_volume=30,
+        bead_ratio=__PARAMETERS['purif_bead_ratio']['value'],
+        elution_buffer_volume=40,
+        incubation_time=__PARAMETERS['purif_incubation_time']['value'],
+        settling_time=__PARAMETERS['purif_settling_time']['value'],
+            # if using Gen 2 magentic module, need to change time! see: https://docs.opentrons.com/v2/new_modules.html
+            # "The GEN2 Magnetic Module uses smaller magnets than the GEN1 version...this means it will take longer for the GEN2 module to attract beads."
+            # Recommended Magnetic Module GEN2 bead attraction time:
+                # Total liquid volume <= 50 uL: 5 minutes
+            # this template was written with the Gen 1 magnetic module, so the settling time is set to 5 minutes
+        drying_time=__PARAMETERS['purif_drying_time']['value'],
+        elution_time=__PARAMETERS['purif_elution_time']['value'],
+        #sample_offset can be used to start the purification at a different column
+        sample_offset=0,
+        #tiprack_type=__LABWARES['96_tiprack_300ul']['id']):
+        #tiprack_200=__LABWARES['flex_96_tiprack_200ul']['id'],            
+        #tiprack_1000=__LABWARES['flex_96_tiprack_1000ul']['id']):
 
-    def magbead(
-            sample_number,
-            ethanol_well,
-            elution_buffer_well='A1',
-            sample_volume=30,
-            bead_ratio=__PARAMETERS['purif_bead_ratio']['value'],
-            elution_buffer_volume=40,
-            incubation_time=__PARAMETERS['purif_incubation_time']['value'],
-            settling_time=__PARAMETERS['purif_settling_time']['value'],
-                # if using Gen 2 magentic module, need to change time! see: https://docs.opentrons.com/v2/new_modules.html
-                # "The GEN2 Magnetic Module uses smaller magnets than the GEN1 version...this means it will take longer for the GEN2 module to attract beads."
-                # Recommended Magnetic Module GEN2 bead attraction time:
-                    # Total liquid volume <= 50 uL: 5 minutes
-                # this template was written with the Gen 1 magnetic module, as it is compatible with API version 2
-            drying_time=__PARAMETERS['purif_drying_time']['value'],
-            elution_time=__PARAMETERS['purif_elution_time']['value'],
-            sample_offset=0,
-            #tiprack_type=__LABWARES['96_tiprack_300ul']['id']):
-            tiprack_200=__LABWARES['flex_96_tiprack_200ul']['id'],            
-            tiprack_1000=__LABWARES['flex_96_tiprack_1000ul']['id']):
-        
-
-        """
-
-        Selected args:
-            ethanol_well (str): well in reagent container containing ethanol.
-            elution_buffer_well (str): well in reagent container containing elution buffer.
-            sample_offset (int): offset the intial sample column by the specified value.
-
-        """
-
-
-        ### Constants
-
-        # Pipettes
-        PIPETTE_ASPIRATE_RATE = 25
-        PIPETTE_DISPENSE_RATE = 150
-##
         TIPS_PER_SAMPLE = 5
         TIPS_WASH = 2
 
         #PIPETTE_TYPE = __LABWARES['p300_multi']['id']
-        PIPETTE_TYPE = __LABWARES['multi_pipette']['id']
+        PIPETTE_TYPE = __HARDWARE['multi_pipette']['id']
 
-          # Tiprack
-        #CANDIDATE_TIPRACK_SLOTS = ['3', '6', '9', '2', '5']
-        #CANDIDATE_TIPRACK_SLOTS_200 = ['D3', 'C3', 'B3']
-        #CANDIDATE_TIPRACK_SLOT_1000 = 'C2'
-        if __HARDWARE['robot_type']['id']=='OT-2':
-            CANDIDATE_TIPRACK_SLOTS = ['3', '6', '9', '2', '5']
-        elif __HARDWARE['robot_type']['id']=='Flex':
-            CANDIDATE_TIPRACK_SLOTS_200 = ["D3", "C3", "B3"]
-            CANDIDATE_TIPRACK_SLOT_1000 = "C2"
-        else:
-            raise ValueError("Invalid robot type. Must be 'OT-2' or 'Flex'.")
-        tiprack_200_1= protocol.load_labware(tiprack_200, 'D3')
-        tiprack_200_2= protocol.load_labware(tiprack_200, 'C3')
-        tiprack_200_3= protocol.load_labware(tiprack_200, 'B3')  # 200  ul tip used for Asperation, Transfer, Elusion and so on.
-        tiprack_1000 = protocol.load_labware(tiprack_1000, 'C2') # 1000 ul tip used for ethanol wash 
+        ### Loading Pipettes
+        pipette = protocol.load_instrument(PIPETTE_TYPE, mount="left",tip_racks=[tiprack_200_1,tiprack_200_2,tiprack_200_3,tiprack_1000])
+           #pipetting speeds -
+           # Flex 8- channel default speeds:
+           # 50 ul tip = 478 ul/s; 200 ul tip = 716 ul/s; 1000 ul tip = 716 ul/s
+            # p300_multi_gen2 default speeds:
+            # 300 ul tip = 94 ul/s; 1000 ul tip = 94 ul/s
+        if PIPETTE_TYPE=="Flex_8channel_1000":
+            pipette.flow_rate.aspirate = 200
+            pipette.flow_rate.dispense = 200
+            pipette.flow_rate.blow_out = 500
+            pipette.max_volume = 200
+            pipette.max_volume_1000 = 1000
+        elif PIPETTE_TYPE=="p300_multi_gen2":
+            pipette.flow_rate.aspirate = 60
+            pipette.flow_rate.dispense = 60
+            pipette.flow_rate.blow_out = 90
+            pipette.max_volume = 300
+        else: 
+            print("Don't have a multi-channel pipette loaded"),
+            protocol.pause()
+
         # Magnetic Module
         #MAGDECK_POSITION = '1' Magnetic Block Updated
-        MAGNETIC_BLOCK_TYPE = __LABWARES['mag_block']['id']  # Updated from "magneticBlockV1"
-        MAGNETIC_BLOCK_POSITION = 'D1'
         MAGNETIC_PLATE_TYPE = __LABWARES['mag_plate']['id']
+        if __HARDWARE['robot_type']['id']=='OT-2':
+            MAGDECK_POSITION = '1'
+            MAGDECK = protocol.load_module(__HARDWARE['mag_deck']['id'], location= MAGDECK_POSITION)
+            MAGDECK.disengage()
+            mag_plate = protocol.load_labware(MAGNETIC_PLATE_TYPE, MAGDECK_POSITION)
+        elif __HARDWARE['robot_type']['id']=='Flex':
+            MAGDECK_POSITION = 'D1'
+            MAGDECK = protocol.load_module(__HARDWARE['mag_deck']['id'], location=MAGDECK_POSITION)
+            mag_plate = MAGDECK.load_labware(MAGNETIC_PLATE_TYPE)
 
         # Mix Plate
         MIX_PLATE_TYPE = __LABWARES['mix_plate']['id']
-        MIX_PLATE_POSITION = 'C1' # MIX_PLATE_POSITION = '4' updated for flex now
-            # modified from custom labware as API 2 doesn't support labware.create anymore, so the old add_labware script can't be used
-            # also acts as the type of plate loaded onto the magnetic module
-
+        if __HARDWARE['robot_type']['id']=='OT-2':
+            MIX_PLATE_POSITION = '4'
+        elif __HARDWARE['robot_type']['id']=='Flex':
+            MIX_PLATE_POSITION = 'C1'
+        
         # Reagents
         REAGENT_CONTAINER_TYPE = __LABWARES['12_reservoir_21000ul']['id']
-        REAGENT_CONTAINER_POSITION = 'A2' #REAGENT_CONTAINER_POSITION = '7' updated for flex now(Notice!! B1 is not available,so A2 is used)
-
-        # Beads
+        if __HARDWARE['robot_type']['id']=='OT-2':
+            REAGENT_CONTAINER_POSITION = '7'
+        elif __HARDWARE['robot_type']['id']=='Flex':
+            REAGENT_CONTAINER_POSITION = 'A2'
+            # Beads
         BEAD_CONTAINER_TYPE = __LABWARES['96_deepwellplate_2ml']['id']
-        BEAD_CONTAINER_POSITION = 'B2' #BEAD_CONTAINER_POSITION = '8' updated for flex now
-
+        if __HARDWARE['robot_type']['id']=='OT-2':
+            BEAD_CONTAINER_POSITION = '8'
+        elif __HARDWARE['robot_type']['id']=='Flex':
+            BEAD_CONTAINER_POSITION = 'B2'
+        
         # Settings
         #LIQUID_WASTE_WELL = 'A5'
         BEADS_WELL = 'A1'
@@ -108,7 +115,7 @@ def run(protocol: protocol_api.ProtocolContext):
         #SLOW_HEAD_SPEEDS = {'x': 600 // 4, 'y': 400 // 4, 'z': 125 // 10, 'a': 125 // 10}
         #DEFAULT_HEAD_SPEEDS = {'x': 400, 'y': 400, 'z': 125, 'a': 100}
         IMMOBILISE_MIX_REPS = 10
-        #MAGDECK_HEIGHT = __PARAMETERS['purif_magdeck_height']['value']
+        MAGDECK_HEIGHT = __PARAMETERS['purif_magdeck_height']['value']
         AIR_VOL_COEFF = 0.1
         ETHANOL_VOL = 150
         WASH_TIME = __PARAMETERS['purif_wash_time']['value']
@@ -128,27 +135,37 @@ def run(protocol: protocol_api.ProtocolContext):
         # Calculates whether one/two/three/four/five tipracks are needed, which are in slots 3, 6, 9, 2, and 5 respectively
         total_tips = sample_number * TIPS_PER_SAMPLE
         tiprack_num = total_tips // 96 + (1 if total_tips % 96 > 0 else 0)
-        print(str(tiprack_num) + 'of 200ul tipboxs is needed')
+        print(str(tiprack_num) + 'of 200ul tipboxes is needed')
             
         wash_tips = sample_number * TIPS_WASH
-        tiprack_wash = wash_tips // 96 + (1 if total_tips % 96 > 0 else 0)
-        print(str(tiprack_wash) + 'of 1000ul tipboxs is needed')
+        tiprack_wash = wash_tips // 96 + (1 if wash_tips % 96 > 0 else 0)
+        print(str(tiprack_wash) + 'of 1000ul tipboxes is needed')
         
-        ### Loading Pipettes
+  # Tiprack
+        if __HARDWARE['robot_type']['id']=='OT-2':
+            CANDIDATE_TIPRACK_SLOTS = ['3', '6', '9', '2', '5']
+            tiprack_type = __LABWARES['96_tiprack_300ul']['id']
+        elif __HARDWARE['robot_type']['id']=='Flex':
+            CANDIDATE_TIPRACK_SLOTS = ["D3", "C3", "B3"]
+            CANDIDATE_TIPRACK_SLOT_1000 = "C2"
+            tiprack_type = __LABWARES['flex_96_tiprack_200ul']['id']
+            tiprack_1000 = __LABWARES['flex_96_tiprack_1000ul']['id']
+        else:
+            raise ValueError("Invalid robot type. Must be 'OT-2' or 'Flex'.")
+        
+        slots = CANDIDATE_TIPRACK_SLOTS[:tiprack_num]
+        slots_wash =  CANDIDATE_TIPRACK_SLOT_1000[:tiprack_wash]
+        # loads the correct number of tipracks
+        tipracks = [protocol.load_labware(tiprack_type, slot) for slot in slots]
+        tiprack_wash=[protocol.load_labware(tiprack_1000, slot) for slot in slots_wash]
 
-        pipette = protocol.load_instrument(PIPETTE_TYPE, mount="left",tip_racks=[tiprack_200_1,tiprack_200_2,tiprack_200_3,tiprack_1000])
-        pipette.aspirate_flow_rate=PIPETTE_ASPIRATE_RATE
-        pipette.dispense_flow_rate=PIPETTE_DISPENSE_RATE
-            # for reference: default aspirate/dispense flow rate for p300_multi_gen2 is 94 ul/s
+       # tiprack_200_1= protocol.load_labware(tiprack_200, 'D3')
+        #tiprack_200_2= protocol.load_labware(tiprack_200, 'C3')
+        #tiprack_200_3= protocol.load_labware(tiprack_200, 'B3')  # 200  ul tip used for Asperation, Transfer, Elusion and so on.
+        #tiprack_1000 = protocol.load_labware(tiprack_1000, 'C2') # 1000 ul tip used for ethanol wash 
+
 
         ### Define Labware
-
-        # Magnetic Block used in flex
-        #MAGDECK = protocol.load_module(__LABWARES['mag_deck']['id'], location= MAGDECK_POSITION)
-        magnetic_block = protocol.load_module(module_name=MAGNETIC_BLOCK_TYPE, location=MAGNETIC_BLOCK_POSITION)
-        # Load a 96-well plate on the Magnetic Block
-        mag_plate = magnetic_block.load_labware(name=MAGNETIC_PLATE_TYPE)
-
         # Mix Plate
         mix_plate = protocol.load_labware(MIX_PLATE_TYPE, MIX_PLATE_POSITION)
 
@@ -157,7 +174,6 @@ def run(protocol: protocol_api.ProtocolContext):
 
         # Beads Container
         bead_container = protocol.load_labware(BEAD_CONTAINER_TYPE, BEAD_CONTAINER_POSITION)
-
 
         ### Calculating Columns
         # Total number of columns
@@ -198,23 +214,28 @@ def run(protocol: protocol_api.ProtocolContext):
         # Mix beads and parts
         for target in range(col_num):
 
+
+            # relative rates for fine-tuning pipetting steps
+            high = 1.5
+            normal = 1
+            slow = 0.4
+            vslow = 0.2
+
+            pipette.pick_up_tip()
             # Aspirate beads
             #pipette.pick_up_tip(tiprack_200_1["A1"])
-            pipette.pick_up_tip()
-            pipette.default_speed = 50
-            
             #for row in samples[target]:
                 #pipette.aspirate(bead_volume / len(samples[target]), beads)
-            pipette.aspirate(bead_volume, beads)
+            pipette.aspirate(bead_volume, beads.bottom(2), rate=normal)
             #protocol.max_speeds.update(SLOW_HEAD_SPEEDS)
 
-            # Aspirte samples
-            pipette.aspirate(sample_volume + DEAD_TOTAL_VOL, samples[target][0])
+            # Aspirte samples into same tip (saves tips)
+            pipette.aspirate(sample_volume + DEAD_TOTAL_VOL, samples[target][0], rate=normal)
 
             # Transfer and mix on mix_plate
-            pipette.dispense(total_vol, mixing[target][0])
+            pipette.dispense(total_vol, mixing[target][0], rate=normal)
                 # similar to above, added [0] because samples[target] returned a list of every well in column 1 rather than just one well
-            pipette.mix(IMMOBILISE_MIX_REPS, mix_vol, mixing[target][0])
+            pipette.mix(IMMOBILISE_MIX_REPS, mix_vol, mixing[target][0],rate=high)
                 # similar to above, added [0] because samples[target] returned a list of every well in column 1 rather than just one well
             pipette.blow_out()
 
@@ -249,6 +270,7 @@ def run(protocol: protocol_api.ProtocolContext):
             #pipette.pick_up_tip(tiprack_200_2["A1"])
             pipette.aspirate(total_vol, samples[target][0])
             pipette.dispense(total_vol, reagent_container['A5'] )
+            #protocol.delay(seconds=7)
             pipette.blow_out(reagent_container['A5'] )
             #pipette.transfer(total_vol, target, liquid_waste, blow_out=True)
             pipette.drop_tip()
@@ -260,9 +282,11 @@ def run(protocol: protocol_api.ProtocolContext):
             for target in samples:
                 #pipette.pick_up_tip()
                 #pipette.pick_up_tip(tiprack_1000)
-                pipette.pick_up_tip(tiprack_1000['A1'])
-                #Tell p1000_multi to switch mode and pick up p1000 instead of p200
-                pipette.distribute(ETHANOL_VOL, ethanol, target, air_gap=air_vol, new_tip='never')
+                if robot_type=='Flex'
+                  pipette.pick_up_tip(tiprack_1000)
+                else:
+                    pipette.pick_up_tip()
+                pipette.distribute(ETHANOL_VOL, ethanol.bottom(2), target.bottom(5), air_gap=air_vol, new_tip='never')
                 pipette.return_tip()
                 #Reuse the tip since it only comes into contact with ethanol. This approach reduces the number of tips needed for ethanol purification by half, saving a total of 96 tips when processing 48 samples.
                 
@@ -270,12 +294,15 @@ def run(protocol: protocol_api.ProtocolContext):
             
             for target in range(len(samples)):
                 #pipette.pick_up_tip()
-                pipette.pick_up_tip(tiprack_1000['A1'])
+                if robot_type=='Flex'
+                  pipette.pick_up_tip(tiprack_1000['A1'])
+                else:
+                    pipette.pick_up_tip()
                 #Tell pipette to restart from A1 column. It will automatically pick up tips from A2 column otherwise.
                 #pipette.pick_up_tip(tiprack_1000)
                 pipette.aspirate(ETHANOL_VOL + ETHANOL_DEAD_VOL, samples[target][0]) 
                 pipette.air_gap(air_vol) 
-                pipette.dispense(ETHANOL_VOL + ETHANOL_DEAD_VOL + air_vol, reagent_container['A5'] )
+                pipette.dispense(ETHANOL_VOL + ETHANOL_DEAD_VOL + air_vol, reagent_container['A5'].top(5))
                 pipette.blow_out(reagent_container['A5'] )
                 #pipette.transfer(ETHANOL_VOL + ETHANOL_DEAD_VOL, target, liquid_waste, air_gap=air_vol)
                 pipette.drop_tip()
@@ -295,7 +322,7 @@ def run(protocol: protocol_api.ProtocolContext):
         for target in range(len(samples)):
             #pipette.transfer(elution_buffer_volume, elution_buffer, target, mix_after=(ELUTION_MIX_REPS, mix_vol))
             pipette.pick_up_tip()
-            pipette.aspirate(elution_buffer_volume, reagent_container['A1'] )
+            pipette.aspirate(elution_buffer_volume, reagent_container[elution_buffer_well] )
             pipette.dispense(elution_buffer_volume, samples[target][0])
             for _ in range(ELUTION_MIX_REPS): 
                 pipette.aspirate(mix_vol, samples[target][0])
