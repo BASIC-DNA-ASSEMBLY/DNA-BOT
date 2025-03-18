@@ -15,16 +15,17 @@ requirements = {"robotType": __HARDWARE['robot_type']['id'], "apiLevel": "2.21"}
 
 
 def run(protocol: protocol_api.ProtocolContext):
-    if __HARDWARE['robot_type']['id']=='Flex':
+    robot_type=__HARDWARE['robot_type']['id']
+    if robot_type=='Flex':
         trash = protocol.load_trash_bin("A3")
         tc_mod = protocol.load_module(module_name=__HARDWARE['thermocycler']['id'], location = "B1")
-        robot_type = 'Flex'
-    elif __HARDWARE['robot_type']['id']=='OT-2':
-        robot_type = 'OT-2'
+        tiprack_type = ['opentrons_flex_96_tiprack_200ul']
+        tiprack_1000 = ['opentrons_flex_tiprack_1000ul'] 
+    elif robot_type=='OT-2':
+        tiprack_type = __LABWARES['OT-2_tiprack_300ul']['id']
     else:
         raise ValueError("Invalid robot type. Must be 'OT-2' or 'Flex'.")
-   
-   
+
     def magbead(sample_number, ethanol_well):
         # sample_number,
         # ethanol_well,
@@ -50,11 +51,40 @@ def run(protocol: protocol_api.ProtocolContext):
         TIPS_PER_SAMPLE = 5
         TIPS_WASH = 2
 
+### Loading Tiprack
+
+        # Calculates whether one/two/three/four/five tipracks are needed, which are in slots 3, 6, 9, 2, and 5 respectively
+        total_tips = sample_number * TIPS_PER_SAMPLE
+        tiprack_num = total_tips // 96 + (1 if total_tips % 96 > 0 else 0)
+        print(str(tiprack_num) + 'of 200ul tipboxes is needed')
+            
+        wash_tips = sample_number * TIPS_WASH
+        tiprack_wash = wash_tips // 96 + (1 if wash_tips % 96 > 0 else 0)
+        print(str(tiprack_wash) + 'of 1000ul tipboxes is needed')
+        
+        # Tiprack
+        if robot_type=='OT-2':
+            CANDIDATE_TIPRACK_SLOTS = ['3', '6', '9', '2', '5']
+            tiprack_type = __LABWARES['96_tiprack_300ul']['id']
+        elif robot_type=='Flex':
+            CANDIDATE_TIPRACK_SLOTS = ["D3", "C3", "B3"]
+            CANDIDATE_TIPRACK_SLOT_1000 = "C2"
+            tiprack_type = __LABWARES['opentrons_flex_96_tiprack_200ul']['id']
+            tiprack_1000 = __LABWARES['opentrons_flex_96_tiprack_1000ul']['id']
+        else:
+            raise ValueError("Invalid robot type. Must be 'OT-2' or 'Flex'.")
+        
+        slots = CANDIDATE_TIPRACK_SLOTS[:tiprack_num]
+        slots_wash =  CANDIDATE_TIPRACK_SLOT_1000[:tiprack_wash]
+        # loads the correct number of tipracks
+        tipracks = [protocol.load_labware(tiprack_type, slot) for slot in slots]
+        tiprack_wash=[protocol.load_labware(tiprack_1000, slot) for slot in slots_wash]
+
         #PIPETTE_TYPE = __LABWARES['p300_multi']['id']
         PIPETTE_TYPE = __HARDWARE['multi_pipette']['id']
 
         ### Loading Pipettes
-        pipette = protocol.load_instrument(PIPETTE_TYPE, mount="left",tip_racks=[tiprack_200_1,tiprack_200_2,tiprack_200_3,tiprack_1000])
+        pipette = protocol.load_instrument(PIPETTE_TYPE, mount=PIPETTE_MOUNT,tip_racks=tipracks)
            #pipetting speeds -
            # Flex 8- channel default speeds:
            # 50 ul tip = 478 ul/s; 200 ul tip = 716 ul/s; 1000 ul tip = 716 ul/s
@@ -72,40 +102,39 @@ def run(protocol: protocol_api.ProtocolContext):
             pipette.flow_rate.blow_out = 90
             pipette.max_volume = 300
         else: 
-            print("Don't have a multi-channel pipette loaded"),
-            protocol.pause()
-
+            raise ValueError("Don't have a multi-channel pipette loaded"),
+ 
         # Magnetic Module
         #MAGDECK_POSITION = '1' Magnetic Block Updated
         MAGNETIC_PLATE_TYPE = __LABWARES['mag_plate']['id']
-        if __HARDWARE['robot_type']['id']=='OT-2':
+        if robot_type=='OT-2':
             MAGDECK_POSITION = '1'
             MAGDECK = protocol.load_module(__HARDWARE['mag_deck']['id'], location= MAGDECK_POSITION)
             MAGDECK.disengage()
             mag_plate = protocol.load_labware(MAGNETIC_PLATE_TYPE, MAGDECK_POSITION)
-        elif __HARDWARE['robot_type']['id']=='Flex':
+        elif robot_type=='Flex':
             MAGDECK_POSITION = 'D1'
             MAGDECK = protocol.load_module(__HARDWARE['mag_deck']['id'], location=MAGDECK_POSITION)
             mag_plate = MAGDECK.load_labware(MAGNETIC_PLATE_TYPE)
 
         # Mix Plate
         MIX_PLATE_TYPE = __LABWARES['mix_plate']['id']
-        if __HARDWARE['robot_type']['id']=='OT-2':
+        if robot_type=='OT-2':
             MIX_PLATE_POSITION = '4'
-        elif __HARDWARE['robot_type']['id']=='Flex':
+        elif robot_type=='Flex':
             MIX_PLATE_POSITION = 'C1'
         
         # Reagents
         REAGENT_CONTAINER_TYPE = __LABWARES['12_reservoir_21000ul']['id']
-        if __HARDWARE['robot_type']['id']=='OT-2':
+        if robot_type=='OT-2':
             REAGENT_CONTAINER_POSITION = '7'
-        elif __HARDWARE['robot_type']['id']=='Flex':
+        elif robot_type=='Flex':
             REAGENT_CONTAINER_POSITION = 'A2'
             # Beads
         BEAD_CONTAINER_TYPE = __LABWARES['96_deepwellplate_2ml']['id']
-        if __HARDWARE['robot_type']['id']=='OT-2':
+        if robot_type=='OT-2':
             BEAD_CONTAINER_POSITION = '8'
-        elif __HARDWARE['robot_type']['id']=='Flex':
+        elif robot_type=='Flex':
             BEAD_CONTAINER_POSITION = 'B2'
         
         # Settings
@@ -128,42 +157,6 @@ def run(protocol: protocol_api.ProtocolContext):
         ### Errors
         if sample_number > 48:
             raise ValueError('sample number cannot exceed 48')
-
-
-        ### Loading Tiprack
-
-        # Calculates whether one/two/three/four/five tipracks are needed, which are in slots 3, 6, 9, 2, and 5 respectively
-        total_tips = sample_number * TIPS_PER_SAMPLE
-        tiprack_num = total_tips // 96 + (1 if total_tips % 96 > 0 else 0)
-        print(str(tiprack_num) + 'of 200ul tipboxes is needed')
-            
-        wash_tips = sample_number * TIPS_WASH
-        tiprack_wash = wash_tips // 96 + (1 if wash_tips % 96 > 0 else 0)
-        print(str(tiprack_wash) + 'of 1000ul tipboxes is needed')
-        
-  # Tiprack
-        if __HARDWARE['robot_type']['id']=='OT-2':
-            CANDIDATE_TIPRACK_SLOTS = ['3', '6', '9', '2', '5']
-            tiprack_type = __LABWARES['96_tiprack_300ul']['id']
-        elif __HARDWARE['robot_type']['id']=='Flex':
-            CANDIDATE_TIPRACK_SLOTS = ["D3", "C3", "B3"]
-            CANDIDATE_TIPRACK_SLOT_1000 = "C2"
-            tiprack_type = __LABWARES['flex_96_tiprack_200ul']['id']
-            tiprack_1000 = __LABWARES['flex_96_tiprack_1000ul']['id']
-        else:
-            raise ValueError("Invalid robot type. Must be 'OT-2' or 'Flex'.")
-        
-        slots = CANDIDATE_TIPRACK_SLOTS[:tiprack_num]
-        slots_wash =  CANDIDATE_TIPRACK_SLOT_1000[:tiprack_wash]
-        # loads the correct number of tipracks
-        tipracks = [protocol.load_labware(tiprack_type, slot) for slot in slots]
-        tiprack_wash=[protocol.load_labware(tiprack_1000, slot) for slot in slots_wash]
-
-       # tiprack_200_1= protocol.load_labware(tiprack_200, 'D3')
-        #tiprack_200_2= protocol.load_labware(tiprack_200, 'C3')
-        #tiprack_200_3= protocol.load_labware(tiprack_200, 'B3')  # 200  ul tip used for Asperation, Transfer, Elusion and so on.
-        #tiprack_1000 = protocol.load_labware(tiprack_1000, 'C2') # 1000 ul tip used for ethanol wash 
-
 
         ### Define Labware
         # Mix Plate
@@ -278,34 +271,79 @@ def run(protocol: protocol_api.ProtocolContext):
         # Wash beads twice with 70% ethanol
         
         air_vol = pipette.max_volume * AIR_VOL_COEFF
-        for cycle in range(2):
-            for target in samples:
-                #pipette.pick_up_tip()
-                #pipette.pick_up_tip(tiprack_1000)
-                if robot_type=='Flex'
-                  pipette.pick_up_tip(tiprack_1000)
-                else:
-                    pipette.pick_up_tip()
-                pipette.distribute(ETHANOL_VOL, ethanol.bottom(2), target.bottom(5), air_gap=air_vol, new_tip='never')
-                pipette.return_tip()
-                #Reuse the tip since it only comes into contact with ethanol. This approach reduces the number of tips needed for ethanol purification by half, saving a total of 96 tips when processing 48 samples.
+        # for cycle in range(2):
+        #     for target in samples:
+        #         if robot_type=='Flex'
+        #           pipette.pick_up_tip(tiprack_1000['A1'])
+        #         else:
+        #             pipette.pick_up_tip()
+        #         pipette.distribute(ETHANOL_VOL, ethanol.bottom(2), target.bottom(5), air_gap=air_vol, new_tip='never')
+        #         pipette.return_tip()
+        #         #Reuse the tip since it only comes into contact with ethanol. This approach reduces the number of tips needed for ethanol purification by half, saving a total of 96 tips when processing 48 samples.
                 
+        #     protocol.delay(minutes=WASH_TIME)
+            
+        #     for target in range(len(samples)):
+        #         #pipette.pick_up_tip()
+        #         if robot_type=='Flex'
+        #           pipette.pick_up_tip(tiprack_1000['A1'])
+        #         else:
+        #             pipette.pick_up_tip()
+        #         #Tell pipette to restart from A1 column. It will automatically pick up tips from A2 column otherwise.
+        #         #pipette.pick_up_tip(tiprack_1000)
+        #         pipette.aspirate(ETHANOL_VOL + ETHANOL_DEAD_VOL, samples[target][0]) 
+        #         pipette.air_gap(air_vol) 
+        #         pipette.dispense(ETHANOL_VOL + ETHANOL_DEAD_VOL + air_vol, reagent_container['A5'].top(5))
+        #         pipette.blow_out(reagent_container['A5'] )
+        #         #pipette.transfer(ETHANOL_VOL + ETHANOL_DEAD_VOL, target, liquid_waste, air_gap=air_vol)
+        #         pipette.drop_tip()
+        tip_index = 0  # Track tip positions by row for multi-channel pipette
+
+        def get_flex_tip(tip_index):
+            global tip_index
+            if tip_index >= len(tiprack_1000.rows()[0]):  # Ensure we don't exceed available tips
+                raise IndexError("No more tips available in tiprack_1000")
+            tip_pos = tiprack_1000.rows()[0][tip_index]  # Select tips by row for multi-channel pipette
+            tip_index += 1  # Move to the next tip for the next cycle
+            return tip_pos
+
+        # Dynamic tip handling for OT-2 standard tipracks, ensuring multi-channel row indexing
+        def get_ot2_tip(tip_index):
+            global tip_index
+            if tip_index >= len(pipette.tip_racks[0].rows()[0]):  # Ensure we don't exceed available tips
+                raise IndexError("No more tips available in OT-2 tip rack")
+            tip_pos = pipette.tip_racks[0].rows()[0][tip_index]  # Select tips by row for multi-channel pipette
+            tip_index += 1  # Move to the next tip for the next cycle
+            return tip_pos
+
+        for cycle in range(2):
+            if robot_type == 'Flex':
+                tip = get_flex_tip()  # Get a new tip for each cycle
+            else:
+                tip = get_ot2_tip()  # Get a new tip for OT-2 with correct row indexing
+            
+            for target in samples:
+                if robot_type == 'Flex':
+                    pipette.pick_up_tip(tip)  # Reuse the same tip for this cycle
+                else:
+                    pipette.pick_up_tip(tip)
+                
+                pipette.distribute(ETHANOL_VOL, ethanol.bottom(2), target.bottom(5), air_gap=air_vol, new_tip='never')
+                pipette.return_tip()  # Return tip for reuse within the cycle
+            
             protocol.delay(minutes=WASH_TIME)
             
             for target in range(len(samples)):
-                #pipette.pick_up_tip()
-                if robot_type=='Flex'
-                  pipette.pick_up_tip(tiprack_1000['A1'])
+                if robot_type == 'Flex':
+                    pipette.pick_up_tip(tip)  # Reuse the same tip for this cycle
                 else:
-                    pipette.pick_up_tip()
-                #Tell pipette to restart from A1 column. It will automatically pick up tips from A2 column otherwise.
-                #pipette.pick_up_tip(tiprack_1000)
+                    pipette.pick_up_tip(tip)
+                
                 pipette.aspirate(ETHANOL_VOL + ETHANOL_DEAD_VOL, samples[target][0]) 
                 pipette.air_gap(air_vol) 
                 pipette.dispense(ETHANOL_VOL + ETHANOL_DEAD_VOL + air_vol, reagent_container['A5'].top(5))
-                pipette.blow_out(reagent_container['A5'] )
-                #pipette.transfer(ETHANOL_VOL + ETHANOL_DEAD_VOL, target, liquid_waste, air_gap=air_vol)
-                pipette.drop_tip()
+                pipette.blow_out(reagent_container['A5'])
+                pipette.drop_tip()  # Drop the tip at the end of the cycle
 
         # Dry at room temperature
         protocol.delay(minutes=drying_time)

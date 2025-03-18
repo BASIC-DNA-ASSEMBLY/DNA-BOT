@@ -33,13 +33,13 @@ labwares:
 
   # Tip racks #############################################
   # Opentrons 20μL tips rack
-  96_tiprack_20ul:
+  OT-2_tiprack_20ul:
     id: opentrons_96_tiprack_20ul
     # id: tipone_3dprinted_96_tiprack_20ul  # BRS
     #id: opentrons_flex_96_tiprack_50ul #FLEX
 
   # Opentrons 300μL tips rack
-  96_tiprack_300ul:
+  OT-2_tiprack_300ul:
     id: opentrons_96_tiprack_300ul
     # id: tipone_yellow_3dprinted_96_tiprack_300ul  # BRS
     #id: opentrons_flex_96_tiprack_1000ul #FLEX

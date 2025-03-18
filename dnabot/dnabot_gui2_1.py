@@ -217,7 +217,8 @@ class GUI:
         message_2 = tk.Message(
             self.frame,
             text=(
-                "3 - Specify the labware IDs to be used. \nDefault choices are shown, leave as is to use these."),
+                "3 - Specify the labware IDs to be used. \nDefault choices are shown, leave as is to use these." 
+                "\nFlex tipracks are automatically defined in the code and do not need to be specified here."),
             width=850,
             anchor='w',
             font=('Arial', 12, 'bold'))
@@ -232,13 +233,13 @@ class GUI:
         # Opentrons 10μL tips rack
         irow += 1
         self.labware_96_tiprack_20ul_entry = self.__make_labware_entry(
-            label="Opentrons 20μL tips rack",
+            label="OT-2 20μL tips rack",
             labware_id='96_tiprack_20ul',
             irow=irow)
         # Opentrons 300μL tips rack
         irow += 1
         self.labware_96_tiprack_300ul_entry = self.__make_labware_entry(
-            label="Opentrons 300μL tips rack",
+            label="OT-2 300μL tips rack",
             labware_id='96_tiprack_300ul',
             irow=irow)
         # Clip reaction source plate (steps: clip)

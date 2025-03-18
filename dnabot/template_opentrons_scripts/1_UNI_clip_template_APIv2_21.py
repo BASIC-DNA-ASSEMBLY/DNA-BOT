@@ -16,19 +16,22 @@ metadata = {
 requirements = {"robotType": __HARDWARE['robot_type']['id'], "apiLevel": "2.21"}
 
 def run(protocol: protocol_api.ProtocolContext):
-
-    #Flex requires trash bin assignment
-    if __HARDWARE['robot_type']['id']=='Flex':
+    robot_type=__HARDWARE['robot_type']['id']
+    if robot_type=='Flex':
         trash = protocol.load_trash_bin("A3")
+        #tc_mod = protocol.load_module(module_name=__HARDWARE['thermocycler']['id'], location = "B1")
+        tiprack_type = ['opentrons_flex_96_tiprack_50ul']
+        #tiprack_1000 = ['Flex_tiprack_1000ul'] 'opentrons_flex_96_tiprack_1000ul'
+    elif robot_type=='OT-2':
+        tiprack_type = __LABWARES['OT-2_tiprack_20ul']['id']
     else:
-        pass
-    #Tiprack
-    tiprack_type=__LABWARES['96_tiprack_20ul']['id']
+        raise ValueError("Invalid robot type. Must be 'OT-2' or 'Flex'.")
+    # Constants
     INITIAL_TIP = 'A1'
     # Candidate Tiprack Slots according to robot type
-    if __HARDWARE['robot_type']['id']=='OT-2':
+    if robot_type=='OT-2':
         CANDIDATE_TIPRACK_SLOTS = ['3', '6', '9']
-    elif __HARDWARE['robot_type']['id']=='Flex':
+    elif robot_type=='Flex':
         CANDIDATE_TIPRACK_SLOTS = ["D3", "C3", "B3"]
     else:
         raise ValueError("Invalid robot type. Must be 'OT-2' or 'Flex'.")
@@ -38,7 +41,7 @@ def run(protocol: protocol_api.ProtocolContext):
     #PIPETTE_TYPE = 'flex_1channel_50'
     PIPETTE_MOUNT = __HARDWARE['single_pipette_mount']['id']
 
-    if __HARDWARE['robot_type']['id']=='Flex':
+    if robot_type=='Flex':
         tc_mod = protocol.load_module(module_name=__HARDWARE['thermocycler']['id'], location = "B1")
     else:
         tc_mod = protocol.load_module(module_name=__HARDWARE['thermocycler']['id'])
@@ -76,19 +79,19 @@ def run(protocol: protocol_api.ProtocolContext):
 
     def mix_linkers_function(Mix_linkers_bool, clips_dict, pipette, source_plates, PIPETTE_TYPE):
             #pipetting speeds - default rates in ul /s
-        if __HARDWARE['robot_type']['id']=='Flex':
+        if robot_type=='Flex':
             if PIPETTE_TYPE=="flex_1channel_50":
                 pipette.flow_rate.aspirate = 50
                 pipette.flow_rate.dispense = 50
                 pipette.flow_rate.blow_out = 100
-        elif __HARDWARE['robot_type']['id']=='OT2':            
+        elif robot_type=='OT2':            
             if PIPETTE_TYPE=="p20_single_gen2":
                 pipette.flow_rate.aspirate = 10
                 pipette.flow_rate.dispense = 10
                 pipette.flow_rate.blow_out = 20
             else: 
-                print("Don't have a single-channel P20 or P50 pipette loaded"),
-                protocol.pause()
+                raise ValueError("Don't have a single-channel P20 or P50 pipette loaded")
+  
         # relative rates for fine-tuning pipetting steps
         high = 2
         normal = 1
@@ -97,10 +100,10 @@ def run(protocol: protocol_api.ProtocolContext):
 
         #set maximum volume for mixing calculations as 100 for Flex and 40 for OT2 so max volume of pipette is not exceeded:
         #maximum linker mix is set as linker_vol/2
-        if __HARDWARE['robot_type']['id']=='Flex':
+        if robot_type=='Flex':
             if __PARAMETERS['linkers_volume']['value']>100:
                 linker_vol=100
-        elif __HARDWARE['robot_type']['id']=='OT2':
+        elif robot_type=='OT2':
             if __PARAMETERS['linkers_volume']['value']>40:
                 linker_vol=40
         else:
@@ -172,12 +175,12 @@ def run(protocol: protocol_api.ProtocolContext):
     def mix_parts_function(Mix_parts_bool, clips_dict, pipette_name, source_plates, PIPETTE_TYPE):
         pipette = pipette_name
 
-        if __HARDWARE['robot_type']['id']=='Flex':
+        if robot_type=='Flex':
             if(PIPETTE_TYPE)=="flex_1channel_50":
                 pipette.flow_rate.aspirate = 50
                 pipette.flow_rate.dispense = 50
                 pipette.flow_rate.blow_out = 100
-        elif __HARDWARE['robot_type']['id']=='OT2':            
+        elif robot_type=='OT2':            
             if(PIPETTE_TYPE)=="p20_single_gen2":
                 pipette.flow_rate.aspirate = 10
                 pipette.flow_rate.dispense = 10
@@ -194,10 +197,10 @@ def run(protocol: protocol_api.ProtocolContext):
         #set maximum volume for mixing calculations as 100 for Flex and 40 for OT2 so max volume of pipette is not exceeded:
         #maximum linker mix is set as linker_vol/2
     
-        if __HARDWARE['robot_type']['id']=='Flex':
+        if robot_type=='Flex':
             if __PARAMETERS['parts_volume']['value']>100:
                 part_vol=100
-        elif __HARDWARE['robot_type']['id']=='OT2':
+        elif robot_type=='OT2':
             if __PARAMETERS['parts_volume']['value']>40:
                 part_vol=40
         else:
@@ -328,12 +331,12 @@ def run(protocol: protocol_api.ProtocolContext):
         mix_parts_function(Mix_parts_bool, clips_dict, pipette, source_plates, PIPETTE_TYPE)
 
         ### Reset pipette clearance for setting up clip reactions - pipetting small volume into larger volume
-        if __HARDWARE['robot_type']['id']=='Flex':
+        if robot_type=='Flex':
             if(PIPETTE_TYPE)=="flex_1channel_50":
                 pipette.flow_rate.aspirate = 50
                 pipette.flow_rate.dispense = 50
                 pipette.flow_rate.blow_out = 100
-        elif __HARDWARE['robot_type']['id']=='OT2':            
+        elif robot_type=='OT2':            
             if(PIPETTE_TYPE)=="p20_single_gen2":
                 pipette.flow_rate.aspirate = 10
                 pipette.flow_rate.dispense = 10
