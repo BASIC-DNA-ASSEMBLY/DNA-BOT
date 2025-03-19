@@ -82,7 +82,7 @@ def run(protocol: protocol_api.ProtocolContext):
 
         #PIPETTE_TYPE = __LABWARES['p300_multi']['id']
         PIPETTE_TYPE = __HARDWARE['multi_pipette']['id']
-
+        PIPETTE_MOUNT = __HARDWARE['multi_pipette_mount']['id']
         ### Loading Pipettes
         pipette = protocol.load_instrument(PIPETTE_TYPE, mount=PIPETTE_MOUNT,tip_racks=tipracks)
            #pipetting speeds -

@@ -66,95 +66,143 @@ __LABWARES={"p50_single": {"id": "flex_1channel_50"},
             "12_corning_wellplate": {"id": "corning_12_wellplate_6.9ml_flat"}}
 
 def run(protocol: protocol_api.ProtocolContext):
-    trash = protocol.load_trash_bin(location="A3")
-    def final_assembly(final_assembly_dict, tiprack_num, tiprack_type=__LABWARES['flex_96_tiprack_50ul']['id']):
+
+    robot_type=__HARDWARE['robot_type']['id']
+    if robot_type=='Flex':
+        trash = protocol.load_trash_bin("A3")
+        tc_mod = protocol.load_module(module_name=__HARDWARE['thermocycler']['id'], location = "B1")
+        tiprack_type = ['opentrons_flex_96_tiprack_50ul']
+    elif robot_type=='OT-2':
+        tiprack_type = __LABWARES['OT-2_tiprack_20ul']['id']
+    else:
+        raise ValueError("Invalid robot type. Must be 'OT-2' or 'Flex'.")
+
+       
+    
+    def final_assembly(robot_type, final_assembly_dict, tiprack_num, tiprack_type):
         
-            # Constants, we update all the labware name in version 2
-            #Tiprack
-            #CANDIDATE_TIPRACK_SLOTS = ['2', '3', '5', '6', '9']
-            CANDIDATE_TIPRACK_SLOTS = ['D2', 'D3', 'C2', 'C3', 'B3']
-            PIPETTE_MOUNT = 'right'
-            #Plate of sample after  purification
+        # Constants, we update all the labware name in version 2
+        #Tiprack
+        #CANDIDATE_TIPRACK_SLOTS = ['2', '3', '5', '6', '9']
+        # CANDIDATE_TIPRACK_SLOTS = ['D2', 'D3', 'C2', 'C3', 'B3']
+        # PIPETTE_MOUNT = 'right'
+        #Plate of sample after  purification
+        
+        if robot_type=='OT-2':
+            CLIP_PLATE_TYPE = __LABWARES['clip_plate']['id']
+            CLIP_PLATE_POSITION = '1'
+        elif robot_type=='Flex':
             CLIP_PLATE_TYPE = __LABWARES['clip_plate']['id']
             CLIP_PLATE_POSITION = 'D1'
-            #Tuberack
+        #Tuberack
+            if robot_type=='OT-2':
             TUBE_RACK_TYPE = __LABWARES['24_tuberack_1500ul']['id']
-            TUBE_RACK_POSITION = 'C1'
-            #Destination plate
+            TUBE_RACK_POSITION = '4'
+        elif robot_type=='Flex':
+            TUBE_RACK_TYPE = __LABWARES['24_tuberack_1500ul']['id']
+            TUBE_RACK_POSITION = 'C1'           
+            if robot_type=='OT-2':
             DESTINATION_PLATE_TYPE = __LABWARES['final_assembly_plate']['id']
-            TOTAL_VOL = 15
-            PART_VOL = 1.5
-            MIX_SETTINGS = (1, 3)
-            tiprack_num=tiprack_num+1
-            # Errors
-            sample_number = len(final_assembly_dict.keys())
-            if sample_number > 96:
-                raise ValueError('Final assembly nummber cannot exceed 96.')
+            TUBE_RACK_POSITION = '4'
+        elif robot_type=='Flex':
+            DESTINATION_PLATE_TYPE = __LABWARES['final_assembly_plate']['id']
+            TUBE_RACK_POSITION = 'C1'  
+        #Destination plate
+        DESTINATION_PLATE_TYPE = __LABWARES['final_assembly_plate']['id']
+        
+        TOTAL_VOL = 15
+        PART_VOL = 1.5
+        MIX_SETTINGS = (1, 3)
+        tiprack_num=tiprack_num+1
+        # Errors
+        sample_number = len(final_assembly_dict.keys())
+        if sample_number > 96:
+            raise ValueError('Final assembly nummber cannot exceed 96.')
 
-            slots = CANDIDATE_TIPRACK_SLOTS[:tiprack_num]
-            tipracks = [protocol.load_labware(tiprack_type, slot) for slot in slots]
-            pipette = protocol.load_instrument(__LABWARES['p50_single']['id'], PIPETTE_MOUNT, tip_racks=tipracks)
+        # Constants
+        INITIAL_TIP = 'A1'
+    # Candidate Tiprack Slots according to robot type
+        if robot_type=='OT-2':
+            CANDIDATE_TIPRACK_SLOTS = ['2', '3', '5', '6', '9']
+        elif robot_type=='Flex':
+            CANDIDATE_TIPRACK_SLOTS = ['D2', 'D3', 'C2', 'C3', 'B3']
+        else:
+            raise ValueError("Invalid robot type. Must be 'OT-2' or 'Flex'.")
+        PIPETTE_TYPE = __HARDWARE['single_pipette']['id']
+        PIPETTE_MOUNT = __HARDWARE['single_pipette_mount']['id']
+        
+        slots = CANDIDATE_TIPRACK_SLOTS[:tiprack_num]
+        tipracks = [protocol.load_labware(tiprack_type, slot) for slot in slots]
+        
+        pipette = protocol.load_instrument(PIPETTE_TYPE, PIPETTE_MOUNT, tip_racks=tipracks)
+        if robot_type=='Flex':
+            if(PIPETTE_TYPE)=="flex_1channel_50":
+                pipette.flow_rate.aspirate = 50
+                pipette.flow_rate.dispense = 50
+                pipette.flow_rate.blow_out = 100
+            elif robot_type=='OT2':            
+                if(PIPETTE_TYPE)=="p20_single_gen2":
+                    pipette.flow_rate.aspirate = 10
+                    pipette.flow_rate.dispense = 10
+                    pipette.flow_rate.blow_out = 20
+                else: 
+                    raise ValueError("Don't have a single-channel P20 or P50 pipette loaded"),
+    # relative rates for fine-tuning pipetting steps
+        high = 2
+        normal = 1
+        slow = 0.4
+        vslow = 0.2
+        # Define thermocycler and set temperature
+        if robot_type=='Flex':
+            tc_mod = protocol.load_module(module_name=__HARDWARE['thermocycler']['id'], location = "B1")
+        else:
+            tc_mod = protocol.load_module(module_name=__HARDWARE['thermocycler']['id'])
+        tc_mod.open_lid()
+        tc_mod.deactivate_lid()
+        tc_mod.set_block_temperature(temperature=4)         
 
-            # Define Labware and set temperature
-            purified_clip_plate = protocol.load_labware(CLIP_PLATE_TYPE, CLIP_PLATE_POSITION)
-            tube_rack = protocol.load_labware(TUBE_RACK_TYPE, TUBE_RACK_POSITION)
-                  
-            #thermocycler module gen2 
-            tc_mod = protocol.load_module(module_name="thermocyclerModuleV2")
-            destination_plate = tc_mod.load_labware(DESTINATION_PLATE_TYPE)
-            tc_mod.open_lid()
-            tc_mod.deactivate_lid()
-            tc_mod.set_block_temperature(4)
+            # Master mix transfers
+        final_assembly_lengths = []
+        for values in final_assembly_dict.values():
+            final_assembly_lengths.append(len(values))
+        unique_assemblies_lengths = list(set(final_assembly_lengths))
+        master_mix_well_letters = ['A', 'B', 'C', 'D']
 
-             # Master mix transfers
-            final_assembly_lengths = []
-            for values in final_assembly_dict.values():
-                final_assembly_lengths.append(len(values))
-            unique_assemblies_lengths = list(set(final_assembly_lengths))
-            master_mix_well_letters = ['A', 'B', 'C', 'D']
+        for x in unique_assemblies_lengths:
+            master_mix_well = master_mix_well_letters[(x - 1) // 6] + str(x - 1)
+            destination_inds = [i for i, lengths in enumerate(final_assembly_lengths) if lengths == x]
+            destination_wells = np.array([key for key, value in list(final_assembly_dict.items())])
+            destination_wells = list(destination_wells[destination_inds])
+            
+            pipette.well_bottom_clearance.aspirate = 1 
+            pipette.well_bottom_clearance.dispense = 2
 
-            for x in unique_assemblies_lengths:
-                master_mix_well = master_mix_well_letters[(x - 1) // 6] + str(x - 1)
-                destination_inds = [i for i, lengths in enumerate(final_assembly_lengths) if lengths == x]
-                destination_wells = np.array([key for key, value in list(final_assembly_dict.items())])
-                destination_wells = list(destination_wells[destination_inds])
-                
-                pipette.flow_rate.aspirate = 6
-                pipette.flow_rate.dispense = 6
-                pipette.flow_rate.blow_out = 15
-                high = 2
-                normal = 1
-                slow = 0.5
-                vslow = 0.2
-                pipette.well_bottom_clearance.aspirate = 1 
-                pipette.well_bottom_clearance.dispense = 2
+            pipette.pick_up_tip()
+            for destination_well in destination_wells:# make tube_rack_wells and destination_plate.wells in the same type  
+                pipette.distribute(TOTAL_VOL - x * PART_VOL, tube_rack[master_mix_well], destination_plate[destination_well],blow_out=True, blowout_location="source well", new_tip='never')
+            pipette.drop_tip()
 
+        # Part transfers
+        for key, values in list(final_assembly_dict.items()):
+            for value in values:# purified_clip_plate.wells and destination_plate.wells in the same type
+                #pipette.transfer(PART_VOL, purified_clip_plate.wells(value), destination_plate.wells(key), mix_after=MIX_SETTINGS, new_tip='always')#transfer parts in one tube
                 pipette.pick_up_tip()
-                for destination_well in destination_wells:# make tube_rack_wells and destination_plate.wells in the same type  
-                    pipette.distribute(TOTAL_VOL - x * PART_VOL, tube_rack[master_mix_well], destination_plate[destination_well],blow_out=True, blowout_location="source well", new_tip='never')
+                pipette.well_bottom_clearance.aspirate = 1  # tip is 2 mm above well bottom
+                pipette.well_bottom_clearance.dispense = 2  # tip is 2 mm above well bottom
+                #Prefix Transfer
+                pipette.aspirate(PART_VOL, purified_clip_plate[value].bottom(1), rate=slow)
+                pipette.dispense(PART_VOL, destination_plate[key].bottom(2), rate=slow)
+                #mix after transfer
+                pipette.aspirate(10, destination_plate[key].bottom(1), rate=normal)
+                pipette.dispense(10, destination_plate[key].bottom(3), rate=high)
+                pipette.aspirate(10, destination_plate[key].bottom(2), rate=normal)
+                pipette.dispense(10, destination_plate[key].bottom(1), rate=normal)
+                pipette.aspirate(10, destination_plate[key].bottom(2), rate=slow)
+                pipette.dispense(10, destination_plate[key].bottom(3), push_out=0.5, rate=vslow)
+                pipette.move_to(destination_plate[key].top(-8))
+                pipette.blow_out()
+                pipette.touch_tip(radius=0.6, v_offset=-8, speed=10)
                 pipette.drop_tip()
-
-            # Part transfers
-            for key, values in list(final_assembly_dict.items()):
-                for value in values:# purified_clip_plate.wells and destination_plate.wells in the same type
-                    #pipette.transfer(PART_VOL, purified_clip_plate.wells(value), destination_plate.wells(key), mix_after=MIX_SETTINGS, new_tip='always')#transfer parts in one tube
-                    pipette.pick_up_tip()
-                    pipette.well_bottom_clearance.aspirate = 1  # tip is 2 mm above well bottom
-                    pipette.well_bottom_clearance.dispense = 2  # tip is 2 mm above well bottom
-                    #Prefix Transfer
-                    pipette.aspirate(PART_VOL, purified_clip_plate[value].bottom(1), rate=slow)
-                    pipette.dispense(PART_VOL, destination_plate[key].bottom(2), rate=slow)
-                    #mix after transfer
-                    pipette.aspirate(10, destination_plate[key].bottom(1), rate=normal)
-                    pipette.dispense(10, destination_plate[key].bottom(3), rate=high)
-                    pipette.aspirate(10, destination_plate[key].bottom(2), rate=normal)
-                    pipette.dispense(10, destination_plate[key].bottom(1), rate=normal)
-                    pipette.aspirate(10, destination_plate[key].bottom(2), rate=slow)
-                    pipette.dispense(10, destination_plate[key].bottom(3), push_out=0.5, rate=vslow)
-                    pipette.move_to(destination_plate[key].top(-8))
-                    pipette.blow_out()
-                    pipette.touch_tip(radius=0.6, v_offset=-8, speed=10)
-                    pipette.drop_tip()
 
             #thermocycler module gen2
             tc_mod.close_lid()
