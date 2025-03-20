@@ -234,13 +234,13 @@ class GUI:
         irow += 1
         self.labware_96_tiprack_20ul_entry = self.__make_labware_entry(
             label="OT-2 20μL tips rack",
-            labware_id='96_tiprack_20ul',
+            labware_id='OT-2_tiprack_20ul',
             irow=irow)
         # Opentrons 300μL tips rack
         irow += 1
         self.labware_96_tiprack_300ul_entry = self.__make_labware_entry(
             label="OT-2 300μL tips rack",
-            labware_id='96_tiprack_300ul',
+            labware_id='OT-2_tiprack_300ul',
             irow=irow)
         # Clip reaction source plate (steps: clip)
         irow += 1
@@ -590,8 +590,8 @@ class GUI:
            
         # Labware IDs
         self.user_settings['labwares']['24_tuberack_1500ul']['id'] = self.labware_24_tuberack_1500ul_entry.get()
-        self.user_settings['labwares']['96_tiprack_20ul']['id'] = self.labware_96_tiprack_20ul_entry.get()
-        self.user_settings['labwares']['96_tiprack_300ul']['id'] = self.labware_96_tiprack_300ul_entry.get()
+        self.user_settings['labwares']['OT-2_tiprack_20ul']['id'] = self.labware_96_tiprack_20ul_entry.get()
+        self.user_settings['labwares']['OT-2_tiprack_300ul']['id'] = self.labware_96_tiprack_300ul_entry.get()
         self.user_settings['labwares']['clip_source_plate']['id'] = self.labware_clip_source_plate_entry.get()
         self.user_settings['labwares']['clip_plate']['id'] = self.labware_clip_plate_entry.get()
         self.user_settings['labwares']['mix_plate']['id'] = self.labware_mix_plate_entry.get()
