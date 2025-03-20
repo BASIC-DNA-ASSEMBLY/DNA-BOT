@@ -81,14 +81,14 @@ def run(protocol: protocol_api.ProtocolContext):
             #pipetting speeds - default rates in ul /s
         if robot_type=='Flex':
             if PIPETTE_TYPE=="flex_1channel_50":
-                pipette.flow_rate.aspirate = 50
-                pipette.flow_rate.dispense = 50
-                pipette.flow_rate.blow_out = 100
+                pipette.flow_rate.aspirate = 20
+                pipette.flow_rate.dispense = 20
+                pipette.flow_rate.blow_out = 35
         elif robot_type=='OT2':            
             if PIPETTE_TYPE=="p20_single_gen2":
-                pipette.flow_rate.aspirate = 10
-                pipette.flow_rate.dispense = 10
-                pipette.flow_rate.blow_out = 20
+                pipette.flow_rate.aspirate = 8
+                pipette.flow_rate.dispense = 8
+                pipette.flow_rate.blow_out = 15
             else: 
                 raise ValueError("Don't have a single-channel P20 or P50 pipette loaded")
   
@@ -176,15 +176,15 @@ def run(protocol: protocol_api.ProtocolContext):
         pipette = pipette_name
 
         if robot_type=='Flex':
-            if(PIPETTE_TYPE)=="flex_1channel_50":
-                pipette.flow_rate.aspirate = 50
-                pipette.flow_rate.dispense = 50
-                pipette.flow_rate.blow_out = 100
+            if PIPETTE_TYPE=="flex_1channel_50":
+                pipette.flow_rate.aspirate = 20
+                pipette.flow_rate.dispense = 20
+                pipette.flow_rate.blow_out = 35
         elif robot_type=='OT2':            
-            if(PIPETTE_TYPE)=="p20_single_gen2":
-                pipette.flow_rate.aspirate = 10
-                pipette.flow_rate.dispense = 10
-                pipette.flow_rate.blow_out = 20
+            if PIPETTE_TYPE=="p20_single_gen2":
+                pipette.flow_rate.aspirate = 8
+                pipette.flow_rate.dispense = 8
+                pipette.flow_rate.blow_out = 15
             else: 
                 print("Don't have a single-channel P20 or P50 pipette loaded"),
                 protocol.pause()
@@ -332,15 +332,15 @@ def run(protocol: protocol_api.ProtocolContext):
 
         ### Reset pipette clearance for setting up clip reactions - pipetting small volume into larger volume
         if robot_type=='Flex':
-            if(PIPETTE_TYPE)=="flex_1channel_50":
-                pipette.flow_rate.aspirate = 50
-                pipette.flow_rate.dispense = 50
-                pipette.flow_rate.blow_out = 100
+            if PIPETTE_TYPE=="flex_1channel_50":
+                pipette.flow_rate.aspirate = 20
+                pipette.flow_rate.dispense = 20
+                pipette.flow_rate.blow_out = 35
         elif robot_type=='OT2':            
-            if(PIPETTE_TYPE)=="p20_single_gen2":
-                pipette.flow_rate.aspirate = 10
-                pipette.flow_rate.dispense = 10
-                pipette.flow_rate.blow_out = 20
+            if PIPETTE_TYPE=="p20_single_gen2":
+                pipette.flow_rate.aspirate = 8
+                pipette.flow_rate.dispense = 8
+                pipette.flow_rate.blow_out = 15
             else: 
                 print("Don't have a single-channel P20 or P50 pipette loaded"),
                 protocol.pause()
@@ -390,7 +390,7 @@ def run(protocol: protocol_api.ProtocolContext):
             #Prefix Transfer
             pipette.pick_up_tip()
             pipette.aspirate(1, source_plates[prefixes_plates[clip_num]][prefixes_wells[clip_num]].bottom(1), rate=slow)
-            pipette.dispense(1, destination_wells[clip_num].bottom(3), rate=slow)
+            pipette.dispense(1, destination_wells[clip_num].from_center_cartesian(0.2, 0, -0.9), rate=slow)
             #mix after transfer
             pipette.aspirate(4, destination_wells[clip_num].bottom(1), rate=normal)
             pipette.dispense(4, destination_wells[clip_num].bottom(3), rate=high)

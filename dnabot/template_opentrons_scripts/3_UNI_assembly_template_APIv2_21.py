@@ -137,14 +137,14 @@ def run(protocol: protocol_api.ProtocolContext):
         pipette = protocol.load_instrument(PIPETTE_TYPE, PIPETTE_MOUNT, tip_racks=tipracks)
         if robot_type=='Flex':
             if(PIPETTE_TYPE)=="flex_1channel_50":
-                pipette.flow_rate.aspirate = 50
-                pipette.flow_rate.dispense = 50
-                pipette.flow_rate.blow_out = 100
+                pipette.flow_rate.aspirate = 20
+                pipette.flow_rate.dispense = 20
+                pipette.flow_rate.blow_out = 35
             elif robot_type=='OT2':            
                 if(PIPETTE_TYPE)=="p20_single_gen2":
-                    pipette.flow_rate.aspirate = 10
-                    pipette.flow_rate.dispense = 10
-                    pipette.flow_rate.blow_out = 20
+                    pipette.flow_rate.aspirate = 8
+                    pipette.flow_rate.dispense = 8
+                    pipette.flow_rate.blow_out = 15
                 else: 
                     raise ValueError("Don't have a single-channel P20 or P50 pipette loaded"),
     # relative rates for fine-tuning pipetting steps
@@ -196,9 +196,12 @@ def run(protocol: protocol_api.ProtocolContext):
                 pipette.aspirate(10, destination_plate[key].bottom(1), rate=normal)
                 pipette.dispense(10, destination_plate[key].bottom(3), rate=high)
                 pipette.aspirate(10, destination_plate[key].bottom(2), rate=normal)
-                pipette.dispense(10, destination_plate[key].bottom(1), rate=normal)
+                pipette.dispense(10, destination_plate[key].bottom(1), rate=high)
+                pipette.aspirate(10, destination_plate[key].bottom(3), rate=normal)
+                pipette.dispense(10, destination_plate[key].bottom(1), rate=high)
                 pipette.aspirate(10, destination_plate[key].bottom(2), rate=slow)
                 pipette.dispense(10, destination_plate[key].bottom(3), push_out=0.5, rate=vslow)
+                protocol.delay(5 seconds)
                 pipette.move_to(destination_plate[key].top(-8))
                 pipette.blow_out()
                 pipette.touch_tip(radius=0.6, v_offset=-8, speed=10)
@@ -207,11 +210,27 @@ def run(protocol: protocol_api.ProtocolContext):
             #thermocycler module gen2
             tc_mod.close_lid()
             tc_mod.set_lid_temperature(105)
-            tc_mod.set_block_temperature(50, hold_time_minutes=45, block_max_volume=15)
-            tc_mod.set_block_temperature(4, hold_time_minutes=2, block_max_volume=30)
+            tc_mod.set_block_temperature(72, hold_time_minutes=1)
+            tc_mod.set_block_temperature(70, hold_time_minutes=1)
+            tc_mod.set_block_temperature(68, hold_time_minutes=1)
+            tc_mod.set_block_temperature(66, hold_time_minutes=1)
+            tc_mod.set_block_temperature(64, hold_time_minutes=2)
+            tc_mod.set_block_temperature(62, hold_time_minutes=2)
+            tc_mod.set_block_temperature(60, hold_time_minutes=2)
+            tc_mod.set_block_temperature(58, hold_time_minutes=2)
+            tc_mod.set_block_temperature(56, hold_time_minutes=2)
+            tc_mod.set_block_temperature(54, hold_time_minutes=2)
+            tc_mod.set_block_temperature(52, hold_time_minutes=2)
+            tc_mod.set_block_temperature(50, hold_time_minutes=2)
+            tc_mod.set_block_temperature(48, hold_time_minutes=2)
+            tc_mod.set_block_temperature(46, hold_time_minutes=2)
+            tc_mod.set_block_temperature(44, hold_time_minutes=1)
+            tc_mod.set_block_temperature(42, hold_time_minutes=1)
+            tc_mod.set_block_temperature(40, hold_time_minutes=1)
+            tc_mod.set_block_temperature(4)
             # Increase the hold time at 4 C if necessary
             tc_mod.set_lid_temperature(37)
-            protocol.delay(seconds=120)
+            protocol.delay(minutes=2)
             tc_mod.deactivate_lid()
             tc_mod.open_lid()
             tc_mod.set_block_temperature(4)

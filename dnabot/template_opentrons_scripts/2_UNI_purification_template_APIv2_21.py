@@ -65,12 +65,12 @@ def run(protocol: protocol_api.ProtocolContext):
         # Tiprack
         if robot_type=='OT-2':
             CANDIDATE_TIPRACK_SLOTS = ['3', '6', '9', '2', '5']
-            tiprack_type = __LABWARES['96_tiprack_300ul']['id']
+            #tiprack_type = __LABWARES['96_tiprack_300ul']['id']
         elif robot_type=='Flex':
             CANDIDATE_TIPRACK_SLOTS = ["D3", "C3", "B3"]
             CANDIDATE_TIPRACK_SLOT_1000 = "C2"
-            tiprack_type = __LABWARES['opentrons_flex_96_tiprack_200ul']['id']
-            tiprack_1000 = __LABWARES['opentrons_flex_96_tiprack_1000ul']['id']
+            #tiprack_type = ['opentrons_flex_96_tiprack_200ul']
+            #tiprack_1000 = ['opentrons_flex_96_tiprack_1000ul']
         else:
             raise ValueError("Invalid robot type. Must be 'OT-2' or 'Flex'.")
         
