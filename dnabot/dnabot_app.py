@@ -166,34 +166,34 @@ def __info_from_gui():
 
 
 def main():
-    # # Settings
-    # args = __cli()
+    # Settings
+    args = __cli()
     
-    # if args.nogui:
-    #     etoh_well = args.etoh_well
-    #     soc_column = args.soc_column
-    #     construct_path = args.construct_path
-    #     sources_paths = args.source_paths
-    #     output_dir = args.output_dir
-    #     template_dir = args.template_dir
-    # else:
-    #     user_inputs = __info_from_gui()
-    #     etoh_well = user_inputs['etoh_well']
-    #     soc_column = user_inputs['soc_column']
-    #     construct_path = user_inputs['construct_path']
-    #     sources_paths = user_inputs['sources_paths']
-    #     output_dir = os.path.dirname(construct_path)
-    #     template_dir = None
+    if args.nogui:
+        etoh_well = args.etoh_well
+        soc_column = args.soc_column
+        construct_path = args.construct_path
+        sources_paths = args.source_paths
+        output_dir = args.output_dir
+        template_dir = args.template_dir
+    else:
+        user_inputs = __info_from_gui()
+        etoh_well = user_inputs['etoh_well']
+        soc_column = user_inputs['soc_column']
+        construct_path = user_inputs['construct_path']
+        sources_paths = user_inputs['sources_paths']
+        output_dir = os.path.dirname(construct_path)
+        template_dir = None
 
-    #### TEST FILES - TO BE DELETED ####
-    etoh_well = 'A11'
-    soc_column = 1
-    construct_path = 'C:\\Users\\ljh119\\OneDrive - Imperial College London\\Builds\\648_build\\DNA-BOT\\648_constructs\\multistage_builds\\stage_2\\stage2_constructs.csv'
-    sources_paths = ['C:\\Users\\ljh119\\OneDrive - Imperial College London\\Builds\\648_build\\DNA-BOT\\648_constructs\\multistage_builds\\stage_2\\stage2_parts.csv']
-    output_dir = 'C:\\Users\\ljh119\\OneDrive - Imperial College London\\Builds\\648_build\\DNA-BOT\\648_constructs\\multistage_builds\\stage_2'
-    template_dir = None
+    # #### TEST FILES - TO BE DELETED ####
+    # etoh_well = 'A11'
+    # soc_column = 1
+    # construct_path = 'C:\\Users\\ljh119\\OneDrive - Imperial College London\\Builds\\648_build\\DNA-BOT\\648_constructs\\multistage_builds\\stage_2\\stage2_constructs.csv'
+    # sources_paths = ['C:\\Users\\ljh119\\OneDrive - Imperial College London\\Builds\\648_build\\DNA-BOT\\648_constructs\\multistage_builds\\stage_2\\stage2_parts.csv']
+    # output_dir = 'C:\\Users\\ljh119\\OneDrive - Imperial College London\\Builds\\648_build\\DNA-BOT\\648_constructs\\multistage_builds\\stage_2'
+    # template_dir = None
 
-    ####################################
+    # ####################################
 
     # Args checking
     if len(sources_paths) > len(SOURCE_DECK_POS):
@@ -472,20 +472,38 @@ def generate_clips_dict(clips_df, sources_dict):
                   'parts_wells': [], 'parts_plates': [], 'parts_vols': [],
                   'water_vols': []}
 
-    # Generate clips_dict from args
-    # try:
+    # Check for missing parts in sources_dict
+    missing_parts = []
     for _, clip_info in clips_df.iterrows():
-        prefix_linker = clip_info['prefixes']
+        prefix_linker = clip_info['prefixes'].strip()
+        suffix_linker = clip_info['suffixes'].strip()
+        part = clip_info['parts'].strip()
+        
+        if prefix_linker not in sources_dict:
+            missing_parts.append(f"Prefix linker: {prefix_linker}")
+        if suffix_linker not in sources_dict:
+            missing_parts.append(f"Suffix linker: {suffix_linker}")
+        if part not in sources_dict:
+            missing_parts.append(f"Part: {part}")
+    
+    if missing_parts:
+        error_msg = "The following parts/linkers are in the constructs but not in the parts plate:\n"
+        error_msg += "\n".join(missing_parts)
+        raise ValueError(error_msg)
+
+    # Generate clips_dict from args
+    for _, clip_info in clips_df.iterrows():
+        prefix_linker = clip_info['prefixes'].strip()
         clips_dict['prefixes_wells'].append([sources_dict[prefix_linker][0]]
                                             * clip_info['number'])
         clips_dict['prefixes_plates'].append(
             [handle_2_columns(sources_dict[prefix_linker])[2]] * clip_info['number'])
-        suffix_linker = clip_info['suffixes']
+        suffix_linker = clip_info['suffixes'].strip()
         clips_dict['suffixes_wells'].append([sources_dict[suffix_linker][0]]
                                             * clip_info['number'])
         clips_dict['suffixes_plates'].append(
             [handle_2_columns(sources_dict[suffix_linker])[2]] * clip_info['number'])
-        part = clip_info['parts']
+        part = clip_info['parts'].strip()
         clips_dict['parts_wells'].append([sources_dict[part][0]]
                                             * clip_info['number'])
         clips_dict['parts_plates'].append([handle_2_columns(sources_dict[part])[2]]
@@ -508,9 +526,6 @@ def generate_clips_dict(clips_df, sources_dict):
             clips_dict['water_vols'].append(
                 [water_vol] * clip_info['number'])
                 
-    # except KeyError:
-    #     sys.exit('likely part/linker not listed in sources.csv')
-    
     for key, value in clips_dict.items():                               # unlist all sublist in clips dict to yield a single list as the value for every key
         clips_dict[key] = [item for sublist in value for item in sublist]
 
@@ -629,20 +644,6 @@ def generate_final_assembly_dict_list(constructs_list, clips_df):
     CONSTRUCT_COUNT_TOTAL = len(constructs_list)
     # ASSEMBLY_PLATE_COUNT = CONSTRUCT_COUNT_TOTAL // MAX_ASSEMBLIES_PER_PLATE + 1           # plus one to include final partially full plate ################# old version
 
-
-    #################################
-    '''
-    It would be better to subset the assemblies based on the number of tips required as well as the max number of assemblies allowed 
-    on a plate. This is because for longer constructs, the number of tips required in total exceeds the total number of tips that 
-    could be available on the board. 
-
-    Maybe both limitations (number of assemblies and number of tips) could be combined together if the MAX_ASSEMBLIES_PER_PLATE was 
-    calculated dynamically rather than being declared. This is sort of done within the calculate_final_assembly_tipracks function.
-
-    I also need to output a new construct csv as a dictionary saying where each construct is on the plate.
-    '''
-    #################################
-
     # # Error ########################### NO ERROR AS NO MAX ASSEMBLIES
     # if clips_df['number'].sum() > MAX_CLIPS_TOTAL:
     #     raise ValueError(
@@ -689,6 +690,11 @@ def generate_final_assembly_dict_list(constructs_list, clips_df):
             tip_count = master_mix_tips                                 # reset tips for new assembly and include tips for distribution of master mix
             construct_count = 0
 
+        for tip in range(len(construct[0])):
+            tip_count += 1
+            print(i, '\ttip =', tip_count + tip)
+
+
         keys.append(tip_counter(construct_count))
         construct_count += 1 
 
@@ -731,6 +737,7 @@ def calculate_final_assembly_tipracks(final_assembly_dict):
     master_mix_tips = len(list(set(final_assembly_lens)))               # number of different unique build lengths in construct build
     total_tips = master_mix_tips + sum(final_assembly_lens) 
     final_assembly_tipracks = (total_tips - 1) // TIPS_PER_BOX + 1
+    print(final_assembly_tipracks, MAX_FINAL_ASSEMBLY_TIPRACKS)
     if final_assembly_tipracks > MAX_FINAL_ASSEMBLY_TIPRACKS:
         raise ValueError(
             'Final assembly tiprack number exceeds number of slots. Reduce number of constructs in constructs.csv')
