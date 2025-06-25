@@ -408,7 +408,7 @@ def _setup_directories(user_config: Dict[str, Union[str, List[str], int]]) -> Di
         raise FileNotFoundError(f"Template directory not found at: {template_dir_path}")
     
     _ensure_output_dir(output_dir)
-    
+
     return {
         'output_dir': output_dir,
         'template_dir': template_dir_path,
@@ -542,7 +542,7 @@ def _generate_ot2_scripts(data_structures: Dict[str, Any],
     for clip_plate, sub_clip_dict in enumerate(data_structures['clips_dict_list']):
         print(f"Generating clip scripts for plate {clip_plate + 1}...")
         _generate_clip_scripts(sub_clip_dict, clip_plate, paths)
-    
+
     # Generate magbead purification scripts
     for i, magbead_sample_number in enumerate(data_structures['magbead_sample_list']):
         print(f"Generating magbead scripts for sample {i + 1}...")
@@ -679,7 +679,7 @@ def _output_metadata_files(data_structures: Dict[str, Any],
 def _write_final_assembly_info(data_structures: Dict[str, Any], paths: Dict[str, str]) -> None:
     """Write final assembly information to CSV file."""
     with open(paths['construct_base'] + '_' + FILE_CONFIG.OUTPUT_FILES['INFO']['FINAL_ASSEMBLIES'],
-              'w', newline='') as csvfile:
+                  'w', newline='') as csvfile:
         csvwriter = csv.writer(csvfile)
         for final_assembly_dict in data_structures['final_assembly_dict_list']:
             for final_assembly_well, construct_clips in final_assembly_dict.items():
@@ -874,6 +874,13 @@ def generate_sources_dict(paths: List[str]) -> Dict[str, Tuple[str, ...]]:
                     if index == 0:  # Skip header row if present
                         continue
                     
+                    # Strip whitespace from part name
+                    part_name = str(source[0]).strip()
+                    
+                    # Skip rows with empty part names (blank wells)
+                    if not part_name:
+                        continue
+                    
                     # Validate row has minimum required data
                     if len(source) < 2:
                         raise ValueError(f"Row {index + 1}: Insufficient data. Need at least part name and well location.")
@@ -882,17 +889,13 @@ def generate_sources_dict(paths: List[str]) -> Dict[str, Tuple[str, ...]]:
                     csv_values = source[1:]
                     csv_values.append(DECK_CONFIG.SOURCE_POSITIONS[deck_index])
                     
-                    # Validate well format
+                    # Validate well format (only for non-empty wells)
                     well = source[1] if len(source) > 1 else ""
-                    try:
-                        validate_well_format(well)
-                    except ValueError as e:
-                        raise ValueError(f"Row {index + 1}, part '{source[0]}': {str(e)}")
-                    
-                    # Strip whitespace from part name
-                    part_name = str(source[0]).strip()
-                    if not part_name:
-                        raise ValueError(f"Row {index + 1}: Empty part name")
+                    if well.strip():  # Only validate if well is not empty
+                        try:
+                            validate_well_format(well)
+                        except ValueError as e:
+                            raise ValueError(f"Row {index + 1}, part '{part_name}': {str(e)}")
                     
                     # Check for duplicate parts
                     if part_name in sources_dict:
@@ -1059,34 +1062,34 @@ def generate_clips_dict(clips_df: pd.DataFrame, sources_dict: Dict[str, Tuple[st
             prefix_linker = clip_info['prefixes'].strip()
             clips_dict['prefixes_wells'].append([sources_dict[prefix_linker][0]] * clip_info['number'])
             clips_dict['prefixes_plates'].append(
-                [handle_2_columns(sources_dict[prefix_linker])[2]] * clip_info['number'])
+                [normalize_source_data(sources_dict[prefix_linker])[2]] * clip_info['number'])
             
             # Process suffix linker
             suffix_linker = clip_info['suffixes'].strip()
             clips_dict['suffixes_wells'].append([sources_dict[suffix_linker][0]] * clip_info['number'])
             clips_dict['suffixes_plates'].append(
-                [handle_2_columns(sources_dict[suffix_linker])[2]] * clip_info['number'])
+                [normalize_source_data(sources_dict[suffix_linker])[2]] * clip_info['number'])
             
             # Process part
             part = clip_info['parts'].strip()
             clips_dict['parts_wells'].append([sources_dict[part][0]] * clip_info['number'])
             clips_dict['parts_plates'].append(
-                [handle_2_columns(sources_dict[part])[2]] * clip_info['number'])
+                [normalize_source_data(sources_dict[part])[2]] * clip_info['number'])
             
             # Calculate part and water volumes
             if not sources_dict[part][1]:  # No concentration specified
                 clips_dict['parts_vols'].append(
-                    [PROTOCOL_CONFIG.CLIP_DEFAULT_PART_VOL] * clip_info['number'])
+                    [float(PROTOCOL_CONFIG.CLIP_DEFAULT_PART_VOL)] * clip_info['number'])
                 clips_dict['water_vols'].append(
-                    [max_part_vol - PROTOCOL_CONFIG.CLIP_DEFAULT_PART_VOL] * clip_info['number'])
+                    [float(max_part_vol - PROTOCOL_CONFIG.CLIP_DEFAULT_PART_VOL)] * clip_info['number'])
             else:  # Use specified concentration
                 part_vol = round(
                     PROTOCOL_CONFIG.CLIP_PART_PER_CLIP / float(sources_dict[part][1]), 1)
                 part_vol = max(PROTOCOL_CONFIG.CLIP_MIN_VOL,
                              min(part_vol, max_part_vol))
                 water_vol = max_part_vol - part_vol
-                clips_dict['parts_vols'].append([part_vol] * clip_info['number'])
-                clips_dict['water_vols'].append([water_vol] * clip_info['number'])
+                clips_dict['parts_vols'].append([float(part_vol)] * clip_info['number'])
+                clips_dict['water_vols'].append([float(water_vol)] * clip_info['number'])
                     
         # Flatten nested lists
         for key, value in clips_dict.items():
@@ -1193,7 +1196,7 @@ def generate_final_assembly_dict(constructs_list, clips_df):
 
             clips_count[clip_num] = clips_count[clip_num] + 1
 
-        # final_assembly_dict[tip_counter(construct_index)] = [construct_well_list, construct_plate_list]   #### old version (generates dictionary)
+        # final_assembly_dict[convert_well_coordinates(construct_index)] = [construct_well_list, construct_plate_list]   #### old version (generates dictionary)
         final_assembly_dict_keys.append(tip_counter(construct_index))
         final_assembly_dict_values.append([construct_well_list, construct_plate_list])
 
@@ -1236,9 +1239,10 @@ def generate_final_assembly_dict_list(constructs_list: List[pd.DataFrame],
     # Initialize tracking variables
     current_assembly_plate = []
     current_tip_count = master_mix_tip_count
+    current_well_count = 0  # Track well count within current plate
     assembly_plates = []
     
-    for construct_index, (construct_key, construct_value) in enumerate(zip(assembly_keys, assembly_values)):
+    for construct_index, (_, construct_value) in enumerate(zip(assembly_keys, assembly_values)):
         # Calculate tips needed for this construct
         construct_tips_needed = len(construct_value[0])  # Number of CLIP reactions in this construct
         
@@ -1247,21 +1251,23 @@ def generate_final_assembly_dict_list(constructs_list: List[pd.DataFrame],
             current_tip_count + construct_tips_needed > 
             PROTOCOL_CONFIG.ASSEMBLY_TIPS_PER_BOX * PROTOCOL_CONFIG.ASSEMBLY_MAX_FINAL_ASSEMBLY_TIPRACKS
         )
-        wells_would_exceed_limit = len(current_assembly_plate) >= PROTOCOL_CONFIG.ASSEMBLY_MAX_ASSEMBLIES_PER_PLATE
+        wells_would_exceed_limit = current_well_count >= PROTOCOL_CONFIG.ASSEMBLY_MAX_ASSEMBLIES_PER_PLATE - 1
         is_last_construct = construct_index == total_constructs - 1
         
         # Add construct to current plate first
+        construct_key = tip_counter(current_well_count)  # Generate well coordinate for current plate
         current_assembly_plate.append((construct_key, construct_value))
         current_tip_count += construct_tips_needed
+        current_well_count += 1
         
         # Then check if we need to finalise this plate
-        should_finalise_plate = (
+        start_new_plate = (
             tips_would_exceed_limit or 
             wells_would_exceed_limit or 
             is_last_construct
         )
         
-        if should_finalise_plate:
+        if start_new_plate:
             # Finalize current assembly plate
             assembly_plates.append(dict(current_assembly_plate))
             
@@ -1269,6 +1275,7 @@ def generate_final_assembly_dict_list(constructs_list: List[pd.DataFrame],
             if not is_last_construct:
                 current_assembly_plate = []
                 current_tip_count = master_mix_tip_count
+                current_well_count = 0  # Reset well count to start from A1
     
     return assembly_plates
 
@@ -1442,7 +1449,9 @@ def generate_master_mix_df(clip_number):
     bsai_vol = PROTOCOL_CONFIG.CLIP_BSAI_VOL
     t4_lig_vol = PROTOCOL_CONFIG.CLIP_T4_LIG_VOL
     
-    master_mix_df[VOL_COLUMN] = (clip_number + dead_vol/clip_vol) * \
+    # Ensure float calculation to avoid integer results
+    multiplier = float(clip_number + dead_vol/clip_vol)
+    master_mix_df[VOL_COLUMN] = multiplier * \
         np.array([t4_buff_vol, mast_water, bsai_vol, t4_lig_vol])
     return master_mix_df
 
@@ -1477,53 +1486,29 @@ def dfs_to_csv(path, index=True, **kw_dfs):
             csvwriter.writerow('')
 
 
-def convert_well_coordinates(well_position: Union[int, str], rows_per_plate: int = 8) -> str:
+def counter(rows: int):
     """
-    Convert between well position index and well coordinate format.
-    
-    This function handles bidirectional conversion:
+    Returns a function that converts between well index and well coordinate for a plate with the given number of rows.
     - Integer index (0-based) -> Well coordinate (e.g., 0 -> 'A1', 8 -> 'B1')
     - Well coordinate -> Integer index (e.g., 'A1' -> 0, 'B1' -> 8)
-    
-    Args:
-        well_position: Either an integer index or a well coordinate string
-        rows_per_plate: Number of rows in the plate (default: 8 for 96-well plate)
-        
-    Returns:
-        Converted value (string coordinate if input was int, int index if input was string)
-        
-    Examples:
-        >>> convert_well_coordinates(0)
-        'A1'
-        >>> convert_well_coordinates('A1')
-        0
-        >>> convert_well_coordinates(8)
-        'B1'
     """
-    if isinstance(well_position, int):
-        # Convert index to well coordinate
-        row = chr(ord('A') + (well_position % rows_per_plate))
-        col = 1 + well_position // rows_per_plate
-        return f"{row}{col}"
-    
-    elif isinstance(well_position, str):
-        # Convert well coordinate to index
-        row, col = re.findall(r'\d+|\D+', well_position)
-        col = int(col) - 1
-        return col * rows_per_plate + (ord(row) - ord('A'))
-    
-    else:
-        raise TypeError(f"Expected int or str, got {type(well_position)}")
+    import re
+    def convert(well_position):
+        if isinstance(well_position, int):
+            row = chr(ord('A') + (well_position % rows))
+            col = 1 + well_position // rows
+            return f"{row}{col}"
+        elif isinstance(well_position, str):
+            row, col = re.findall(r'\d+|\D+', well_position)
+            col = int(col) - 1
+            return col * rows + (ord(row) - ord('A'))
+        else:
+            raise TypeError(f"Expected int or str, got {type(well_position)}")
+    return convert
 
 
-# Legacy function for backward compatibility
-def counter(rows: int):
-    """Legacy function - use convert_well_coordinates instead."""
-    return lambda n: convert_well_coordinates(n, rows)
-
-
-# Global well coordinate converter for 96-well plates
-tip_counter = convert_well_coordinates
+# Default for 96-well plates (8 rows)
+tip_counter = counter(8)
 
 
 def normalize_source_data(data_tuple: Union[Tuple, List]) -> Tuple[str, str, str]:
@@ -1556,12 +1541,6 @@ def normalize_source_data(data_tuple: Union[Tuple, List]) -> Tuple[str, str, str
         return (data_tuple[0], data_tuple[1], data_tuple[2])
     else:
         raise ValueError(f"Expected 2 or more elements, got {len(data_tuple)}")
-
-
-# Legacy function for backward compatibility
-def handle_2_columns(datalist):
-    """Legacy function - use normalize_source_data instead."""
-    return normalize_source_data(datalist)
 
 
 def validate_construct_data(constructs_list: List[pd.DataFrame], clips_df: pd.DataFrame) -> None:
@@ -1792,6 +1771,10 @@ def validate_well_format(well: str) -> bool:
     """
     if not isinstance(well, str):
         raise ValueError(f"Well identifier must be a string, got {type(well)}")
+    
+    # Handle empty wells (blank wells)
+    if not well.strip():
+        return True
     
     if len(well) < 2 or len(well) > 3:
         raise ValueError(f"Well identifier must be 2-3 characters long, got '{well}'")
