@@ -1,0 +1,50 @@
+MASTER_MIX
+Component,Volume (uL)
+"Promega T4 DNA Ligase buffer, 10X",195.0
+Water,1007.5
+NEB BsaI-HFv2,65.0
+Promega T4 DNA Ligase,32.5
+
+SOURCE_PLATES
+Deck position,Source plate,Path
+1,example_parts.csv,c:\Users\ljh119\OneDrive - Imperial College London\Builds\648_build\DNA-BOT\test_scripts\test_runs\test_run_20250625_204313\example_parts.csv
+
+CLIP_REACTIONS
+prefixes,parts,suffixes,number,mag_well,plate
+LMS-P,SV39,LMP-S,21,"('A1', 'B1', 'C1', 'D1', 'E1', 'F1', 'G1', 'H1', 'A2', 'B2', 'C2', 'D2', 'E2', 'F2', 'G2', 'H2', 'A3', 'B3', 'C3', 'D3', 'E3')","(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1)"
+LMP-P,serC_2,L1-S,3,"('F3', 'G3', 'H3')","(1, 1, 1)"
+L1-P,carA_1,LMS-S,1,"('A4',)","(1,)"
+L1-P,carB_1,LMS-S,1,"('B4',)","(1,)"
+LMP-P,folM_1,L1-S,1,"('C4',)","(1,)"
+L1-P,folA_1,LMS-S,1,"('D4',)","(1,)"
+LMP-P,dmlA_1,L1-S,1,"('E4',)","(1,)"
+L1-P,leuB_2,LMS-S,1,"('F4',)","(1,)"
+LMP-P,ilvN_1,L1-S,1,"('G4',)","(1,)"
+L1-P,ilvH_1,LMS-S,1,"('H4',)","(1,)"
+L1-P,sucB_1,LMS-S,1,"('A5',)","(1,)"
+LMP-P,tynA_1,L1-S,1,"('B5',)","(1,)"
+L1-P,serC_2,LMS-S,5,"('C5', 'D5', 'E5', 'F5', 'G5')","(1, 1, 1, 1, 1)"
+LMP-P,gadB_1,L1-S,1,"('H5',)","(1,)"
+LMP-P,alaC_2,L1-S,1,"('A6',)","(1,)"
+LMP-P,aroE_1,L1-S,1,"('B6',)","(1,)"
+L1-P,ydiB_1,LMS-S,1,"('C6',)","(1,)"
+LMP-P,trxA_1,L1-S,1,"('D6',)","(1,)"
+L1-P,trxC_1,LMS-S,1,"('E6',)","(1,)"
+LMP-P,menA_1,L1-S,1,"('F6',)","(1,)"
+LMP-P,thiS_2,L1-S,1,"('G6',)","(1,)"
+LMP-P,argI_2,L1-S,1,"('H6',)","(1,)"
+L1-P,argF_1,LMS-S,1,"('A7',)","(1,)"
+LMP-P,aroK_1,L1-S,1,"('B7',)","(1,)"
+L1-P,aroL_1,LMS-S,1,"('C7',)","(1,)"
+LMP-P,asnA_1,L1-S,1,"('D7',)","(1,)"
+L1-P,asnB_1,LMS-S,1,"('E7',)","(1,)"
+LMP-P,tyrB_1,L1-S,1,"('F7',)","(1,)"
+L1-P,aspC_2,LMS-S,1,"('G7',)","(1,)"
+LMP-P,gltB_1,L1-S,1,"('H7',)","(1,)"
+L1-P,gdhA_2,LMS-S,2,"('A8', 'B8')","(1, 1)"
+LMP-P,cysM_1,L1-S,1,"('C8',)","(1,)"
+L1-P,cysK_1,LMS-S,1,"('D8',)","(1,)"
+LMP-P,ilvA_1,L1-S,1,"('E8',)","(1,)"
+L1-P,tdcB_2,LMS-S,1,"('F8',)","(1,)"
+LMP-P,gltD_1,L1-S,1,"('G8',)","(1,)"
+

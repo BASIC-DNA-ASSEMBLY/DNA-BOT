@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Created on Thu Apr 11 14:26:07 2019
+DNA-BOT: DNA assembly using BASIC on OpenTrons
 
 @author: mh2210
 
@@ -14,8 +14,11 @@ TO DO
     - new GUI??
  
 """
+from typing import List, Dict, Tuple, Union, Optional, Any
 import os
 import sys
+from dataclasses import dataclass
+from pathlib import Path
 
 #add dnabot module to syspath
 abs_path = os.path.dirname(os.path.abspath(__file__))
@@ -30,78 +33,165 @@ import tkinter as tk
 import dnabot_gui as gui
 import regex as re
 
-# Constant str
-TEMPLATE_DIR_NAME = 'template_ot2_scripts'
-CLIP_TEMP_FNAME_1 = 'clip_template_APIv1.py'
-CLIP_TEMP_FNAME_2 = 'clip_template_APIv2.8.py'
-CLIP_TEMP_FNAME_3 = 'clip_template_Thermocycler_module_APIv2.8.py'
 
-MAGBEAD_TEMP_FNAME_1 = 'purification_template_APIv1.py'
-MAGBEAD_TEMP_FNAME_2 = 'purification_template_APIv2.8.py'
-
-F_ASSEMBLY_TEMP_FNAME_1 = 'assembly_template_APIv1.py'
-F_ASSEMBLY_TEMP_FNAME_2 = 'assembly_template_APIv2.8.py'
-F_ASSEMBLY_TEMP_FNAME_3 = 'assembly_template_Thermocycler_module_APIv2.8.py'
-
-TRANS_SPOT_TEMP_FNAME_1 = 'transformation_template_APIv1.py'
-TRANS_SPOT_TEMP_FNAME_2 = 'transformation_template_APIv2.8.py'
-TRANS_SPOT_TEMP_FNAME_3 = 'transformation_template_Thermocycler_module_APIv2.8.py'
-
-CLIP_FNAME_1 = 'A_clip_ot2_APIv1'                           # removed '.py'
-CLIP_FNAME_2 = 'A_clip_ot2_APIv2.8'                         # removed '.py'
-CLIP_FNAME_3 = 'A_clip_ot2_Thermocycler_APIv2.8'            # removed '.py'
-
-MAGBEAD_FNAME_1 = 'B_purification_ot2_APIv1'                # removed '.py'
-MAGBEAD_FNAME_2 = 'B_purification_ot2_APIv2.8'              # removed '.py'
-
-F_ASSEMBLY_FNAME_1 = 'C_assembly_ot2_APIv1'                 # removed '.py'
-F_ASSEMBLY_FNAME_2 = 'C_assembly_ot2_APIv2.8'               # removed '.py'
-F_ASSEMBLY_FNAME_3 = 'C_assembly_ot2_Thermocycler_APIv2.8'  # removed '.py'
-
-TRANS_SPOT_FNAME_1 = 'D_transformation_ot2_APIv1.py'
-TRANS_SPOT_FNAME_2 = 'D_transformation_ot2_APIv2.8.py'
-TRANS_SPOT_FNAME_3 = 'D_transformation_ot2_Thermocycler_APIv2.8.py'
-
-CLIPS_INFO_FNAME = 'clip_run_info.csv'
-FINAL_ASSEMBLIES_INFO_FNAME = 'final_assembly_run_info.csv'
-WELL_OUTPUT_FNAME = 'wells.txt'
-NEW_CONSTRUCTS = 'new_construct_list.csv'
-
-V1_PATH = "\\APIv1\\"
-V2_8_PATH = "\\APIv2.8\\"
-V2_8_TC_PATH = "\\Thermocycler_APIv2.8\\"
-
-# Constant floats/ints
-CLIP_DEAD_VOL = 60
-CLIP_VOL = 30
-T4_BUFF_VOL = 3
-BSAI_VOL = 1
-T4_LIG_VOL = 0.5
-CLIP_MAST_WATER = 15.5
-PART_PER_CLIP = 200
-MIN_VOL = 1
-# MAX_CONSTRUCTS = 96               # not required
-MAX_CLIPS_PER_PLATE = 48            # Max clips per clip plate
-MAX_CLIPS_TOTAL = 96*2              # 48
-MAX_ASSEMBLIES_PER_PLATE = 96
-FINAL_ASSEMBLIES_PER_CLIP = 13      ##### NB maybe lower better as clips evaporate? #15
-DEFAULT_PART_VOL = 1
-MAX_SOURCE_PLATES = 6
-MAX_FINAL_ASSEMBLY_TIPRACKS = 4
-TIPS_PER_BOX = 96
-
-# Constant dicts
-SPOTTING_VOLS_DICT = {2: 5, 3: 5, 4: 5, 5: 5, 6: 5, 7: 5}
-
-# Constant lists
-SOURCE_DECK_POS = ['1', '2'] #'8', '7', '10', '11']      # NB for thermocycler protocols, the thermocycler takes up slots 7, 8, 10, 11
+@dataclass
+class ProtocolConfig:
+    """Configuration for DNA assembly protocol parameters."""
+    
+    # CLIP reaction parameters
+    CLIP_DEAD_VOL: int = 60
+    CLIP_VOL: int = 30
+    CLIP_T4_BUFF_VOL: float = 3.0
+    CLIP_BSAI_VOL: float = 1.0
+    CLIP_T4_LIG_VOL: float = 0.5
+    CLIP_MAST_WATER: float = 15.5
+    CLIP_PART_PER_CLIP: int = 200
+    CLIP_MIN_VOL: float = 1.0
+    CLIP_DEFAULT_PART_VOL: float = 1.0
+    
+    # Assembly parameters
+    ASSEMBLY_MAX_CLIPS_PER_PLATE: int = 48
+    ASSEMBLY_MAX_CLIPS_TOTAL: int = 96 * 2
+    ASSEMBLY_MAX_ASSEMBLIES_PER_PLATE: int = 96
+    ASSEMBLY_FINAL_ASSEMBLIES_PER_CLIP: int = 13
+    ASSEMBLY_MAX_SOURCE_PLATES: int = 6
+    ASSEMBLY_MAX_FINAL_ASSEMBLY_TIPRACKS: int = 4
+    ASSEMBLY_TIPS_PER_BOX: int = 96
 
 
-def __cli():
+@dataclass
+class FileConfig:
+    """Configuration for file paths and naming conventions."""
+    
+    # Directory structure
+    TEMPLATE_DIR_NAME: str = 'template_ot2_scripts'
+    V2_8_PATH: str = "\\APIv2.8\\"
+    V2_8_TC_PATH: str = "\\Thermocycler_APIv2.8\\"
+    
+    # Template files
+    TEMPLATE_FILES: Dict[str, Dict[str, str]] = None
+    
+    # Output files
+    OUTPUT_FILES: Dict[str, Dict[str, str]] = None
+    
+    def __post_init__(self):
+        if self.TEMPLATE_FILES is None:
+            self.TEMPLATE_FILES = {
+    'CLIP': {
+        'V2_8': 'clip_template_APIv2.8.py',
+        'V2_8_TC': 'clip_template_Thermocycler_module_APIv2.8.py'
+    },
+    'MAGBEAD': {
+        'V2_8': 'purification_template_APIv2.8.py'
+    },
+    'F_ASSEMBLY': {
+        'V2_8': 'assembly_template_APIv2.8.py',
+        'V2_8_TC': 'assembly_template_Thermocycler_module_APIv2.8.py'
+    },
+    'TRANS_SPOT': {
+        'V2_8': 'transformation_template_APIv2.8.py',
+        'V2_8_TC': 'transformation_template_Thermocycler_module_APIv2.8.py'
+    }
+}
+
+        if self.OUTPUT_FILES is None:
+            self.OUTPUT_FILES = {
+    'CLIP': {
+        'V2_8': 'A_clip_ot2_APIv2.8',
+        'V2_8_TC': 'A_clip_ot2_Thermocycler_APIv2.8'
+    },
+    'MAGBEAD': {
+        'V2_8': 'B_purification_ot2_APIv2.8'
+    },
+    'F_ASSEMBLY': {
+        'V2_8': 'C_assembly_ot2_APIv2.8',
+        'V2_8_TC': 'C_assembly_ot2_Thermocycler_APIv2.8'
+    },
+    'TRANS_SPOT': {
+        'V2_8': 'D_transformation_ot2_APIv2.8.py',
+        'V2_8_TC': 'D_transformation_ot2_Thermocycler_APIv2.8.py'
+    },
+    'INFO': {
+        'CLIPS': 'clip_run_info.csv',
+        'FINAL_ASSEMBLIES': 'final_assembly_run_info.csv',
+        'WELL_OUTPUT': 'wells.txt',
+        'NEW_CONSTRUCTS': 'new_construct_list.csv'
+    }
+}
+
+
+@dataclass
+class DeckConfig:
+    """Configuration for OT-2 deck layout."""
+    
+    SOURCE_POSITIONS: List[str] = None
+    SPOTTING_VOLS: Dict[int, int] = None
+    
+    def __post_init__(self):
+        if self.SOURCE_POSITIONS is None:
+            self.SOURCE_POSITIONS = ['1', '2']  # NB for thermocycler protocols, the thermocycler takes up slots 7, 8, 10, 11
+        if self.SPOTTING_VOLS is None:
+            self.SPOTTING_VOLS = {2: 5, 3: 5, 4: 5, 5: 5, 6: 5, 7: 5}
+
+
+@dataclass
+class ClipReaction:
+    """Represents a single CLIP reaction with its components."""
+    prefix: str
+    part: str
+    suffix: str
+    number: int = 1
+    mag_well: Union[str, Tuple[str, ...]] = None
+    plate: Union[int, Tuple[int, ...]] = None
+    
+    def __post_init__(self):
+        if self.mag_well is None:
+            self.mag_well = '0'
+        if self.plate is None:
+            self.plate = 0
+
+
+@dataclass
+class Construct:
+    """Represents a DNA construct with its component parts."""
+    name: str
+    clips: List[ClipReaction]
+    assembly_well: str = None
+    assembly_plate: int = None
+
+
+@dataclass
+class SourceLocation:
+    """Represents the location of a part/linker in a source plate."""
+    well: str
+    concentration: Optional[float] = None
+    deck_position: str = None
+    additional_info: List[str] = None
+    
+    def __post_init__(self):
+        if self.additional_info is None:
+            self.additional_info = []
+
+
+@dataclass
+class AssemblyPlan:
+    """Represents the plan for final assembly of constructs."""
+    destination_well: str
+    source_clips: List[Tuple[str, int]]  # (well, plate) pairs
+    construct_name: str = None
+
+
+# Global configuration instances
+PROTOCOL_CONFIG = ProtocolConfig()
+FILE_CONFIG = FileConfig()
+DECK_CONFIG = DeckConfig()
+
+
+def __cli() -> argparse.Namespace:
     """Command line interface.
 
-    :returns: CLI arguments
-    :rtype: <argparse.Namespace>
+    Returns:
+        argparse.Namespace: Parsed command line arguments
     """
     desc = "DNA assembly using BASIC on OpenTrons."
     parser = argparse.ArgumentParser(description=desc)
@@ -117,22 +207,22 @@ def __cli():
     parser_nogui.add_argument('--output_dir',
                               help='Output directory. Default: same directory than the one containing the '
                                    '"construct_path" file',
-                              default=None, type=str or None)
+                              default=None, type=str)
     parser_nogui.add_argument('--template_dir',
                               help='Template directory. Default: "template_ot2_scripts" located next to the present '
                                    'script.',
-                              default=None, type=str or None)
+                              default=None, type=str)
     
     parser.set_defaults(nogui=False)
     parser_nogui.set_defaults(nogui=True)
     return parser.parse_args()
 
 
-def __info_from_gui():
+def __info_from_gui() -> Dict[str, Union[str, List[str], int]]:
     """Pop GUI to collect user inputs.
 
-    :returns user_inputs: info collected
-    :rtype: dict
+    Returns:
+        Dict[str, Union[str, List[str], int]]: Dictionary containing user inputs
     """
     user_inputs = {
         'construct_path': None,
@@ -165,312 +255,783 @@ def __info_from_gui():
     return user_inputs
 
 
-def main():
-    # Settings
-    args = __cli()
-    
-    if args.nogui:
-        etoh_well = args.etoh_well
-        soc_column = args.soc_column
-        construct_path = args.construct_path
-        sources_paths = args.source_paths
-        output_dir = args.output_dir
-        template_dir = args.template_dir
-    else:
-        user_inputs = __info_from_gui()
-        etoh_well = user_inputs['etoh_well']
-        soc_column = user_inputs['soc_column']
-        construct_path = user_inputs['construct_path']
-        sources_paths = user_inputs['sources_paths']
-        output_dir = os.path.dirname(construct_path)
-        template_dir = None
-
-    # #### TEST FILES - TO BE DELETED ####
-    # etoh_well = 'A11'
-    # soc_column = 1
-    # construct_path = 'C:\\Users\\ljh119\\OneDrive - Imperial College London\\Builds\\648_build\\DNA-BOT\\648_constructs\\multistage_builds\\stage_2\\stage2_constructs.csv'
-    # sources_paths = ['C:\\Users\\ljh119\\OneDrive - Imperial College London\\Builds\\648_build\\DNA-BOT\\648_constructs\\multistage_builds\\stage_2\\stage2_parts.csv']
-    # output_dir = 'C:\\Users\\ljh119\\OneDrive - Imperial College London\\Builds\\648_build\\DNA-BOT\\648_constructs\\multistage_builds\\stage_2'
-    # template_dir = None
-
-    # ####################################
-
-    # Args checking
-    if len(sources_paths) > len(SOURCE_DECK_POS):
-        raise ValueError('Number of source plates exceeds deck positions.')
-
-    # Path to template directory
+def _resolve_template_dir(template_dir: str, construct_path: str) -> str:
+    """Resolve the template directory path based on user input or defaults."""
     if template_dir is not None:
-        # Just to comment this case: only way to fall here is that the variable has been set throught the command
-        # line arguments, nothing to do.
-        template_dir_path = template_dir
-        pass
-    elif __name__ == '__main__':
-        # Alternatively, try to automatically deduce the path relatively to the main script path
-        script_path = os.path.abspath(__file__)
-        template_dir_path = os.path.abspath(os.path.join(script_path, '..', TEMPLATE_DIR_NAME))
-    else:
-        # Fallback - if template directory is neither given in cli nor the file is run directly, 
-        # check for the template dir in the current wd
-        generator_dir = os.getcwd()
-        template_dir_path = os.path.abspath(os.path.join(generator_dir, TEMPLATE_DIR_NAME))
+        print(f"Using provided template directory: {template_dir}")
+        return template_dir
+    print("Automatically deducing template directory from script location")
+    script_path = os.path.abspath(__file__)
+    return os.path.abspath(os.path.join(script_path, '..', FILE_CONFIG.TEMPLATE_DIR_NAME))
 
-    # Dealing with output dir
+
+def _ensure_output_dir(output_dir: str) -> None:
+    """Ensure the output directory exists and change to it."""
     if not os.path.exists(output_dir):
+        print(f"Creating output directory: {output_dir}")
         os.makedirs(output_dir)
     os.chdir(output_dir)
 
-    # Prefix name
-    construct_base = os.path.basename(construct_path)
-    construct_base = os.path.splitext(construct_base)[0]
-    print('User input successfully collected.')
 
-    # Process input csv files
-    print('Processing input csv files...')
-    constructs_list = generate_constructs_list(construct_path)      # returns a list of individual dfs for each construct in which each row is a required clip reaction
-    clips_df = generate_clips_df(constructs_list)                   # takes the constructs_list and returns a df of all unique clip reactions with the number of times each one is required to be made and the location(s) of it
-    sources_dict = generate_sources_dict(sources_paths)             # returns a dict with source id as keys and location as values
+def main() -> None:
+    """
+    Main function to run the DNA-BOT application.
 
-    ####################################
-    # print(constructs_list)
-    # print(clips_df)
-    # print(sources_dict)
-    ####################################
-    
-    # output clips csv
-    output_file = os.path.join(output_dir, 'clips_df.csv')
-    clips_df.to_csv(output_file, index=False)
+    This function orchestrates the entire DNA assembly workflow:
+    1. Collects user input (via GUI or CLI)
+    2. Validates input files and directories
+    3. Processes input files to generate intermediate data structures
+    4. Generates OT-2 scripts for each protocol stage
+    5. Outputs metadata and summary files
 
-    # calculate OT2 script variables
-    print('Calculating OT-2 variables...')
-    clips_dict_list = generate_clips_dict_list(clips_df, sources_dict)      # takes the clips df and the sources dict and produces a list of dictionaries of tuples of the parts, prefixes, and suffixes' wells and plate locations
-    
-    magbead_sample_number_total = clips_df['number'].sum()                  # the total number of clips is built in sets of >48, these are combined in pairs into up to 2 plates each of >96 clips, the total number of clips possible is 192 (see error trapping in clip_dict_list_generator)
-    magbead_sample_list = [96 for i in range(magbead_sample_number_total//96)] + [magbead_sample_number_total % 96 + 1] # creates a list of values where each value represents the number of mag purifications for a single step
+    The workflow follows this sequence:
+    - CLIP reactions: Create DNA fragments with compatible ends
+    - Purification: Clean up CLIP reactions using magnetic beads
+    - Final Assembly: Combine purified fragments into final constructs
+    - Transformation: Prepare constructs for bacterial transformation (optional)
 
+    Raises:
+        FileNotFoundError: If required input files or directories are missing
+        ValueError: If input data is malformed or exceeds protocol limits
+        Exception: For other processing errors
+    """
+    try:
+        print("Starting DNA-BOT...")
+        print("=" * 50)
 
-    clips_dict = generate_clips_dict(clips_df, sources_dict)                # one dict of everything - original version - to be used by final assembly generator functions
-    final_assembly_dict_list = generate_final_assembly_dict_list(constructs_list, clips_df)
-    
-    ################### UNCOMMENT ###################
-    # spotting_tuples = generate_spotting_tuples(constructs_list,
-    #                                            SPOTTING_VOLS_DICT)
-    #################################################
-
-    print('Writing files...')
-    # Write OT2 scripts
-    for clip_plate in range(len(clips_dict_list)):
-        sub_clip_dict = clips_dict_list[clip_plate]
-                
-        generate_ot2_script(CLIP_FNAME_1 + '_SCRIPT_{}.py'.format(clip_plate+1), os.path.join(
-            template_dir_path, CLIP_TEMP_FNAME_1), clips_dict=sub_clip_dict)
-        generate_ot2_script(CLIP_FNAME_2 + '_SCRIPT_{}.py'.format(clip_plate+1), os.path.join(
-            template_dir_path, CLIP_TEMP_FNAME_2), clips_dict=sub_clip_dict)
-        generate_ot2_script(CLIP_FNAME_3 + '_SCRIPT_{}.py'.format(clip_plate+1), os.path.join(
-            template_dir_path, CLIP_TEMP_FNAME_3), clips_dict=sub_clip_dict)
-    
+        # -----------------------------
+        # 1. Collect and validate user input
+        # -----------------------------
+        user_config = _collect_user_input()
+        _validate_input_files(user_config)
         
-    ######## NEED TO AMMEND META DATA ##########
+        # -----------------------------
+        # 2. Set up directories and paths
+        # -----------------------------
+        paths = _setup_directories(user_config)
         
-    for i, magbead_sample_number in enumerate(magbead_sample_list):
+        # -----------------------------
+        # 3. Process input files and generate data structures
+        # -----------------------------
+        data_structures = _process_input_files(user_config, paths)
         
-        generate_ot2_script(MAGBEAD_FNAME_1 + '_SCRIPT_{}.py'.format(i+1), os.path.join(
-            template_dir_path, MAGBEAD_TEMP_FNAME_1),
-            sample_number=magbead_sample_number,
-            ethanol_well=etoh_well)
-        generate_ot2_script(MAGBEAD_FNAME_2 + '_SCRIPT_{}.py'.format(i+1), os.path.join(
-            template_dir_path, MAGBEAD_TEMP_FNAME_2),
-            sample_number=magbead_sample_number,
-            ethanol_well=etoh_well)
+        # -----------------------------
+        # 4. Generate OT-2 scripts for each protocol stage
+        # -----------------------------
+        _generate_ot2_scripts(data_structures, paths, user_config)
+        
+        # -----------------------------
+        # 5. Output metadata and summary files
+        # -----------------------------
+        _output_metadata_files(data_structures, paths, user_config)
+
+        print("=" * 50)
+        print('DNA-BOT completed successfully!')
+
+    except Exception as e:
+        print(f"\nError: {str(e)}")
+        print(f"Error type: {type(e)}")
+        import traceback
+        print("\nFull traceback:")
+        traceback.print_exc()
+        sys.exit(1)
+
+
+def _collect_user_input() -> Dict[str, Union[str, List[str], int]]:
+    """
+    Collect user input either via CLI or GUI.
     
-    ############### If I want to add in the clips as a new source point I need to append the new clips plate at this point ##########################
-
-    for assembly_plate in range(len(final_assembly_dict_list)):
-        final_assembly_dict = final_assembly_dict_list[assembly_plate]
-        final_assembly_tipracks = calculate_final_assembly_tipracks(final_assembly_dict)
-
-        generate_ot2_script(F_ASSEMBLY_FNAME_1 + '_SCRIPT_{}.py'.format(assembly_plate+1), os.path.join(
-            template_dir_path, F_ASSEMBLY_TEMP_FNAME_1),
-            final_assembly_dict=final_assembly_dict,
-            tiprack_num=final_assembly_tipracks)
-        generate_ot2_script(F_ASSEMBLY_FNAME_2 + '_SCRIPT_{}.py'.format(assembly_plate+1), os.path.join(
-            template_dir_path, F_ASSEMBLY_TEMP_FNAME_2),
-            final_assembly_dict=final_assembly_dict,
-            tiprack_num=final_assembly_tipracks)
-        generate_ot2_script(F_ASSEMBLY_FNAME_3 + '_SCRIPT_{}.py'.format(assembly_plate+1), os.path.join(
-            template_dir_path, F_ASSEMBLY_TEMP_FNAME_3),
-            final_assembly_dict=final_assembly_dict,
-            tiprack_num=final_assembly_tipracks)
-    
-    # generate_ot2_script(TRANS_SPOT_FNAME_1, os.path.join(
-    #     template_dir_path, TRANS_SPOT_TEMP_FNAME_1),
-    #     spotting_tuples=spotting_tuples,
-    #     soc_well=f"A{soc_column}")
-    # generate_ot2_script(TRANS_SPOT_FNAME_2, os.path.join(
-    #     template_dir_path, TRANS_SPOT_TEMP_FNAME_2),
-    #     spotting_tuples=spotting_tuples,
-    #     soc_well=f"A{soc_column}")
-    # generate_ot2_script(TRANS_SPOT_FNAME_3, os.path.join(
-    #     template_dir_path, TRANS_SPOT_TEMP_FNAME_3),
-    #     spotting_tuples=spotting_tuples,
-    #     soc_well=f"A{soc_column}")
-
-    # Write non-OT2 scripts
-    if 'metainformation' in os.listdir():
-        pass
+    Returns:
+        Dictionary containing all user configuration parameters
+    """
+    args = __cli()
+    if args.nogui:
+        print("Running in CLI mode...")
+        return {
+            'etoh_well': args.etoh_well,
+            'soc_column': args.soc_column,
+            'construct_path': args.construct_path,
+            'sources_paths': args.source_paths,
+            'output_dir': args.output_dir,
+            'template_dir': args.template_dir
+        }
     else:
-        os.makedirs('metainformation')
-    os.chdir('metainformation')
-    master_mix_df = generate_master_mix_df(clips_df['number'].sum())
-    sources_paths_df = generate_sources_paths_df(sources_paths, SOURCE_DECK_POS)
-    dfs_to_csv(construct_base + '_' + CLIPS_INFO_FNAME, index=False,
-               MASTER_MIX=master_mix_df, SOURCE_PLATES=sources_paths_df,
-               CLIP_REACTIONS=clips_df)
-    with open(construct_base + '_' + FINAL_ASSEMBLIES_INFO_FNAME,
+        print("Running in GUI mode...")
+        return __info_from_gui()
+
+
+def _validate_input_files(user_config: Dict[str, Union[str, List[str], int]]) -> None:
+    """
+    Validate that all required input files exist.
+    
+    Args:
+        user_config: User configuration dictionary
+        
+    Raises:
+        FileNotFoundError: If any required file is missing
+    """
+    construct_path = user_config['construct_path']
+    sources_paths = user_config['sources_paths']
+    
+    if not os.path.exists(construct_path):
+        raise FileNotFoundError(f"Construct file not found: {construct_path}")
+    
+    for source_path in sources_paths:
+        if not os.path.exists(source_path):
+            raise FileNotFoundError(f"Source file not found: {source_path}")
+
+
+def _setup_directories(user_config: Dict[str, Union[str, List[str], int]]) -> Dict[str, str]:
+    """
+    Set up output and template directories.
+    
+    Args:
+        user_config: User configuration dictionary
+        
+    Returns:
+        Dictionary containing resolved directory paths
+    """
+    construct_path = user_config['construct_path']
+    output_dir = user_config.get('output_dir')
+    template_dir = user_config.get('template_dir')
+    
+    # Resolve output directory
+    if output_dir is None:
+        output_dir = os.path.dirname(os.path.abspath(construct_path))
+        print(f"Using construct file directory as output: {output_dir}")
+    
+    # Resolve template directory
+    template_dir_path = _resolve_template_dir(template_dir, construct_path)
+    print(f"Template directory path: {template_dir_path}")
+    
+    if not os.path.exists(template_dir_path):
+        raise FileNotFoundError(f"Template directory not found at: {template_dir_path}")
+    
+    _ensure_output_dir(output_dir)
+    
+    return {
+        'output_dir': output_dir,
+        'template_dir': template_dir_path,
+        'construct_base': os.path.splitext(os.path.basename(construct_path))[0]
+    }
+
+
+def _process_input_files(user_config: Dict[str, Union[str, List[str], int]], 
+                        paths: Dict[str, str]) -> Dict[str, Any]:
+    """
+    Process input files and generate intermediate data structures.
+    
+    Args:
+        user_config: User configuration dictionary
+        paths: Directory paths dictionary
+        
+    Returns:
+        Dictionary containing all processed data structures
+        
+    Raises:
+        ValueError: If input data is malformed or exceeds protocol limits
+        FileNotFoundError: If required files cannot be found
+    """
+    print('Processing input files...')
+    print("=" * 60)
+
+    try:
+        # Process constructs
+        print("\n1. Loading and validating constructs...")
+        constructs_list = generate_constructs_list(user_config['construct_path'])
+        print(f"✓ Generated {len(constructs_list)} constructs")
+        
+        # Generate CLIP reactions first
+        print("\n2. Generating CLIP reactions...")
+        clips_df = generate_clips_df(constructs_list)
+        print(f"✓ Generated {len(clips_df)} unique clips")
+        
+        # Validate construct data (now with clips_df for accurate counting)
+        validate_construct_data(constructs_list, clips_df)
+        print("✓ Construct data validation passed")
+        
+        # Validate CLIP data
+        validate_clips_data(clips_df)
+        print("✓ CLIP data validation passed")
+        
+        # Process source files
+        print("\n3. Loading and validating source data...")
+        sources_dict = generate_sources_dict(user_config['sources_paths'])
+        print(f"✓ Processed {len(sources_dict)} sources")
+
+        # Validate source data
+        validate_sources_data(sources_dict)
+        print("✓ Source data validation passed")
+        
+        # Validate component availability
+        print("\n4. Validating component availability...")
+        validate_components_availability(constructs_list, sources_dict)
+        print("✓ All required components are available")
+        
+        # Validate tip usage
+        print("\n5. Validating tip usage...")
+        validate_tip_usage(constructs_list, clips_df)
+        print("✓ Tip usage within limits")
+        
+        # Log processing summary
+        log_processing_summary(constructs_list, clips_df, sources_dict)
+        
+        # Save intermediate data
+        output_file = os.path.join(paths['output_dir'], 'clips_df.csv')
+        clips_df.to_csv(output_file, index=False)
+        print(f"✓ Saved clips information to: {output_file}")
+
+        print('\n6. Calculating OT-2 variables...')
+        
+        # Generate CLIP dictionaries for OT-2 scripts
+        clips_dict_list = generate_clips_dict_list(clips_df, sources_dict)
+        print(f"✓ Generated {len(clips_dict_list)} clip dictionaries")
+
+        # Calculate magbead sample distribution
+        magbead_sample_number_total = clips_df['number'].sum()
+        full_plates = magbead_sample_number_total // 96
+        remaining_samples = magbead_sample_number_total % 96
+        magbead_sample_list = [96] * full_plates
+        if remaining_samples > 0:
+            magbead_sample_list.append(remaining_samples)
+
+        print(f"✓ Total number of magbead samples: {magbead_sample_number_total}")
+        
+        # Generate final assembly plans
+        final_assembly_dict_list = generate_final_assembly_dict_list(constructs_list, clips_df)
+        print(f"✓ Generated {len(final_assembly_dict_list)} final assembly dictionaries")
+
+        print("=" * 60)
+        print("✓ All processing completed successfully!")
+
+        return {
+            'constructs_list': constructs_list,
+            'clips_df': clips_df,
+            'sources_dict': sources_dict,
+            'clips_dict_list': clips_dict_list,
+            'magbead_sample_list': magbead_sample_list,
+            'final_assembly_dict_list': final_assembly_dict_list
+        }
+        
+    except Exception as e:
+        print("\n" + "=" * 60)
+        print("❌ ERROR DURING PROCESSING")
+        print("=" * 60)
+        print(f"Error: {str(e)}")
+        print(f"Error type: {type(e)}")
+        import traceback
+        print("\nFull traceback:")
+        traceback.print_exc()
+        raise
+
+
+def _generate_ot2_scripts(data_structures: Dict[str, Any], 
+                         paths: Dict[str, str],
+                         user_config: Dict[str, Union[str, List[str], int]]) -> None:
+    """
+    Generate OT-2 scripts for each protocol stage.
+    
+    Args:
+        data_structures: Processed data structures
+        paths: Directory paths
+        user_config: User configuration
+    """
+    print('Writing OT-2 scripts...')
+    
+    # Generate CLIP scripts
+    for clip_plate, sub_clip_dict in enumerate(data_structures['clips_dict_list']):
+        print(f"Generating clip scripts for plate {clip_plate + 1}...")
+        _generate_clip_scripts(sub_clip_dict, clip_plate, paths)
+    
+    # Generate magbead purification scripts
+    for i, magbead_sample_number in enumerate(data_structures['magbead_sample_list']):
+        print(f"Generating magbead scripts for sample {i + 1}...")
+        _generate_magbead_scripts(magbead_sample_number, i, paths, user_config)
+    
+    # Generate final assembly scripts
+    for assembly_plate, final_assembly_dict in enumerate(data_structures['final_assembly_dict_list']):
+        print(f"Generating assembly scripts for plate {assembly_plate + 1}...")
+        _generate_assembly_scripts(final_assembly_dict, assembly_plate, paths)
+
+
+def _generate_clip_scripts(sub_clip_dict: Dict[str, List], 
+                          clip_plate: int, 
+                          paths: Dict[str, str]) -> None:
+    """Generate CLIP reaction scripts for a single plate."""
+    template_dir = paths['template_dir']
+    
+    # Generate standard CLIP script
+    generate_ot2_script(
+        FILE_CONFIG.OUTPUT_FILES['CLIP']['V2_8'] + f'_SCRIPT_{clip_plate+1}.py',
+        os.path.join(template_dir, FILE_CONFIG.TEMPLATE_FILES['CLIP']['V2_8']),
+        clips_dict=sub_clip_dict
+    )
+    
+    # Generate thermocycler CLIP script
+    generate_ot2_script(
+        FILE_CONFIG.OUTPUT_FILES['CLIP']['V2_8_TC'] + f'_SCRIPT_{clip_plate+1}.py',
+        os.path.join(template_dir, FILE_CONFIG.TEMPLATE_FILES['CLIP']['V2_8_TC']),
+        clips_dict=sub_clip_dict
+    )
+
+
+def _generate_magbead_scripts(magbead_sample_number: int, 
+                             script_index: int, 
+                             paths: Dict[str, str],
+                             user_config: Dict[str, Union[str, List[str], int]]) -> None:
+    """Generate magnetic bead purification scripts."""
+    template_dir = paths['template_dir']
+    
+    generate_ot2_script(
+        FILE_CONFIG.OUTPUT_FILES['MAGBEAD']['V2_8'] + f'_SCRIPT_{script_index+1}.py',
+        os.path.join(template_dir, FILE_CONFIG.TEMPLATE_FILES['MAGBEAD']['V2_8']),
+        sample_number=magbead_sample_number,
+        ethanol_well=user_config['etoh_well']
+    )
+
+
+def _generate_assembly_scripts(final_assembly_dict: Dict, 
+                              assembly_plate: int, 
+                              paths: Dict[str, str]) -> None:
+    """Generate final assembly scripts."""
+    template_dir = paths['template_dir']
+    final_assembly_tipracks = calculate_final_assembly_tipracks(final_assembly_dict)
+    
+    # Generate standard assembly script
+    generate_ot2_script(
+        FILE_CONFIG.OUTPUT_FILES['F_ASSEMBLY']['V2_8'] + f'_SCRIPT_{assembly_plate+1}.py',
+        os.path.join(template_dir, FILE_CONFIG.TEMPLATE_FILES['F_ASSEMBLY']['V2_8']),
+        final_assembly_dict=final_assembly_dict,
+        tiprack_num=final_assembly_tipracks
+    )
+    
+    # Generate thermocycler assembly script
+    generate_ot2_script(
+        FILE_CONFIG.OUTPUT_FILES['F_ASSEMBLY']['V2_8_TC'] + f'_SCRIPT_{assembly_plate+1}.py',
+        os.path.join(template_dir, FILE_CONFIG.TEMPLATE_FILES['F_ASSEMBLY']['V2_8_TC']),
+        final_assembly_dict=final_assembly_dict,
+        tiprack_num=final_assembly_tipracks
+    )
+
+
+def _output_metadata_files(data_structures: Dict[str, Any], 
+                          paths: Dict[str, str],
+                          user_config: Dict[str, Union[str, List[str], int]]) -> None:
+    """
+    Output metadata and summary files.
+    
+    Args:
+        data_structures: Processed data structures
+        paths: Directory paths
+        user_config: User configuration
+    """
+    print('Writing metadata files...')
+    
+    # Create metainformation directory
+    metainfo_dir = os.path.join(paths['output_dir'], 'metainformation')
+    if not os.path.exists(metainfo_dir):
+        os.makedirs(metainfo_dir)
+    
+    # Change to metainformation directory for file creation
+    original_dir = os.getcwd()
+    os.chdir(metainfo_dir)
+    
+    try:
+        # Generate master mix information
+        master_mix_df = generate_master_mix_df(data_structures['clips_df']['number'].sum())
+        
+        # Generate source plate information
+        sources_paths_df = generate_sources_paths_df(
+            user_config['sources_paths'], 
+            DECK_CONFIG.SOURCE_POSITIONS
+        )
+        
+        # Write CLIP run information
+        dfs_to_csv(
+            paths['construct_base'] + '_' + FILE_CONFIG.OUTPUT_FILES['INFO']['CLIPS'],
+            index=False,
+            MASTER_MIX=master_mix_df,
+            SOURCE_PLATES=sources_paths_df,
+            CLIP_REACTIONS=data_structures['clips_df']
+        )
+        
+        # Write final assembly information
+        _write_final_assembly_info(data_structures, paths)
+        
+        # Write well output information
+        _write_well_output_info(user_config, paths)
+        
+        # Write new constructs information
+        new_constructs_df = generate_new_constructs_df(
+            user_config['construct_path'], 
+            data_structures['final_assembly_dict_list']
+        )
+        new_constructs_df.to_csv(
+            paths['construct_base'] + '_' + FILE_CONFIG.OUTPUT_FILES['INFO']['NEW_CONSTRUCTS'],
+            index=False
+        )
+        
+    finally:
+        # Restore original directory
+        os.chdir(original_dir)
+
+
+def _write_final_assembly_info(data_structures: Dict[str, Any], paths: Dict[str, str]) -> None:
+    """Write final assembly information to CSV file."""
+    with open(paths['construct_base'] + '_' + FILE_CONFIG.OUTPUT_FILES['INFO']['FINAL_ASSEMBLIES'],
               'w', newline='') as csvfile:
         csvwriter = csv.writer(csvfile)
-        for final_assembly_well, construct_clips in final_assembly_dict.items():            ##### ITERATE THROUGH FINAL ASSEMBLY DICTS LIST
-            csvwriter.writerow([final_assembly_well, construct_clips])
-    with open(construct_base + '_' + WELL_OUTPUT_FNAME, 'w') as f:
-        f.write('Magbead ethanol well: {}'.format(etoh_well))
-        f.write('\n')
-        f.write('SOC column: {}'.format(soc_column))
+        for final_assembly_dict in data_structures['final_assembly_dict_list']:
+            for final_assembly_well, construct_clips in final_assembly_dict.items():
+                csvwriter.writerow([final_assembly_well, construct_clips])
 
-    new_constructs_df = generate_new_constructs_df(construct_path, final_assembly_dict_list)
-    new_constructs_df.to_csv(construct_base + '_' + NEW_CONSTRUCTS, index=False) ##############
+
+def _write_well_output_info(user_config: Dict[str, Union[str, List[str], int]], 
+                           paths: Dict[str, str]) -> None:
+    """Write well output information to text file."""
+    with open(paths['construct_base'] + '_' + FILE_CONFIG.OUTPUT_FILES['INFO']['WELL_OUTPUT'], 'w') as f:
+        f.write(f'Magbead ethanol well: {user_config["etoh_well"]}\n')
+        f.write(f'SOC column: {user_config["soc_column"]}')
+
+
+def generate_constructs_list(path: str) -> List[pd.DataFrame]:
+    """Generates a list of dataframes corresponding to each construct.
     
-    print('BOT-2 generator successfully completed!')
+    Each dataframe lists components of the CLIP reactions required for that construct,
+    including prefix linkers, parts, and suffix linkers.
 
+    Args:
+        path (str): Path to the constructs CSV file
 
-def generate_constructs_list(path):
-    """Generates a list of dataframes corresponding to each construct. Each
-    dataframe lists components of the CLIP reactions required.
+    Returns:
+        List[pd.DataFrame]: List of dataframes, each containing CLIP reaction components
+            for a single construct. Each dataframe has columns:
+            - prefixes: Prefix linker identifiers
+            - parts: Part identifiers
+            - suffixes: Suffix linker identifiers
 
+    Raises:
+        FileNotFoundError: If the constructs file cannot be found
+        ValueError: If the constructs file is malformed
     """
+    print(f"\n... Loading constructs from: {path}")
+    
+    def process_construct(construct: List[str], construct_index: int) -> pd.DataFrame:
+        """Processes an individual construct into a dataframe of CLIP reactions.
+        
+        Args:
+            construct (List[str]): List of parts and linkers for a single construct
+                in the format [linker1, part1, linker2, part2, ...]
+            construct_index (int): Index of the construct for error reporting
 
-    def process_construct(construct):
-        """Processes an individual construct into a dataframe of CLIP reactions
-        outlining prefix linkers, parts and suffix linkers.
-
+        Returns:
+            pd.DataFrame: DataFrame containing CLIP reaction components with columns:
+                - prefixes: Prefix linker identifiers
+                - parts: Part identifiers
+                - suffixes: Suffix linker identifiers
         """
+        def get_suffix_linker(linker: str) -> str:
+            """Determines the suffix linker identifier from a linker.
+            
+            If the linker starts with 'U', it's a UTR linker and gets '-S' suffix.
+            Otherwise, just appends '-S' to the linker identifier.
 
-        def interogate_linker(linker):
-            """Interrogates linker to determine if the suffix linker is a UTR
-            linker.
+            Args:
+                linker (str): Linker identifier
 
+            Returns:
+                str: Suffix linker identifier
             """
             if linker.startswith('U'):
                 return linker.split('-')[0] + '-S'
-            else:
-                return linker + "-S"
+            return linker + "-S"
 
-        clips_info = {'prefixes': [], 'parts': [],
-                      'suffixes': []}
+        # Validate construct structure
+        if len(construct) < 2:
+            raise ValueError(f"Construct {construct_index + 1} has insufficient components. "
+                           f"Expected at least 2 (linker, part), got {len(construct)}")
+        
+        if len(construct) % 2 != 0:
+            raise ValueError(f"Construct {construct_index + 1} has invalid structure. "
+                           f"Expected an even number of components (linker, part, linker, part, ...), got {len(construct)}")
+        
+        # Check that the number of linkers equals the number of parts
+        linkers = construct[::2]
+        parts = construct[1::2]
+        if len(linkers) != len(parts):
+            raise ValueError(f"Construct {construct_index + 1} has mismatched number of linkers and parts. "
+                           f"Linkers: {len(linkers)}, Parts: {len(parts)}")
+
+        # Initialize dictionary to store CLIP reaction components
+        clips_info = {
+            'prefixes': [],
+            'parts': [],
+            'suffixes': []
+        }
+
+        # Process each part and its surrounding linkers
         for i, sequence in enumerate(construct):
-            if i % 2 != 0:
-                clips_info['parts'].append(sequence)
-                clips_info['prefixes'].append(
-                    construct[i - 1] + '-P')
+            if i % 2 != 0:  # Only process parts (odd indices)
+                # Validate part is not empty
+                if not sequence.strip():
+                    raise ValueError(f"Construct {construct_index + 1}, position {i}: Empty part found")
+                
+                clips_info['parts'].append(sequence.strip())
+                
+                # Validate prefix linker
+                prefix_linker = construct[i - 1].strip()
+                if not prefix_linker:
+                    raise ValueError(f"Construct {construct_index + 1}, position {i-1}: Empty prefix linker found")
+                clips_info['prefixes'].append(prefix_linker + '-P')
+                
+                # Determine suffix linker
                 if i == len(construct) - 1:
-                    suffix_linker = interogate_linker(construct[0])
-                    clips_info['suffixes'].append(suffix_linker)
+                    # Last part uses first linker as suffix
+                    suffix_linker = get_suffix_linker(construct[0].strip())
                 else:
-                    suffix_linker = interogate_linker(construct[i + 1])
-                    clips_info['suffixes'].append(suffix_linker)
+                    # Use next linker as suffix
+                    next_linker = construct[i + 1].strip()
+                    if not next_linker:
+                        raise ValueError(f"Construct {construct_index + 1}, position {i+1}: Empty suffix linker found")
+                    suffix_linker = get_suffix_linker(next_linker)
+                clips_info['suffixes'].append(suffix_linker)
+
         return pd.DataFrame.from_dict(clips_info)
 
+    # Process each construct in the CSV file
     constructs_list = []
-    with open(path, 'r') as csvfile:
-        csv_reader = csv.reader(csvfile)
-        for index, construct in enumerate(csv_reader):
-            if index != 0:  # Checks if row is header.
-                construct = list(filter(None, construct))
-                if not construct[1:]:
-                    break
-                else:
-                    constructs_list.append(process_construct(construct[1:]))
+    try:
+        with open(path, 'r') as csvfile:
+            csv_reader = csv.reader(csvfile)
+            
+            for index, row in enumerate(csv_reader):
+                if index == 0:  # Skip header row
+                    continue
+                    
+                # Skip the first column (Well) and get construct components
+                construct_components = row[1:]  # Start from column 2
+                
+                # Filter out empty strings
+                construct_components = list(filter(None, construct_components))
+                
+                # Skip if no components
+                if not construct_components:
+                    continue
+                
+                # Debug output
+                print(f"Debug: Construct {index + 1} components: {construct_components}")
+                print(f"Debug: Number of components: {len(construct_components)}")
+                
+                try:
+                    constructs_list.append(process_construct(construct_components, index))
+                except ValueError as e:
+                    raise ValueError(f"Error processing construct {index + 1}: {str(e)}")
+        
+        print(f"... Successfully loaded {len(constructs_list)} constructs")
+        return constructs_list
+        
+    except FileNotFoundError:
+        raise FileNotFoundError(f"Constructs file not found: {path}")
+    except Exception as e:
+        print(f"[ERROR] Failed to load constructs: {str(e)}")
+        raise
+
+
+def generate_sources_dict(paths: List[str]) -> Dict[str, Tuple[str, ...]]:
+    """Creates a dictionary mapping parts/linkers to their source locations.
     
-    return constructs_list
+    Args:
+        paths (List[str]): List of paths to source CSV files containing part/linker
+            information. Each file should have columns:
+            - Part/linker identifier (first column)
+            - Well location (second column)
+            - Concentration (optional, third column)
+            - Other information (optional, additional columns)
 
+    Returns:
+        Dict[str, Tuple[str, ...]]: Dictionary where:
+            - Keys are part/linker identifiers
+            - Values are tuples containing:
+                - Well location
+                - Concentration (if provided)
+                - Deck position
+                - Other information from CSV
 
-def generate_clips_df(constructs_list):
-    """Generates a dataframe containing information about all unique CLIP reactions required to synthesise the constructs 
-    in constructs_list. Mag_well and Clip plate info identified and added for each clip. Multiple entries added when required
-
+    Raises:
+        FileNotFoundError: If any source file cannot be found
+        ValueError: If source files are malformed
     """
-    merged_construct_dfs = pd.concat(constructs_list, ignore_index=True)
-    unique_clips_df = merged_construct_dfs.drop_duplicates()
-    unique_clips_df = unique_clips_df.reset_index(drop=True)
-    clips_df = unique_clips_df.copy()
+    sources_dict = {}
+    
+    for deck_index, path in enumerate(paths):
+        print(f"\n... Loading source data from: {path}")
+        
+        try:
+            with open(path, 'r') as csvfile:
+                csv_reader = csv.reader(csvfile)
+                
+                for index, source in enumerate(csv_reader):
+                    if index == 0:  # Skip header row if present
+                        continue
+                    
+                    # Validate row has minimum required data
+                    if len(source) < 2:
+                        raise ValueError(f"Row {index + 1}: Insufficient data. Need at least part name and well location.")
+                    
+                    # Extract values and add deck position
+                    csv_values = source[1:]
+                    csv_values.append(DECK_CONFIG.SOURCE_POSITIONS[deck_index])
+                    
+                    # Validate well format
+                    well = source[1] if len(source) > 1 else ""
+                    try:
+                        validate_well_format(well)
+                    except ValueError as e:
+                        raise ValueError(f"Row {index + 1}, part '{source[0]}': {str(e)}")
+                    
+                    # Strip whitespace from part name
+                    part_name = str(source[0]).strip()
+                    if not part_name:
+                        raise ValueError(f"Row {index + 1}: Empty part name")
+                    
+                    # Check for duplicate parts
+                    if part_name in sources_dict:
+                        raise ValueError(f"Duplicate part '{part_name}' found in source files. "
+                                       f"First occurrence in file {paths.index(path) + 1}, "
+                                       f"second occurrence in file {deck_index + 1}")
+                    
+                    sources_dict[part_name] = tuple(csv_values)
+            
+            print(f"... Successfully loaded {len([k for k in sources_dict.keys() if k in sources_dict])} parts from file {deck_index + 1}")
+            
+        except FileNotFoundError:
+            raise FileNotFoundError(f"Source file not found: {path}")
+        except Exception as e:
+            print(f"[ERROR] Failed to load source file {path}: {str(e)}")
+            raise
+    
+    print(f"\n... Total parts loaded: {len(sources_dict)}")
+    return sources_dict
 
-    def count_unique_clips(clips_df, merged_construct_dfs):
-        ''' Count number of each CLIP reaction
-            Iterates through unique clip list, counts number of instances of each unique clip, adds this as a new column'''
+
+def generate_clips_df(constructs_list: List[pd.DataFrame]) -> pd.DataFrame:
+    """Generates a dataframe containing information about all unique CLIP reactions.
+    
+    For each unique CLIP reaction, calculates:
+    - Number of times it's needed
+    - Magnetic bead well locations
+    - CLIP plate assignments
+    
+    Args:
+        constructs_list (List[pd.DataFrame]): List of dataframes containing CLIP reaction 
+            components for each construct
+
+    Returns:
+        pd.DataFrame: DataFrame containing all unique CLIP reactions with columns:
+            - prefixes: Prefix linker identifiers
+            - parts: Part identifiers
+            - suffixes: Suffix linker identifiers
+            - number: Number of times this CLIP reaction is needed
+            - mag_well: Tuple of magnetic bead well locations
+            - plate: Tuple of CLIP plate numbers
+
+    Raises:
+        ValueError: If total number of CLIP reactions exceeds maximum allowed
+    """
+    def count_unique_clips(clips_df: pd.DataFrame, merged_construct_dfs: pd.DataFrame) -> pd.DataFrame:
+        """Counts how many times each unique CLIP reaction is needed.
+        
+        Args:
+            clips_df (pd.DataFrame): DataFrame of unique CLIP reactions
+            merged_construct_dfs (pd.DataFrame): DataFrame of all CLIP reactions
+            
+        Returns:
+            pd.DataFrame: DataFrame with added 'number' column indicating count
+        """
         clip_count = np.zeros(len(clips_df.index))
         for i, unique_clip in clips_df.iterrows():
             for _, clip in merged_construct_dfs.iterrows():
                 if unique_clip.equals(clip):
                     clip_count[i] += 1
-        clip_count = clip_count // FINAL_ASSEMBLIES_PER_CLIP + 1
+                    
+        # Calculate number of reactions needed based on final assemblies per CLIP
+        clip_count = clip_count // PROTOCOL_CONFIG.ASSEMBLY_FINAL_ASSEMBLIES_PER_CLIP + 1
+        
+        # Add the number column to the DataFrame
         clips_df['number'] = [int(i) for i in clip_count.tolist()]
+
         return clips_df
+
+    # Merge all constructs and find unique CLIP reactions
+    merged_construct_dfs = pd.concat(constructs_list, ignore_index=True)
+    unique_clips_df = merged_construct_dfs.drop_duplicates().reset_index(drop=True)
+    clips_df = unique_clips_df.copy()
     
+    # Count occurrences of each unique CLIP reaction
     clips_df = count_unique_clips(unique_clips_df, merged_construct_dfs)
     
-    # Associate well/s and plate/s for each CLIP reaction
+    # Add columns for well and plate locations
     clips_df['mag_well'] = pd.Series(['0'] * len(clips_df.index), index=clips_df.index)
     clips_df['plate'] = pd.Series(['0'] * len(clips_df.index), index=clips_df.index)
-    clip_count = 0
     
-    for unique_clip_count, clip_number in clips_df['number'].items():   # clip number is the number of each unique clip that must be built
+    # Assign well and plate locations for each CLIP reaction
+    clip_count = 0
+    for unique_clip_count, clip_number in clips_df['number'].items():
         mag_wells = []
         plates = []         
 
-        for well in range(clip_count, clip_count + clip_number):    # generate mag well and plate value(s) for a given unique clip
+        for well in range(clip_count, clip_count + clip_number):
             mag_wells.append(tip_counter(well % 96))
-            plates.append(1 + well//96)                             # plus one for one indexing
+            plates.append(1 + well//96)
             
         clips_df.at[unique_clip_count, 'mag_well'] = tuple(mag_wells)
         clips_df.at[unique_clip_count, 'plate'] = tuple(plates)
-        clip_count += clip_number       # increase count of all previous clips by amount for current unique clip
+        clip_count += clip_number
 
     return clips_df
 
 
-def generate_sources_dict(paths):
-    """Imports csvs files containing a series of parts/linkers with
-    corresponding information into a dictionary where the key corresponds with
-    part/linker and the value contains a tuple of corresponding information.
-
+def generate_clips_dict(clips_df: pd.DataFrame, sources_dict: Dict[str, Tuple[str, ...]]) -> Dict[str, List]:
+    """Generates dictionary of CLIP reaction information for OT-2 script.
+    
     Args:
-        paths (list): list of strings each corresponding to a path for a
-                      sources csv file.
+        clips_df (pd.DataFrame): DataFrame containing CLIP reaction information
+        sources_dict (Dict[str, Tuple[str, ...]]): Dictionary mapping parts/linkers
+            to their source locations
 
+    Returns:
+        Dict[str, List]: Dictionary containing:
+            - prefixes_wells: List of prefix linker well locations
+            - prefixes_plates: List of prefix linker plate numbers
+            - suffixes_wells: List of suffix linker well locations
+            - suffixes_plates: List of suffix linker plate numbers
+            - parts_wells: List of part well locations
+            - parts_plates: List of part plate numbers
+            - parts_vols: List of part volumes
+            - water_vols: List of water volumes
+
+    Raises:
+        ValueError: If required parts/linkers are missing from sources_dict
     """
-    sources_dict = {}
-    for deck_index, path in enumerate(paths):
-        with open(path, 'r') as csvfile:
-            csv_reader = csv.reader(csvfile)
-            for index, source in enumerate(csv_reader):
-                if index != 0:
-                    csv_values = source[1:]
-                    csv_values.append(SOURCE_DECK_POS[deck_index])
-                    sources_dict[str(source[0])] = tuple(csv_values)
-    return sources_dict
+    # Calculate maximum part volume based on total reaction volume
+    max_part_vol = PROTOCOL_CONFIG.CLIP_VOL - (
+        PROTOCOL_CONFIG.CLIP_T4_BUFF_VOL + 
+        PROTOCOL_CONFIG.CLIP_BSAI_VOL + 
+        PROTOCOL_CONFIG.CLIP_T4_LIG_VOL + 
+        PROTOCOL_CONFIG.CLIP_MAST_WATER + 2
+    )
 
-
-def generate_clips_dict(clips_df, sources_dict):
-    """Using clips_df and sources_dict, returns a clips_dict which acts as the
-    sole variable for the opentrons script "clip.ot2.py".
-
-    """
-    # print('\nsources_dict', sources_dict) ###############
-    max_part_vol = CLIP_VOL - (T4_BUFF_VOL + BSAI_VOL + T4_LIG_VOL
-                               + CLIP_MAST_WATER + 2)
-    clips_dict = {'prefixes_wells': [], 'prefixes_plates': [],
-                  'suffixes_wells': [], 'suffixes_plates': [],
-                  'parts_wells': [], 'parts_plates': [], 'parts_vols': [],
-                  'water_vols': []}
+    # Initialize dictionary for CLIP reaction information
+    clips_dict = {
+        'prefixes_wells': [],
+        'prefixes_plates': [],
+        'suffixes_wells': [],
+        'suffixes_plates': [],
+        'parts_wells': [],
+        'parts_plates': [],
+        'parts_vols': [],
+        'water_vols': []
+    }
 
     # Check for missing parts in sources_dict
     missing_parts = []
@@ -491,45 +1052,56 @@ def generate_clips_dict(clips_df, sources_dict):
         error_msg += "\n".join(missing_parts)
         raise ValueError(error_msg)
 
-    # Generate clips_dict from args
-    for _, clip_info in clips_df.iterrows():
-        prefix_linker = clip_info['prefixes'].strip()
-        clips_dict['prefixes_wells'].append([sources_dict[prefix_linker][0]]
-                                            * clip_info['number'])
-        clips_dict['prefixes_plates'].append(
-            [handle_2_columns(sources_dict[prefix_linker])[2]] * clip_info['number'])
-        suffix_linker = clip_info['suffixes'].strip()
-        clips_dict['suffixes_wells'].append([sources_dict[suffix_linker][0]]
-                                            * clip_info['number'])
-        clips_dict['suffixes_plates'].append(
-            [handle_2_columns(sources_dict[suffix_linker])[2]] * clip_info['number'])
-        part = clip_info['parts'].strip()
-        clips_dict['parts_wells'].append([sources_dict[part][0]]
-                                            * clip_info['number'])
-        clips_dict['parts_plates'].append([handle_2_columns(sources_dict[part])[2]]
-                                            * clip_info['number'])
-        if not sources_dict[part][1]:                               # add default vols for part and water if not user defined
-            clips_dict['parts_vols'].append([DEFAULT_PART_VOL] *
-                                            clip_info['number'])
-            clips_dict['water_vols'].append([max_part_vol - DEFAULT_PART_VOL]
-                                            * clip_info['number'])
-        else:                                                       # add bespoke vols for part and water if part has a declared conc
-            part_vol = round(
-                PART_PER_CLIP / float(sources_dict[part][1]), 1)
-            if part_vol < MIN_VOL:
-                part_vol = MIN_VOL
-            elif part_vol > max_part_vol:
-                part_vol = max_part_vol
-            water_vol = max_part_vol - part_vol
-            clips_dict['parts_vols'].append(
-                [part_vol] * clip_info['number'])
-            clips_dict['water_vols'].append(
-                [water_vol] * clip_info['number'])
-                
-    for key, value in clips_dict.items():                               # unlist all sublist in clips dict to yield a single list as the value for every key
-        clips_dict[key] = [item for sublist in value for item in sublist]
+    try:
+        # Generate CLIP reaction information
+        for _, clip_info in clips_df.iterrows():
+            # Process prefix linker
+            prefix_linker = clip_info['prefixes'].strip()
+            clips_dict['prefixes_wells'].append([sources_dict[prefix_linker][0]] * clip_info['number'])
+            clips_dict['prefixes_plates'].append(
+                [handle_2_columns(sources_dict[prefix_linker])[2]] * clip_info['number'])
+            
+            # Process suffix linker
+            suffix_linker = clip_info['suffixes'].strip()
+            clips_dict['suffixes_wells'].append([sources_dict[suffix_linker][0]] * clip_info['number'])
+            clips_dict['suffixes_plates'].append(
+                [handle_2_columns(sources_dict[suffix_linker])[2]] * clip_info['number'])
+            
+            # Process part
+            part = clip_info['parts'].strip()
+            clips_dict['parts_wells'].append([sources_dict[part][0]] * clip_info['number'])
+            clips_dict['parts_plates'].append(
+                [handle_2_columns(sources_dict[part])[2]] * clip_info['number'])
+            
+            # Calculate part and water volumes
+            if not sources_dict[part][1]:  # No concentration specified
+                clips_dict['parts_vols'].append(
+                    [PROTOCOL_CONFIG.CLIP_DEFAULT_PART_VOL] * clip_info['number'])
+                clips_dict['water_vols'].append(
+                    [max_part_vol - PROTOCOL_CONFIG.CLIP_DEFAULT_PART_VOL] * clip_info['number'])
+            else:  # Use specified concentration
+                part_vol = round(
+                    PROTOCOL_CONFIG.CLIP_PART_PER_CLIP / float(sources_dict[part][1]), 1)
+                part_vol = max(PROTOCOL_CONFIG.CLIP_MIN_VOL,
+                             min(part_vol, max_part_vol))
+                water_vol = max_part_vol - part_vol
+                clips_dict['parts_vols'].append([part_vol] * clip_info['number'])
+                clips_dict['water_vols'].append([water_vol] * clip_info['number'])
+                    
+        # Flatten nested lists
+        for key, value in clips_dict.items():
+            clips_dict[key] = [item for sublist in value for item in sublist]
 
-    return clips_dict
+        return clips_dict
+        
+    except Exception as e:
+        print(f"\nError generating clips dictionary:")
+        print(f"Error: {str(e)}")
+        print(f"Error type: {type(e)}")
+        import traceback
+        print("\nFull traceback:")
+        traceback.print_exc()
+        raise
 
 
 def generate_clips_dict_list(clips_df, sources_dict):
@@ -558,27 +1130,25 @@ def generate_clips_dict_list(clips_df, sources_dict):
     
     long_clip_df = clip_df_long_format(clips_df)
 
-    # CLIP_COUNT = len(clips_df)
     CLIP_COUNT = clips_df['number'].sum()
-    CLIP_PLATE_COUNT = int(CLIP_COUNT // MAX_CLIPS_PER_PLATE + 1)       # plus one to include final partially full plate
+    CLIP_PLATE_COUNT = int(CLIP_COUNT // PROTOCOL_CONFIG.ASSEMBLY_MAX_CLIPS_PER_PLATE + 1)       # plus one to include final partially full plate
 
     # Error 
-    if clips_df['number'].sum() > MAX_CLIPS_TOTAL:
-        raise ValueError('Number of CLIP reactions exceeds {}. Reduce number of constructs in construct.csv.'.format(MAX_CLIPS_TOTAL))
+    if clips_df['number'].sum() > PROTOCOL_CONFIG.ASSEMBLY_MAX_CLIPS_TOTAL:
+        raise ValueError('Number of CLIP reactions exceeds {}. Reduce number of constructs in construct.csv.'.format(PROTOCOL_CONFIG.ASSEMBLY_MAX_CLIPS_TOTAL))
     
     if clips_df['number'].sum() < 96:                                   # if less clips required than one full plate, the second desk slot can be used for tips
-        MAX_FINAL_ASSEMBLY_TIPRACKS = 5
+        PROTOCOL_CONFIG.ASSEMBLY_MAX_FINAL_ASSEMBLY_TIPRACKS = 5
 
     clips_dict_list = []
 
     for plate in range(CLIP_PLATE_COUNT):
-        subset_lower = (plate * MAX_CLIPS_PER_PLATE)                    # set upper and lower bounds for subset of clips for a given plate
-        subset_upper = subset_lower + MAX_CLIPS_PER_PLATE
+        subset_lower = (plate * PROTOCOL_CONFIG.ASSEMBLY_MAX_CLIPS_PER_PLATE)                    # set upper and lower bounds for subset of clips for a given plate
+        subset_upper = subset_lower + PROTOCOL_CONFIG.ASSEMBLY_MAX_CLIPS_PER_PLATE
 
         if subset_upper > CLIP_COUNT:                                   # set total number number of clips as upper bound if plate incomplete
             subset_upper = CLIP_COUNT
     
-        # sub_clip_df = clips_df.iloc[subset_lower:subset_upper, :]
         sub_clip_df = long_clip_df.iloc[subset_lower:subset_upper, :]
         sub_clip_dict = generate_clips_dict(sub_clip_df, sources_dict)
         clips_dict_list.append(sub_clip_dict)                           # generate and append sub_clip_dict to list - allows for multiple clip reactions
@@ -615,7 +1185,7 @@ def generate_final_assembly_dict(constructs_list, clips_df):
             clip_wells = clip_info.at[clip_num, 'mag_well']                         # list of all mag_wells for this clip
             clip_plates = clip_info.at[clip_num, 'plate']                           # list of all plates for this clip
 
-            chosen_well_index = int(clips_count[clip_num] // FINAL_ASSEMBLIES_PER_CLIP)     # next viable mag well for this clip (i.e. the nth well in the set of total number of wells for this unique clip)  
+            chosen_well_index = int(clips_count[clip_num] // PROTOCOL_CONFIG.ASSEMBLY_FINAL_ASSEMBLIES_PER_CLIP)     # next viable mag well for this clip (i.e. the nth well in the set of total number of wells for this unique clip)  
             clip_well = clip_wells[chosen_well_index]
             clip_plate = clip_plates[chosen_well_index]
             construct_well_list.append(clip_well)
@@ -631,150 +1201,124 @@ def generate_final_assembly_dict(constructs_list, clips_df):
     return final_assembly_dict_keys, final_assembly_dict_values                     # return list of dict keys and values
 
 
-def generate_final_assembly_dict_list(constructs_list, clips_df):
-    ''' Runs the generate_final_assembly_dict function producing a list of 
-    dictionaries of the assembly source and destination. Subsets the list of 
-    assemblies so that 1) the maximum number of tips used does no to 96 (max assemblies 
-    per plate). A sub dictionary is generated for each chunk and then function  
-    returns a list of the resulting sub assembly dicts
-    
-    This method ensures that subsequent assembly scripts do not reuse empty clip 
-    wells while also keeping the correct destination well locations '''
-
-    CONSTRUCT_COUNT_TOTAL = len(constructs_list)
-    # ASSEMBLY_PLATE_COUNT = CONSTRUCT_COUNT_TOTAL // MAX_ASSEMBLIES_PER_PLATE + 1           # plus one to include final partially full plate ################# old version
-
-    # # Error ########################### NO ERROR AS NO MAX ASSEMBLIES
-    # if clips_df['number'].sum() > MAX_CLIPS_TOTAL:
-    #     raise ValueError(
-    #         'Number of CLIP reactions exceeds {}. Reduce number of constructs in construct.csv.'.format(MAX_CLIPS_TOTAL))
-
-    # final_assembly_dict = generate_final_assembly_dict(constructs_list, clips_df) ###### old version (returns dictionary rather than keys and values)
-
-    final_assembly_dict_keys, final_assembly_dict_values = generate_final_assembly_dict(constructs_list, clips_df)
-
-    construct_count  = 0                                                                         # number of assemblies for current assembly script (<96)
-    master_mix_tips = len(list({len(sublist[0]) for sublist in final_assembly_dict_values}))    # returns the length list of unique construct lengths in build - this represents the number of tips needed for MM transfer
-    tip_count       = master_mix_tips
-
-    assembly_subset_lower = 0                                                                   # set upper and lower bounds for subset of assemblies for a given plate
-    assembly_subset_upper = 0
-    
-    keys    = []
-    values  = []
-    assembly_dict_list = []
-    
-    for i, construct in enumerate(final_assembly_dict_values):
-        
-        is_new_assembly_tips    = bool((tip_count + len(construct[0])) // (TIPS_PER_BOX * MAX_FINAL_ASSEMBLY_TIPRACKS)) # new assembly when out of tips (tips required exceeds cap)
-        is_new_assembly_wells   = construct_count == MAX_ASSEMBLIES_PER_PLATE                                            # new assembly when over assembly limit (exceeds number of assembly plate wells)
-        is_new_assembly_end     = i+1 == len(final_assembly_dict_values)                                                # new assembly when final construct reached
-        is_new_assembly = is_new_assembly_tips or is_new_assembly_wells or is_new_assembly_end
-
-        if is_new_assembly:
-            assembly_subset_lower = assembly_subset_upper
-            assembly_subset_upper = i
-
-            if is_new_assembly_end:
-                keys.append(tip_counter(construct_count))
-                assembly_subset_upper = CONSTRUCT_COUNT_TOTAL            #
-
-            values = final_assembly_dict_values[assembly_subset_lower:assembly_subset_upper]
-
-            sub_assembly_dict = {keys[i]: values[i] for i in range(len(keys))}
-            assembly_dict_list.append(sub_assembly_dict)                # generate and append sub_clip_dict to list - allows for multiple clip reactions
-
-            keys    = []
-            values  = []
-
-            tip_count = master_mix_tips                                 # reset tips for new assembly and include tips for distribution of master mix
-            construct_count = 0
-
-        for tip in range(len(construct[0])):
-            tip_count += 1
-            print(i, '\ttip =', tip_count + tip)
-
-
-        keys.append(tip_counter(construct_count))
-        construct_count += 1 
-
-    # assembly_dict_list_old = [] ############# old version - iterates by assembly and not by tip, subsets only by max assemblies not by max tips
-
-    # for plate in range(ASSEMBLY_PLATE_COUNT):
-    #     subset_lower = (plate * MAX_ASSEMBLIES_PER_PLATE)               # set upper and lower bounds for subset of assemblies for a given plate
-    #     subset_upper = subset_lower + MAX_ASSEMBLIES_PER_PLATE
-
-    #     if subset_upper > CONSTRUCT_COUNT_TOTAL:                               # set total number number of assemblies as upper bound if plate incomplete
-    #         subset_upper = CONSTRUCT_COUNT_TOTAL
-
-    #     # sub_assembly_df = constructs_list[subset_lower:subset_upper]
-    #     # sub_assembly_dict = generate_final_assembly_dict(sub_assembly_df, clips_df)
-
-    #     keys = [tip_counter(i) for i in list(range(subset_upper - subset_lower))]
-    #     values = final_assembly_dict_values[subset_lower:subset_upper]
-    #     sub_assembly_dict = {keys[i]: values[i] for i in range(len(keys))}
-    #     # print(values, '\n')
-
-    #     assembly_dict_list_old.append(sub_assembly_dict)                    # generate and append sub_clip_dict to list - allows for multiple clip reactions
-
-    
-
-
-    return assembly_dict_list
-
-
-def calculate_final_assembly_tipracks(final_assembly_dict):
-    """Calculates the number of final assembly tipracks required ensuring
-    no more than MAX_FINAL_ASSEMBLY_TIPRACKS are used.
-
+def generate_final_assembly_dict_list(constructs_list: List[pd.DataFrame], 
+                                     clips_df: pd.DataFrame) -> List[Dict[str, List]]:
     """
-    final_assembly_lens = []
-    # final_assembly_dict = final_assembly_dict[0]
-
-    for values in final_assembly_dict.values():
-        final_assembly_lens.append(len(values[0]))                      # create a list of number of clips per assembly 
-        
-    master_mix_tips = len(list(set(final_assembly_lens)))               # number of different unique build lengths in construct build
-    total_tips = master_mix_tips + sum(final_assembly_lens) 
-    final_assembly_tipracks = (total_tips - 1) // TIPS_PER_BOX + 1
-    print(final_assembly_tipracks, MAX_FINAL_ASSEMBLY_TIPRACKS)
-    if final_assembly_tipracks > MAX_FINAL_ASSEMBLY_TIPRACKS:
-        raise ValueError(
-            'Final assembly tiprack number exceeds number of slots. Reduce number of constructs in constructs.csv')
-    else:
-        return final_assembly_tipracks
-
-
-def generate_spotting_tuples(constructs_list, spotting_vols_dict):
-    """Using constructs_list, generates a spotting tuple
-    (Refer to 'transformation_spotting_template.py') for every column of
-    constructs, assuming the 1st construct is located in well A1 and wells
-    increase linearly. Target wells locations are equivalent to construct well
-    locations and spotting volumes are defined by spotting_vols_dict.
-
+    Generate a list of assembly dictionaries, each representing a subset of constructs
+    that can be assembled on a single plate while respecting tip and well constraints.
+    
+    This function ensures that:
+    1. No more than MAX_ASSEMBLIES_PER_PLATE constructs are assembled per plate
+    2. Tip usage doesn't exceed available tiprack capacity
+    3. Each construct gets the correct destination well location
+    4. CLIP wells are not reused across different assembly plates
+    
     Args:
-        spotting_vols_dict (dict): Part number defined by keys, spottting
-            volumes defined by corresponding value.
-
+        constructs_list: List of DataFrames, each containing CLIP reactions for one construct
+        clips_df: DataFrame containing all unique CLIP reactions with their locations
+        
+    Returns:
+        List of dictionaries, where each dictionary maps destination wells to 
+        [clip_wells_list, clip_plates_list] for the constructs in that assembly plate
+        
+    Raises:
+        ValueError: If the number of constructs exceeds protocol limits
     """
-    # Calculate wells and volumes
-    wells = [tip_counter(x) for x in range(len(constructs_list))]
-    vols = [SPOTTING_VOLS_DICT[len(construct_df.index)]
-            for construct_df in constructs_list]
+    total_constructs = len(constructs_list)
+    
+    # Generate the complete assembly plan for all constructs
+    assembly_keys, assembly_values = generate_final_assembly_dict(constructs_list, clips_df)
+    
+    # Calculate the number of unique construct lengths (affects master mix tip usage)
+    unique_construct_lengths = {len(assembly_value[0]) for assembly_value in assembly_values}
+    master_mix_tip_count = len(unique_construct_lengths)
+    
+    # Initialize tracking variables
+    current_assembly_plate = []
+    current_tip_count = master_mix_tip_count
+    assembly_plates = []
+    
+    for construct_index, (construct_key, construct_value) in enumerate(zip(assembly_keys, assembly_values)):
+        # Calculate tips needed for this construct
+        construct_tips_needed = len(construct_value[0])  # Number of CLIP reactions in this construct
+        
+        # Check if we need to start a new assembly plate
+        tips_would_exceed_limit = (
+            current_tip_count + construct_tips_needed > 
+            PROTOCOL_CONFIG.ASSEMBLY_TIPS_PER_BOX * PROTOCOL_CONFIG.ASSEMBLY_MAX_FINAL_ASSEMBLY_TIPRACKS
+        )
+        wells_would_exceed_limit = len(current_assembly_plate) >= PROTOCOL_CONFIG.ASSEMBLY_MAX_ASSEMBLIES_PER_PLATE
+        is_last_construct = construct_index == total_constructs - 1
+        
+        # Add construct to current plate first
+        current_assembly_plate.append((construct_key, construct_value))
+        current_tip_count += construct_tips_needed
+        
+        # Then check if we need to finalise this plate
+        should_finalise_plate = (
+            tips_would_exceed_limit or 
+            wells_would_exceed_limit or 
+            is_last_construct
+        )
+        
+        if should_finalise_plate:
+            # Finalize current assembly plate
+            assembly_plates.append(dict(current_assembly_plate))
+            
+            # Reset for next plate (unless this was the last construct)
+            if not is_last_construct:
+                current_assembly_plate = []
+                current_tip_count = master_mix_tip_count
+    
+    return assembly_plates
 
-    # Package spotting tuples
-    spotting_tuple_num = len(constructs_list)//8 + (1
-                                                    if len(constructs_list) % 8 > 0 else 0)
-    spotting_tuples = []
-    for x in range(spotting_tuple_num):
-        if x == spotting_tuple_num - 1:
-            tuple_wells = tuple(wells[8*x:])
-            tuple_vols = tuple(vols[8*x:])
-        else:
-            tuple_wells = tuple(wells[8*x:8*x + 8])
-            tuple_vols = tuple(vols[8*x:8*x + 8])
-        spotting_tuples.append((tuple_wells, tuple_wells, tuple_vols))
-    return spotting_tuples
+
+def calculate_final_assembly_tipracks(final_assembly_dict: Dict[str, List]) -> int:
+    """
+    Calculate the number of tipracks required for final assembly operations.
+    
+    This function determines how many tipracks are needed based on:
+    1. Master mix distribution tips (one per unique construct length)
+    2. Individual CLIP transfer tips (one per CLIP reaction per construct)
+    
+    Args:
+        final_assembly_dict: Dictionary mapping destination wells to 
+            [clip_wells_list, clip_plates_list] for constructs
+            
+    Returns:
+        Number of tipracks required for the assembly
+        
+    Raises:
+        ValueError: If the calculated tipracks exceed the maximum allowed
+    """
+    # Count CLIP reactions per construct
+    clips_per_construct = []
+    for construct_data in final_assembly_dict.values():
+        clips_per_construct.append(len(construct_data[0]))
+    
+    # Calculate unique construct lengths (affects master mix tip usage)
+    unique_construct_lengths = set(clips_per_construct)
+    master_mix_tip_count = len(unique_construct_lengths)
+    
+    # Calculate total tips needed
+    total_clip_tips = sum(clips_per_construct)
+    total_tips = master_mix_tip_count + total_clip_tips
+    
+    # Calculate number of tipracks needed
+    tips_per_box = PROTOCOL_CONFIG.ASSEMBLY_TIPS_PER_BOX
+    tipracks_needed = (total_tips - 1) // tips_per_box + 1
+    
+    max_allowed_tipracks = PROTOCOL_CONFIG.ASSEMBLY_MAX_FINAL_ASSEMBLY_TIPRACKS
+    
+    print(f"Tipracks calculated: {tipracks_needed}, Maximum allowed: {max_allowed_tipracks}")
+    
+    if tipracks_needed > max_allowed_tipracks:
+        raise ValueError(
+            f'Final assembly tiprack number ({tipracks_needed}) exceeds maximum allowed ({max_allowed_tipracks}). '
+            'Reduce number of constructs in constructs.csv.'
+        )
+    
+    return tipracks_needed
 
 
 def generate_ot2_script(ot2_script_path, template_path, **kwargs):
@@ -783,29 +1327,64 @@ def generate_ot2_script(ot2_script_path, template_path, **kwargs):
     keyword defines the variable name while the value defines the name of the
     variable. The remainder of template file is subsequently written below.
 
+    Args:
+        ot2_script_path (str): Path where the OT-2 script will be written
+        template_path (str): Path to the template file
+        **kwargs: Variables to be written at the top of the script
+
+    Raises:
+        FileNotFoundError: If template file is not found
+        IOError: If there are issues reading/writing files
     """
-    with open(ot2_script_path, 'w') as wf:
-        with open(template_path, 'r') as rf:
-            for index, line in enumerate(rf):
-                if line[:3] == 'def':
-                    function_start = index
-                    break
-                else:
-                    wf.write(line)
-            for key, value in kwargs.items():
-                wf.write('{}='.format(key))
-                if type(value) == dict:
-                    wf.write(json.dumps(value))
-                elif type(value) == str:
-                    wf.write("'{}'".format(value))
-                else:
-                    wf.write(str(value))
+    try:
+        print(f"Generating OT-2 script: {os.path.basename(ot2_script_path)}")
+        print(f"Using template: {os.path.basename(template_path)}")
+        
+        if not os.path.exists(template_path):
+            raise FileNotFoundError(f"Template file not found: {template_path}")
+            
+        with open(ot2_script_path, 'w') as wf:
+            with open(template_path, 'r') as rf:
+                # Find the start of the function definition
+                function_start = None
+                for index, line in enumerate(rf):
+                    if line[:3] == 'def':
+                        function_start = index
+                        break
+                    else:
+                        wf.write(line)
+                
+                if function_start is None:
+                    raise ValueError(f"No function definition found in template: {template_path}")
+                
+                # Write the variables
+                for key, value in kwargs.items():
+                    wf.write('{}='.format(key))
+                    if type(value) == dict:
+                        wf.write(json.dumps(value))
+                    elif type(value) == str:
+                        wf.write("'{}'".format(value))
+                    else:
+                        wf.write(str(value))
+                    wf.write('\n')
                 wf.write('\n')
-            wf.write('\n')
-        with open(template_path, 'r') as rf:
-            for index, line in enumerate(rf):
-                if index >= function_start - 1:
-                    wf.write(line)
+                
+            # Write the rest of the template
+            with open(template_path, 'r') as rf:
+                for index, line in enumerate(rf):
+                    if index >= function_start - 1:
+                        wf.write(line)
+                        
+        print(f"Successfully generated OT-2 script: {os.path.basename(ot2_script_path)}")
+        
+    except Exception as e:
+        print(f"\nError generating OT-2 script {os.path.basename(ot2_script_path)}:")
+        print(f"Error: {str(e)}")
+        print(f"Error type: {type(e)}")
+        import traceback
+        print("\nFull traceback:")
+        traceback.print_exc()
+        raise
 
 
 def generate_new_constructs_df(construct_path, final_assembly_dict_list):
@@ -813,6 +1392,19 @@ def generate_new_constructs_df(construct_path, final_assembly_dict_list):
     according to the new order applied in the 
     'generate_final_assembly_dict_list' function, returning a new constructs
     csv with the new locations of each construct given.
+    
+    Args:
+        construct_path (str): Path to the original constructs CSV file
+        final_assembly_dict_list (List[Dict]): List of assembly dictionaries
+        
+    Returns:
+        pd.DataFrame: DataFrame with the original construct data plus new
+            Assembly and Well columns showing the final locations
+            
+    Note:
+        The input CSV should have headers, with the first column being the
+        construct ID/name and subsequent columns containing the construct
+        components (linkers, parts, etc.).
     """
     assembly_list   = []
     well_list       = []
@@ -841,11 +1433,17 @@ def generate_master_mix_df(clip_number):
                                 'Promega T4 DNA Ligase']}
     VOL_COLUMN = 'Volume (uL)'
     master_mix_df = pd.DataFrame.from_dict(COMPONENTS)
-    master_mix_df[VOL_COLUMN] = (clip_number + CLIP_DEAD_VOL/CLIP_VOL) * \
-        np.array([T4_BUFF_VOL,
-                  CLIP_MAST_WATER,
-                  BSAI_VOL,
-                  T4_LIG_VOL])
+    
+    # Calculate volumes for each component
+    clip_vol = PROTOCOL_CONFIG.CLIP_VOL
+    dead_vol = PROTOCOL_CONFIG.CLIP_DEAD_VOL
+    t4_buff_vol = PROTOCOL_CONFIG.CLIP_T4_BUFF_VOL
+    mast_water = PROTOCOL_CONFIG.CLIP_MAST_WATER
+    bsai_vol = PROTOCOL_CONFIG.CLIP_BSAI_VOL
+    t4_lig_vol = PROTOCOL_CONFIG.CLIP_T4_LIG_VOL
+    
+    master_mix_df[VOL_COLUMN] = (clip_number + dead_vol/clip_vol) * \
+        np.array([t4_buff_vol, mast_water, bsai_vol, t4_lig_vol])
     return master_mix_df
 
 
@@ -859,7 +1457,7 @@ def generate_sources_paths_df(paths, deck_positions):
     """
     source_plates_dict = {'Deck position': [], 'Source plate': [], 'Path': []}
     for index, path in enumerate(paths):
-        source_plates_dict['Deck position'].append(SOURCE_DECK_POS[index])
+        source_plates_dict['Deck position'].append(DECK_CONFIG.SOURCE_POSITIONS[index])
         source_plates_dict['Source plate'].append(os.path.basename(path))
         source_plates_dict['Path'].append(path)
     return pd.DataFrame(source_plates_dict)
@@ -879,52 +1477,381 @@ def dfs_to_csv(path, index=True, **kw_dfs):
             csvwriter.writerow('')
 
 
-def handle_2_columns(datalist):
-    """This function has the intent of changing:
-    ('A8', '2') => ('A8', '', '2')
-    ('A8', '', '2') => ('A8', '', '2')
-    [('E2', '5')] => [('E2', '', '5')]
-    [('G1', '', '5')] => [('G1', '', '5')]
-    with the purpose of handling 2 column csv part file inputs,
-    as at times when 2 column csv files are input it creates tuples
-    of length 2 instead of 3
+def convert_well_coordinates(well_position: Union[int, str], rows_per_plate: int = 8) -> str:
     """
-    return_list = 0
-    if isinstance(datalist,list):
-        datalist = datalist[0]
-        return_list = 1
-    if len(datalist) == 2:
-        datalist = list(datalist)
-        datalist.insert(1,"")
-        datalist = tuple(datalist)
-    if return_list:
-        mylist = [""]
-        mylist[0] = datalist
-        return mylist
-    return datalist
-
-
-def counter(rows):
-    def inner(n):
-        """ Takes either a value or a well location and converts to other fomat """
+    Convert between well position index and well coordinate format.
+    
+    This function handles bidirectional conversion:
+    - Integer index (0-based) -> Well coordinate (e.g., 0 -> 'A1', 8 -> 'B1')
+    - Well coordinate -> Integer index (e.g., 'A1' -> 0, 'B1' -> 8)
+    
+    Args:
+        well_position: Either an integer index or a well coordinate string
+        rows_per_plate: Number of rows in the plate (default: 8 for 96-well plate)
         
-        row_dict = {0: "A", 1: "B", 2: "C", 3: "D", 4: "E", 5: "F", 6: "G", 7: "H"}
-        inv_row_dict = {v: k for k, v in row_dict.items()}
+    Returns:
+        Converted value (string coordinate if input was int, int index if input was string)
+        
+    Examples:
+        >>> convert_well_coordinates(0)
+        'A1'
+        >>> convert_well_coordinates('A1')
+        0
+        >>> convert_well_coordinates(8)
+        'B1'
+    """
+    if isinstance(well_position, int):
+        # Convert index to well coordinate
+        row = chr(ord('A') + (well_position % rows_per_plate))
+        col = 1 + well_position // rows_per_plate
+        return f"{row}{col}"
+    
+    elif isinstance(well_position, str):
+        # Convert well coordinate to index
+        row, col = re.findall(r'\d+|\D+', well_position)
+        col = int(col) - 1
+        return col * rows_per_plate + (ord(row) - ord('A'))
+    
+    else:
+        raise TypeError(f"Expected int or str, got {type(well_position)}")
 
-        if type(n) == int:
-            row = row_dict[n % rows]
-            col = 1 + n // rows
-            return row + f'{col}'
-            # return row + f'{col:02d}' # for if 2 sf number required (i.e. 'A01' rather than 'A1')
 
-        elif type(n) == str:
-            row, col = re.findall('\d+|\D+', n)
-            col = int(col) - 1
+# Legacy function for backward compatibility
+def counter(rows: int):
+    """Legacy function - use convert_well_coordinates instead."""
+    return lambda n: convert_well_coordinates(n, rows)
 
-            return col*rows + inv_row_dict[row]
 
-    return inner
-tip_counter = counter(8)
+# Global well coordinate converter for 96-well plates
+tip_counter = convert_well_coordinates
+
+
+def normalize_source_data(data_tuple: Union[Tuple, List]) -> Tuple[str, str, str]:
+    """
+    Normalize source data to ensure consistent 3-column format.
+    
+    This function handles both 2-column and 3-column CSV formats by ensuring
+    the concentration field is always present (empty string if not provided).
+    
+    Args:
+        data_tuple: Tuple or list containing source data
+        
+    Returns:
+        Normalized 3-element tuple: (well, concentration, deck_position)
+        
+    Examples:
+        >>> normalize_source_data(('A8', '2'))
+        ('A8', '', '2')
+        >>> normalize_source_data(('A8', '', '2'))
+        ('A8', '', '2')
+    """
+    if isinstance(data_tuple, list):
+        data_tuple = data_tuple[0]
+    
+    if len(data_tuple) == 2:
+        # Insert empty concentration field
+        return (data_tuple[0], "", data_tuple[1])
+    elif len(data_tuple) >= 3:
+        # Return first three elements
+        return (data_tuple[0], data_tuple[1], data_tuple[2])
+    else:
+        raise ValueError(f"Expected 2 or more elements, got {len(data_tuple)}")
+
+
+# Legacy function for backward compatibility
+def handle_2_columns(datalist):
+    """Legacy function - use normalize_source_data instead."""
+    return normalize_source_data(datalist)
+
+
+def validate_construct_data(constructs_list: List[pd.DataFrame], clips_df: pd.DataFrame) -> None:
+    """
+    Validate that construct data is properly formatted and within protocol limits.
+    
+    Args:
+        constructs_list: List of DataFrames containing construct information
+        clips_df: DataFrame containing CLIP reaction information
+        
+    Raises:
+        ValueError: If constructs are malformed or exceed limits
+    """
+    if not constructs_list:
+        raise ValueError("No constructs found in input file")
+    
+    # Use clips_df for accurate clip counting
+    total_clips = clips_df['number'].sum()
+    
+    max_clips = PROTOCOL_CONFIG.ASSEMBLY_MAX_CLIPS_TOTAL
+    
+    if total_clips > max_clips:
+        raise ValueError(
+            f"Total number of CLIP reactions ({total_clips}) exceeds maximum allowed ({max_clips}). "
+            "Reduce the number of constructs or simplify construct designs."
+        )
+    
+    # Validate individual constructs
+    for i, construct in enumerate(constructs_list):
+        if construct.empty:
+            raise ValueError(f"Construct {i+1} is empty")
+        
+        required_columns = ['prefixes', 'parts', 'suffixes']
+        missing_columns = [col for col in required_columns if col not in construct.columns]
+        if missing_columns:
+            raise ValueError(f"Construct {i+1} missing required columns: {missing_columns}")
+        
+        # Check for empty or invalid values
+        for col in required_columns:
+            empty_values = construct[construct[col].isna() | (construct[col] == '')]
+            if not empty_values.empty:
+                raise ValueError(f"Construct {i+1} has empty values in column '{col}' at rows: {empty_values.index.tolist()}")
+
+
+def validate_clips_data(clips_df: pd.DataFrame) -> None:
+    """
+    Validate that CLIP reaction data is properly formatted.
+    
+    Args:
+        clips_df: DataFrame containing CLIP reaction information
+        
+    Raises:
+        ValueError: If CLIP data is malformed
+    """
+    if clips_df.empty:
+        raise ValueError("No CLIP reactions found")
+    
+    required_columns = ['prefixes', 'parts', 'suffixes', 'number', 'mag_well', 'plate']
+    missing_columns = [col for col in required_columns if col not in clips_df.columns]
+    if missing_columns:
+        raise ValueError(f"CLIP DataFrame missing required columns: {missing_columns}")
+    
+    # Check for negative or zero reaction numbers
+    invalid_numbers = clips_df[clips_df['number'] <= 0]
+    if not invalid_numbers.empty:
+        raise ValueError(f"Found {len(invalid_numbers)} CLIP reactions with invalid numbers (≤0): {invalid_numbers.index.tolist()}")
+    
+    # Check for empty values in required columns
+    for col in ['prefixes', 'parts', 'suffixes']:
+        empty_values = clips_df[clips_df[col].isna() | (clips_df[col] == '')]
+        if not empty_values.empty:
+            raise ValueError(f"CLIP DataFrame has empty values in column '{col}' at rows: {empty_values.index.tolist()}")
+
+
+def validate_sources_data(sources_dict: Dict[str, Tuple[str, ...]]) -> None:
+    """
+    Validate that source data is properly formatted.
+    
+    Args:
+        sources_dict: Dictionary mapping parts/linkers to source locations
+        
+    Raises:
+        ValueError: If source data is malformed
+    """
+    if not sources_dict:
+        raise ValueError("No source data found")
+    
+    invalid_entries = []
+    wells = []
+    
+    for part_name, source_data in sources_dict.items():
+        if not isinstance(source_data, (tuple, list)):
+            invalid_entries.append(f"{part_name}: expected tuple/list, got {type(source_data)}")
+            continue
+        
+        if len(source_data) < 2:
+            invalid_entries.append(f"{part_name}: insufficient data (need at least well and deck position)")
+            continue
+        
+        # Validate well format
+        well = source_data[0]
+        try:
+            validate_well_format(well)
+            wells.append(well)
+        except ValueError as e:
+            invalid_entries.append(f"{part_name}: {str(e)}")
+    
+    if invalid_entries:
+        raise ValueError("Invalid source data entries:\n" + "\n".join(invalid_entries))
+    
+    # Check for duplicate wells
+    try:
+        validate_unique_wells(wells, "source plate wells")
+    except ValueError as e:
+        raise ValueError(f"Source data validation failed: {str(e)}")
+
+
+def validate_components_availability(constructs_list: List[pd.DataFrame], 
+                                   sources_dict: Dict[str, Tuple[str, ...]]) -> None:
+    """
+    Validate that all required parts and linkers are available in the source data.
+    
+    Args:
+        constructs_list: List of DataFrames containing construct information
+        sources_dict: Dictionary mapping parts/linkers to source locations
+        
+    Raises:
+        ValueError: If any required components are missing
+    """
+    # Collect all required components
+    required_components = set()
+    for construct in constructs_list:
+        for _, row in construct.iterrows():
+            required_components.add(row['prefixes'].strip())
+            required_components.add(row['parts'].strip())
+            required_components.add(row['suffixes'].strip())
+    
+    # Check which components are missing
+    missing_components = required_components - set(sources_dict.keys())
+    
+    if missing_components:
+        raise ValueError(
+            f"The following parts/linkers are required but not found in the source data:\n"
+            f"{', '.join(sorted(missing_components))}\n\n"
+            f"Please add these components to your source CSV files."
+        )
+
+
+def validate_tip_usage(constructs_list: List[pd.DataFrame], 
+                      clips_df: pd.DataFrame) -> None:
+    """
+    Validate that the experiment doesn't exceed available tip capacity.
+    
+    Args:
+        constructs_list: List of DataFrames containing construct information
+        clips_df: DataFrame containing CLIP reaction information
+        
+    Raises:
+        ValueError: If tip usage exceeds limits
+    """
+    # Calculate total tips needed
+    total_clip_tips = clips_df['number'].sum()
+    
+    # Calculate unique construct lengths for master mix tips
+    unique_construct_lengths = set()
+    for construct in constructs_list:
+        unique_construct_lengths.add(len(construct))
+    
+    master_mix_tips = len(unique_construct_lengths)
+    total_tips = total_clip_tips + master_mix_tips
+    
+    max_tips = PROTOCOL_CONFIG.ASSEMBLY_TIPS_PER_BOX * PROTOCOL_CONFIG.ASSEMBLY_MAX_FINAL_ASSEMBLY_TIPRACKS
+    
+    if total_tips > max_tips:
+        raise ValueError(
+            f"Total tip usage ({total_tips}) exceeds maximum available ({max_tips}).\n"
+            f"Breakdown:\n"
+            f"  - CLIP transfer tips: {total_clip_tips}\n"
+            f"  - Master mix tips: {master_mix_tips}\n"
+            f"  - Total: {total_tips}\n"
+            f"  - Maximum: {max_tips}\n\n"
+            f"Consider reducing the number of constructs or simplifying construct designs."
+        )
+
+
+def log_processing_summary(constructs_list: List[pd.DataFrame], 
+                          clips_df: pd.DataFrame,
+                          sources_dict: Dict[str, Tuple[str, ...]]) -> None:
+    """
+    Log a summary of the processing results for user verification.
+    
+    Args:
+        constructs_list: List of construct DataFrames
+        clips_df: CLIP reactions DataFrame
+        sources_dict: Source locations dictionary
+    """
+    print("\n" + "="*60)
+    print("PROCESSING SUMMARY")
+    print("="*60)
+    print(f"Total constructs: {len(constructs_list)}")
+    print(f"Total CLIP reactions: {clips_df['number'].sum()}")
+    print(f"Unique CLIP reactions: {len(clips_df)}")
+    print(f"Source parts/linkers: {len(sources_dict)}")
+    
+    # Calculate some useful statistics
+    avg_clips_per_construct = sum(len(construct) for construct in constructs_list) / len(constructs_list)
+    print(f"Average CLIP reactions per construct: {avg_clips_per_construct:.1f}")
+    
+    max_clips_per_construct = max(len(construct) for construct in constructs_list)
+    min_clips_per_construct = min(len(construct) for construct in constructs_list)
+    print(f"CLIP reactions per construct range: {min_clips_per_construct} - {max_clips_per_construct}")
+    
+    print("="*60)
+
+
+def validate_well_format(well: str) -> bool:
+    """
+    Validate that a well identifier is in the correct format (e.g., 'A1' or 'H12').
+    
+    Args:
+        well (str): Well identifier to validate
+        
+    Returns:
+        bool: True if well is valid
+        
+    Raises:
+        ValueError: If well format is invalid
+    """
+    if not isinstance(well, str):
+        raise ValueError(f"Well identifier must be a string, got {type(well)}")
+    
+    if len(well) < 2 or len(well) > 3:
+        raise ValueError(f"Well identifier must be 2-3 characters long, got '{well}'")
+    
+    if not well[0].isalpha() or not well[0].isupper():
+        raise ValueError(f"Well row must be an uppercase letter, got '{well[0]}' in '{well}'")
+    
+    if not well[1:].isdigit():
+        raise ValueError(f"Well column must be a number, got '{well[1:]}' in '{well}'")
+    
+    row = ord(well[0]) - ord('A')
+    col = int(well[1:])
+    
+    if row < 0 or row > 7:
+        raise ValueError(f"Well row must be A-H, got '{well[0]}' in '{well}'")
+    
+    if col < 1 or col > 12:
+        raise ValueError(f"Well column must be 1-12, got '{col}' in '{well}'")
+    
+    return True
+
+
+def validate_unique_wells(wells: List[str], context: str = "wells") -> None:
+    """
+    Validate that all wells are unique.
+    
+    Args:
+        wells (List[str]): List of well identifiers
+        context (str): Context for error message (e.g., "source plate wells")
+        
+    Raises:
+        ValueError: If duplicate wells are found
+    """
+    seen = set()
+    duplicates = set()
+    
+    for well in wells:
+        if well in seen:
+            duplicates.add(well)
+        seen.add(well)
+    
+    if duplicates:
+        raise ValueError(f"Duplicate {context} found: {', '.join(sorted(duplicates))}")
+
+
+def validate_csv_columns(reader: csv.DictReader, required_columns: List[str], file_name: str) -> None:
+    """
+    Validate that a CSV file contains all required columns.
+    
+    Args:
+        reader: CSV DictReader object
+        required_columns: List of required column names
+        file_name: Name of the file being validated
+        
+    Raises:
+        ValueError: If required columns are missing
+    """
+    missing_columns = [col for col in required_columns if col not in reader.fieldnames]
+    if missing_columns:
+        raise ValueError(f"CSV file '{file_name}' is missing required columns: {', '.join(missing_columns)}")
 
 
 if __name__ == '__main__':
