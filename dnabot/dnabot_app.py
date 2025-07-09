@@ -115,7 +115,8 @@ class FileConfig:
         'CLIPS': 'clip_run_info.csv',
         'FINAL_ASSEMBLIES': 'final_assembly_run_info.csv',
         'WELL_OUTPUT': 'wells.txt',
-        'NEW_CONSTRUCTS': 'new_construct_list.csv'
+        'NEW_CONSTRUCTS': 'new_construct_list.csv',
+        'ASSEMBLY_TO_CLIP_MAPPING': 'assembly_to_clip_mapping.csv'
     }
 }
 
@@ -501,9 +502,9 @@ def _process_input_files(user_config: Dict[str, Union[str, List[str], int]],
 
         print('\n6. Calculating OT-2 variables...')
         
-        # Generate CLIP dictionaries for OT-2 scripts
-        clips_dict_list = generate_clips_dict_list(clips_df, sources_dict)
-        print(f"✓ Generated {len(clips_dict_list)} clip dictionaries")
+        # Generate CLIP dictionaries for OT-2 scripts using optimised assignment
+        clips_dict_list, assembly_to_clip_mapping = generate_optimised_clips_dict_list(constructs_dict, sources_dict)
+        print(f"✓ Generated {len(clips_dict_list)} clip plate(s)")
 
         # Calculate magbead sample distribution
         magbead_sample_number_total = clips_df['number'].sum()
@@ -513,11 +514,11 @@ def _process_input_files(user_config: Dict[str, Union[str, List[str], int]],
         if remaining_samples > 0:
             magbead_sample_list.append(remaining_samples)
 
-        print(f"✓ Total number of magbead samples: {magbead_sample_number_total}")
+        print(f"✓ Total magbead samples: {magbead_sample_number_total}")
         
         # Generate final assembly plans
         final_assembly_dict_list = generate_final_assembly_dict_list(constructs_dict, clips_df)
-        print(f"✓ Generated {len(final_assembly_dict_list)} final assembly dictionaries")
+        print(f"✓ Generated {len(final_assembly_dict_list)} assembly plate(s)")
 
         print("=" * 60)
         print("✓ All processing completed successfully!")
@@ -528,7 +529,8 @@ def _process_input_files(user_config: Dict[str, Union[str, List[str], int]],
             'sources_dict': sources_dict,
             'clips_dict_list': clips_dict_list,
             'magbead_sample_list': magbead_sample_list,
-            'final_assembly_dict_list': final_assembly_dict_list
+            'final_assembly_dict_list': final_assembly_dict_list,
+            'assembly_to_clip_mapping': assembly_to_clip_mapping
         }
         
     except Exception as e:
@@ -558,17 +560,17 @@ def _generate_ot2_scripts(data_structures: Dict[str, Any],
     
     # Generate CLIP scripts
     for clip_plate, sub_clip_dict in enumerate(data_structures['clips_dict_list']):
-        print(f"Generating clip scripts for plate {clip_plate + 1}...")
+        print(f"  Clip plate {clip_plate + 1}...")
         _generate_clip_scripts(sub_clip_dict, clip_plate, paths)
 
     # Generate magbead purification scripts
     for i, magbead_sample_number in enumerate(data_structures['magbead_sample_list']):
-        print(f"Generating magbead scripts for sample {i + 1}...")
+        print(f"  Magbead sample {i + 1}...")
         _generate_magbead_scripts(magbead_sample_number, i, paths, user_config)
     
     # Generate final assembly scripts
     for assembly_plate, final_assembly_dict in enumerate(data_structures['final_assembly_dict_list']):
-        print(f"Generating assembly scripts for plate {assembly_plate + 1}...")
+        print(f"  Assembly plate {assembly_plate + 1}...")
         _generate_assembly_scripts(final_assembly_dict, assembly_plate, paths)
 
 
@@ -679,6 +681,9 @@ def _output_metadata_files(data_structures: Dict[str, Any],
         # Write well output information
         _write_well_output_info(user_config, paths)
         
+        # Write assembly to clip mapping information
+        _write_assembly_to_clip_mapping(data_structures.get('assembly_to_clip_mapping', {}), paths)
+        
         # Write new constructs information
         new_constructs_df = generate_new_constructs_df(
             user_config['construct_path'], 
@@ -711,6 +716,30 @@ def _write_well_output_info(user_config: Dict[str, Union[str, List[str], int]],
     with open(paths['construct_base'] + '_' + FILE_CONFIG.OUTPUT_FILES['INFO']['WELL_OUTPUT'], 'w') as f:
         f.write(f'Magbead ethanol well: {user_config["etoh_well"]}\n')
         f.write(f'SOC column: {user_config["soc_column"]}')
+
+
+def _write_assembly_to_clip_mapping(assembly_to_clip_mapping: Dict[int, List[int]], 
+                                   paths: Dict[str, str]) -> None:
+    """Write assembly to clip mapping information to CSV file."""
+    if not assembly_to_clip_mapping:
+        return
+    
+    # Create DataFrame for mapping
+    mapping_data = []
+    for assembly_plate, clip_plates in assembly_to_clip_mapping.items():
+        mapping_data.append({
+            'Assembly_Plate': assembly_plate,
+            'Required_Clip_Plates': ', '.join(map(str, clip_plates)),
+            'Number_of_Clip_Plates': len(clip_plates)
+        })
+    
+    mapping_df = pd.DataFrame(mapping_data)
+    mapping_df.to_csv(
+        paths['construct_base'] + '_assembly_to_clip_mapping.csv',
+        index=False
+    )
+    
+    print(f"✓ Assembly to clip mapping saved to: {paths['construct_base']}_assembly_to_clip_mapping.csv")
 
 
 def generate_constructs_list(path: str, keep_layout: bool = False) -> Dict[Tuple[int, int, str], pd.DataFrame]:
@@ -843,9 +872,6 @@ def generate_constructs_list(path: str, keep_layout: bool = False) -> Dict[Tuple
                     # In keep_layout mode, track all rows including empty ones
                     if construct_components:
                         # Valid construct
-                        print(f"Debug: Construct at {well_position} components: {construct_components}")
-                        print(f"Debug: Number of components: {len(construct_components)}")
-                        
                         try:
                             construct_df = process_construct(construct_components, index)
                             # Calculate position based on valid construct index
@@ -859,10 +885,6 @@ def generate_constructs_list(path: str, keep_layout: bool = False) -> Dict[Tuple
                     # Original behavior - skip empty rows
                     if not construct_components:
                         continue
-                    
-                    # Debug output
-                    print(f"Debug: Construct {index + 1} components: {construct_components}")
-                    print(f"Debug: Number of components: {len(construct_components)}")
                     
                     try:
                         construct_df = process_construct(construct_components, index)
@@ -1398,9 +1420,6 @@ def generate_ot2_script(ot2_script_path, template_path, **kwargs):
         IOError: If there are issues reading/writing files
     """
     try:
-        print(f"Generating OT-2 script: {os.path.basename(ot2_script_path)}")
-        print(f"Using template: {os.path.basename(template_path)}")
-        
         if not os.path.exists(template_path):
             raise FileNotFoundError(f"Template file not found: {template_path}")
             
@@ -1436,7 +1455,7 @@ def generate_ot2_script(ot2_script_path, template_path, **kwargs):
                     if index >= function_start - 1:
                         wf.write(line)
                         
-        print(f"Successfully generated OT-2 script: {os.path.basename(ot2_script_path)}")
+        print(f"    ✓ {os.path.basename(ot2_script_path)}")
         
     except Exception as e:
         print(f"\nError generating OT-2 script {os.path.basename(ot2_script_path)}:")
@@ -1979,6 +1998,295 @@ def validate_csv_columns(reader: csv.DictReader, required_columns: List[str], fi
     missing_columns = [col for col in required_columns if col not in reader.fieldnames]
     if missing_columns:
         raise ValueError(f"CSV file '{file_name}' is missing required columns: {', '.join(missing_columns)}")
+
+
+def generate_optimised_clips_dict_list(constructs_dict: Dict[Tuple[int, int, str], pd.DataFrame], 
+                                      sources_dict: Dict[str, Tuple[str, ...]]) -> Tuple[List[Dict[str, List]], Dict[int, List[int]]]:
+    """
+    Generate optimised clip assignments by splitting constructs by assembly plates.
+    
+    This function implements an intelligent clip assignment strategy that:
+    1. Splits constructs into two halves based on assembly plates
+    2. Generates separate clip lists for each half
+    3. Balances clips between halves if needed
+    4. Creates a mapping showing which clip plates are needed for each assembly plate
+    
+    Args:
+        constructs_dict: Dictionary mapping construct positions to DataFrames containing CLIP reactions
+        sources_dict: Dictionary mapping parts/linkers to their source locations
+        
+    Returns:
+        Tuple containing:
+        - List of clip dictionaries for OT-2 scripts
+        - Dictionary mapping assembly plate numbers to lists of required clip plate numbers
+    """
+    
+    def split_constructs_by_assembly_plates(constructs_dict: Dict[Tuple[int, int, str], pd.DataFrame]) -> Tuple[Dict, Dict]:
+        """
+        Split constructs into two halves based on assembly plates.
+        
+        Returns:
+            Tuple of (first_half, second_half) construct dictionaries
+        """
+        # Get all assembly plates
+        assembly_plates = set()
+        for (order, plate, well) in constructs_dict.keys():
+            assembly_plates.add(plate)
+        
+        assembly_plates = sorted(assembly_plates)
+        
+        if len(assembly_plates) <= 1:
+            # Only one assembly plate, return original dict and empty dict
+            return constructs_dict, {}
+        
+        # Split assembly plates into two halves
+        mid_point = (len(assembly_plates) + 1) // 2  # Ceiling division
+        first_half_plates = assembly_plates[:mid_point]
+        second_half_plates = assembly_plates[mid_point:]
+        
+        # Split constructs based on assembly plates
+        first_half = {}
+        second_half = {}
+        
+        for (order, plate, well), construct_df in constructs_dict.items():
+            if plate in first_half_plates:
+                first_half[(order, plate, well)] = construct_df
+            else:
+                second_half[(order, plate, well)] = construct_df
+        
+        return first_half, second_half
+    
+    def count_clips_for_constructs(constructs_dict: Dict[Tuple[int, int, str], pd.DataFrame]) -> int:
+        """Count total number of clips needed for a set of constructs."""
+        if not constructs_dict:
+            return 0
+        
+        # Merge all constructs and find unique CLIP reactions
+        valid_constructs = list(constructs_dict.values())
+        merged_construct_dfs = pd.concat(valid_constructs, ignore_index=True)
+        unique_clips_df = merged_construct_dfs.drop_duplicates().reset_index(drop=True)
+        
+        # Count occurrences of each unique CLIP reaction
+        clip_count = np.zeros(len(unique_clips_df.index))
+        for i, unique_clip in unique_clips_df.iterrows():
+            for _, clip in merged_construct_dfs.iterrows():
+                if unique_clip.equals(clip):
+                    clip_count[i] += 1
+        
+        # Calculate number of reactions needed based on final assemblies per CLIP
+        clip_count = clip_count // PROTOCOL_CONFIG.ASSEMBLY_FINAL_ASSEMBLIES_PER_CLIP + 1
+        
+        return int(clip_count.sum())
+    
+    def balance_clips_between_halves(first_half: Dict, second_half: Dict, 
+                                   assembly_plates: List[int]) -> Tuple[Dict, Dict]:
+        """
+        Balance clips between two halves by moving assembly plates if needed.
+        
+        Args:
+            first_half: First half of constructs
+            second_half: Second half of constructs
+            assembly_plates: List of all assembly plates in order
+            
+        Returns:
+            Tuple of (balanced_first_half, balanced_second_half)
+        """
+        if len(assembly_plates) <= 2:
+            return first_half, second_half
+        
+        # Count clips for each half
+        first_clips = count_clips_for_constructs(first_half)
+        second_clips = count_clips_for_constructs(second_half)
+        
+        print(f"Clip counts: First half {first_clips}, Second half {second_clips}")
+        
+        # If both halves are under 96 clips, we're good
+        if first_clips <= 96 and second_clips <= 96:
+            return first_half, second_half
+        
+        # If both halves are over 96 clips, revert to original approach
+        if first_clips > 96 and second_clips > 96:
+            print("Both halves exceed 96 clips - reverting to standard approach")
+            return {}, {}  # Signal to use original approach
+        
+        # Find the middle plate to move
+        mid_point = (len(assembly_plates) + 1) // 2
+        middle_plate = assembly_plates[mid_point - 1]  # 0-indexed
+        
+        # Determine which half has more clips and needs to give up the middle plate
+        if first_clips > second_clips:
+            # Move middle plate from first half to second half
+            print(f"  Moving plate {middle_plate} from first to second half")
+            
+            # Remove middle plate from first half
+            new_first_half = {}
+            for (order, plate, well), construct_df in first_half.items():
+                if plate != middle_plate:
+                    new_first_half[(order, plate, well)] = construct_df
+            
+            # Add middle plate to second half
+            new_second_half = second_half.copy()
+            for (order, plate, well), construct_df in first_half.items():
+                if plate == middle_plate:
+                    new_second_half[(order, plate, well)] = construct_df
+            
+            # Recursively balance
+            return balance_clips_between_halves(new_first_half, new_second_half, assembly_plates)
+        
+        else:
+            # Move middle plate from second half to first half
+            print(f"  Moving plate {middle_plate} from second to first half")
+            
+            # Remove middle plate from second half
+            new_second_half = {}
+            for (order, plate, well), construct_df in second_half.items():
+                if plate != middle_plate:
+                    new_second_half[(order, plate, well)] = construct_df
+            
+            # Add middle plate to first half
+            new_first_half = first_half.copy()
+            for (order, plate, well), construct_df in second_half.items():
+                if plate == middle_plate:
+                    new_first_half[(order, plate, well)] = construct_df
+            
+            # Recursively balance
+            return balance_clips_between_halves(new_first_half, new_second_half, assembly_plates)
+    
+    def generate_clips_dict_list_for_constructs(constructs_dict: Dict[Tuple[int, int, str], pd.DataFrame], 
+                                               sources_dict: Dict[str, Tuple[str, ...]]) -> List[Dict[str, List]]:
+        """Generate clips dict list for a subset of constructs."""
+        if not constructs_dict:
+            return []
+        
+        # Generate clips_df for this subset
+        clips_df = generate_clips_df(constructs_dict)
+        
+        # Generate clips dict list using existing function
+        return generate_clips_dict_list(clips_df, sources_dict)
+    
+    # Get all assembly plates
+    assembly_plates = set()
+    for (order, plate, well) in constructs_dict.keys():
+        assembly_plates.add(plate)
+    assembly_plates = sorted(assembly_plates)
+    
+    print(f"Optimising clip assignment for {len(assembly_plates)} assembly plate(s)")
+    
+    # If only one assembly plate, use original approach
+    if len(assembly_plates) <= 1:
+        print("Single assembly plate - using standard clip assignment")
+        clips_df = generate_clips_df(constructs_dict)
+        clips_dict_list = generate_clips_dict_list(clips_df, sources_dict)
+        
+        # Create mapping (assembly plate 1 uses all clip plates)
+        assembly_to_clip_mapping = {1: list(range(1, len(clips_dict_list) + 1))}
+        
+        return clips_dict_list, assembly_to_clip_mapping
+    
+    # Split constructs by assembly plates
+    first_half, second_half = split_constructs_by_assembly_plates(constructs_dict)
+    
+    # Balance clips between halves
+    balanced_first_half, balanced_second_half = balance_clips_between_halves(
+        first_half, second_half, assembly_plates)
+    
+    # Check if we need to revert to original approach
+    if not balanced_first_half and not balanced_second_half:
+        print("Reverting to standard clip assignment")
+        clips_df = generate_clips_df(constructs_dict)
+        clips_dict_list = generate_clips_dict_list(clips_df, sources_dict)
+        
+        # Create mapping (all assembly plates use all clip plates)
+        assembly_to_clip_mapping = {}
+        for plate in assembly_plates:
+            assembly_to_clip_mapping[plate] = list(range(1, len(clips_dict_list) + 1))
+        
+        return clips_dict_list, assembly_to_clip_mapping
+    
+    # Generate clips for each half
+    first_clips_dict_list = generate_clips_dict_list_for_constructs(balanced_first_half, sources_dict)
+    second_clips_dict_list = generate_clips_dict_list_for_constructs(balanced_second_half, sources_dict)
+    
+    # Combine clips dict lists
+    clips_dict_list = first_clips_dict_list + second_clips_dict_list
+    
+    # Create mapping from assembly plates to clip plates
+    assembly_to_clip_mapping = {}
+    
+    # Map first half assembly plates to first half clip plates
+    first_half_assembly_plates = set()
+    for (order, plate, well) in balanced_first_half.keys():
+        first_half_assembly_plates.add(plate)
+    
+    for plate in first_half_assembly_plates:
+        assembly_to_clip_mapping[plate] = list(range(1, len(first_clips_dict_list) + 1))
+    
+    # Map second half assembly plates to second half clip plates
+    second_half_assembly_plates = set()
+    for (order, plate, well) in balanced_second_half.keys():
+        second_half_assembly_plates.add(plate)
+    
+    for plate in second_half_assembly_plates:
+        assembly_to_clip_mapping[plate] = list(range(len(first_clips_dict_list) + 1, 
+                                                   len(first_clips_dict_list) + len(second_clips_dict_list) + 1))
+    
+    print(f"Optimisation complete:")
+    print(f"  First half: {len(first_clips_dict_list)} clip plate(s) for assembly plate(s) {sorted(first_half_assembly_plates)}")
+    print(f"  Second half: {len(second_clips_dict_list)} clip plate(s) for assembly plate(s) {sorted(second_half_assembly_plates)}")
+    
+    return clips_dict_list, assembly_to_clip_mapping
+
+
+def generate_clips_dict_list(clips_df, sources_dict):
+    '''Subsets the clips df into chunks of 48, runs the generate_clips_dict function 
+    for each and returns a list of the resulting sub clips dicts'''
+
+    def clip_df_long_format(clip_df):
+        ''' Takes clips df and returns a long format df with one row per mag well 
+        rather than one row per unique clip'''
+
+        df = clip_df.copy()
+        long_clip_df = pd.DataFrame(columns = df.columns)
+
+        index = 0
+
+        for row, clip in clip_df.iterrows():
+            for clip_rep in range(clip.number):                         # copy row and replace mag well and plate lists with well and plate for current rep
+                data = clip.copy()
+                data.number = 1
+                data.mag_well = clip.mag_well[clip_rep]
+                data.plate = clip.plate[clip_rep]
+                long_clip_df.loc[index] = data
+                index += 1
+
+        return long_clip_df
+    
+    long_clip_df = clip_df_long_format(clips_df)
+
+    CLIP_COUNT = clips_df['number'].sum()
+    CLIP_PLATE_COUNT = int(CLIP_COUNT // PROTOCOL_CONFIG.ASSEMBLY_MAX_CLIPS_PER_PLATE + 1)       # plus one to include final partially full plate
+
+    # Error 
+    if clips_df['number'].sum() > PROTOCOL_CONFIG.ASSEMBLY_MAX_CLIPS_TOTAL:
+        raise ValueError('Number of CLIP reactions exceeds {}. Reduce number of constructs in construct.csv.'.format(PROTOCOL_CONFIG.ASSEMBLY_MAX_CLIPS_TOTAL))
+    
+    if clips_df['number'].sum() < 96:                                   # if less clips required than one full plate, the second desk slot can be used for tips
+        PROTOCOL_CONFIG.ASSEMBLY_MAX_FINAL_ASSEMBLY_TIPRACKS = 5
+
+    clips_dict_list = []
+
+    for plate in range(CLIP_PLATE_COUNT):
+        subset_lower = (plate * PROTOCOL_CONFIG.ASSEMBLY_MAX_CLIPS_PER_PLATE)                    # set upper and lower bounds for subset of clips for a given plate
+        subset_upper = subset_lower + PROTOCOL_CONFIG.ASSEMBLY_MAX_CLIPS_PER_PLATE
+
+        if subset_upper > CLIP_COUNT:                                   # set total number number of clips as upper bound if plate incomplete
+            subset_upper = CLIP_COUNT
+    
+        sub_clip_df = long_clip_df.iloc[subset_lower:subset_upper, :]
+        sub_clip_dict = generate_clips_dict(sub_clip_df, sources_dict)
+        clips_dict_list.append(sub_clip_dict)                           # generate and append sub_clip_dict to list - allows for multiple clip reactions
+
+    return clips_dict_list
 
 
 if __name__ == '__main__':
