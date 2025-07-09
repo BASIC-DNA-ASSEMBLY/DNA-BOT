@@ -18,7 +18,7 @@ ethanol_well='A3'
 
 # opentrons_simulate.exe dnabot\template_ot2_scripts\purification_template_APIv2.8.py --custom-labware-path 'labware\Labware definitions'
 
-sample_number=80
+sample_number=37
 ethanol_well='A11'
 
 
