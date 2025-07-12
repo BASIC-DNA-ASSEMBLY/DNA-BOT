@@ -90,7 +90,7 @@ def run_dnabot(test_dir: Path) -> None:
             "--source_paths", *[str(f) for f in source_files],
             "--etoh_well", "A11",
             "--soc_column", "1",
-            "--keep_layout"
+            "--keep_layout", "True"
         ]
         print(f"Debug: DNA-BOT arguments: {sys.argv}")
         

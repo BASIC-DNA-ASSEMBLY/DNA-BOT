@@ -56,16 +56,24 @@ class DnabotApp:
             self.master, text = 'Deep-well plate column for SOC media during transformation:',
             font = DnabotApp.app_font)
         soc_column_label.grid(row = 4, column = 0, sticky = tk.E)
+        
+        # Keep layout option
+        self.keep_layout_var = tk.BooleanVar()
+        self.keep_layout_var.set(True)  # Default to True as we set earlier
+        keep_layout_checkbox = tk.Checkbutton(
+            self.master, text='Keep original CSV layout (preserve empty rows)',
+            variable=self.keep_layout_var, font=DnabotApp.app_font)
+        keep_layout_checkbox.grid(row=5, column=0, columnspan=2, sticky=tk.W)
 
         # Buttons and menus
         self.quit_status=False
         quit_button=tk.Button(
             self.master, text = 'QUIT', fg = 'red', command = self.quitter, 
             font=DnabotApp.app_font)
-        quit_button.grid(row = 5, column = 0)
+        quit_button.grid(row = 6, column = 0)
         generate_button=tk.Button(master, text = 'GENERATE',
                                     command = self.generate, font = DnabotApp.app_font)
-        generate_button.grid(row=5, column=1)
+        generate_button.grid(row=6, column=1)
         self.etoh_well=tk.StringVar(master)
         self.etoh_well.set(DnabotApp.trough_wells[10])
         etoh_w=tk.OptionMenu(master, self.etoh_well, *tuple(
@@ -86,6 +94,7 @@ class DnabotApp:
     def generate(self):
         self.etoh_well=self.etoh_well.get()
         self.soc_column=self.soc_column.get()
+        self.keep_layout=self.keep_layout_var.get()
         self.master.quit()
 
 
@@ -104,6 +113,7 @@ def main():
         sys.exit("User specified 'QUIT' during app")
     print('Ethanol well is ', dnabotinst.etoh_well)
     print('SOC column is ', dnabotinst.soc_column)
+    print('Keep layout is ', dnabotinst.keep_layout)
 
 
 if __name__ == '__main__':

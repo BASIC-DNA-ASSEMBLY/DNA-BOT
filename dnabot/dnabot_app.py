@@ -214,8 +214,8 @@ def __cli() -> argparse.Namespace:
                                    'script.',
                               default=None, type=str)
     parser_nogui.add_argument('--keep_layout',
-                              help='Keep original CSV layout including empty rows. Default: False',
-                              action='store_true')
+                              help='Keep original CSV layout including empty rows. Default: True',
+                              type=str, default='True', choices=['True', 'False'])
     
     parser.set_defaults(nogui=False)
     parser_nogui.set_defaults(nogui=True)
@@ -259,6 +259,7 @@ def __info_from_gui() -> Dict[str, Union[str, List[str], int, bool]]:
         # Store the configuration values
         user_inputs['etoh_well'] = dnabotinst.etoh_well
         user_inputs['soc_column'] = dnabotinst.soc_column
+        user_inputs['keep_layout'] = dnabotinst.keep_layout
         
         # Now get the construct file path
         user_inputs['construct_path'] = gui.UserDefinedPaths(root, 'Construct csv file').output
@@ -372,7 +373,7 @@ def _collect_user_input() -> Dict[str, Union[str, List[str], int]]:
             'sources_paths': args.source_paths,
             'output_dir': args.output_dir,
             'template_dir': args.template_dir,
-            'keep_layout': args.keep_layout
+            'keep_layout': args.keep_layout == 'True'
         }
     else:
         print("Running in GUI mode...")
@@ -457,7 +458,7 @@ def _process_input_files(user_config: Dict[str, Union[str, List[str], int]],
     try:
         # Process constructs
         print("\n1. Loading and validating constructs...")
-        constructs_dict = generate_constructs_list(user_config['construct_path'], user_config.get('keep_layout', False))
+        constructs_dict = generate_constructs_list(user_config['construct_path'], user_config.get('keep_layout', True))
         print(f"✓ Generated {len(constructs_dict)} constructs")
         
         # Generate CLIP reactions first
@@ -565,9 +566,9 @@ def _generate_ot2_scripts(data_structures: Dict[str, Any],
         _generate_magbead_scripts(magbead_sample_number, i, paths, user_config)
     
     # Generate final assembly scripts
-    for assembly_plate, final_assembly_dict in enumerate(data_structures['final_assembly_dict_list']):
-        print(f"  Assembly plate {assembly_plate + 1}...")
-        _generate_assembly_scripts(final_assembly_dict, assembly_plate, paths)
+    for plate_number, final_assembly_dict in data_structures['final_assembly_dict_list'].items():
+        print(f"  Assembly plate {plate_number}...")
+        _generate_assembly_scripts(final_assembly_dict, plate_number, paths)
 
 
 def _generate_clip_scripts(sub_clip_dict: Dict[str, List], 
@@ -606,8 +607,8 @@ def _generate_magbead_scripts(magbead_sample_number: int,
     )
 
 
-def _generate_assembly_scripts(final_assembly_dict: Dict, 
-                              assembly_plate: int, 
+def _generate_assembly_scripts(final_assembly_dict: Dict[str, List], 
+                              plate_number: int, 
                               paths: Dict[str, str]) -> None:
     """Generate final assembly scripts."""
     template_dir = paths['template_dir']
@@ -615,7 +616,7 @@ def _generate_assembly_scripts(final_assembly_dict: Dict,
     
     # Generate standard assembly script
     generate_ot2_script(
-        FILE_CONFIG.OUTPUT_FILES['F_ASSEMBLY']['V2_8'] + f'_SCRIPT_{assembly_plate+1}.py',
+        FILE_CONFIG.OUTPUT_FILES['F_ASSEMBLY']['V2_8'] + f'_SCRIPT_{plate_number}.py',
         os.path.join(template_dir, FILE_CONFIG.TEMPLATE_FILES['F_ASSEMBLY']['V2_8']),
         final_assembly_dict=final_assembly_dict,
         tiprack_num=final_assembly_tipracks
@@ -623,7 +624,7 @@ def _generate_assembly_scripts(final_assembly_dict: Dict,
     
     # Generate thermocycler assembly script
     generate_ot2_script(
-        FILE_CONFIG.OUTPUT_FILES['F_ASSEMBLY']['V2_8_TC'] + f'_SCRIPT_{assembly_plate+1}.py',
+        FILE_CONFIG.OUTPUT_FILES['F_ASSEMBLY']['V2_8_TC'] + f'_SCRIPT_{plate_number}.py',
         os.path.join(template_dir, FILE_CONFIG.TEMPLATE_FILES['F_ASSEMBLY']['V2_8_TC']),
         final_assembly_dict=final_assembly_dict,
         tiprack_num=final_assembly_tipracks
@@ -690,7 +691,7 @@ def _output_metadata_files(data_structures: Dict[str, Any],
         new_constructs_df = generate_new_constructs_df(
             user_config['construct_path'], 
             data_structures['final_assembly_dict_list'],
-            user_config.get('keep_layout', False)
+            data_structures['constructs_dict']
         )
         new_constructs_df.to_csv(
             paths['construct_base'] + '_' + FILE_CONFIG.OUTPUT_FILES['INFO']['NEW_CONSTRUCTS'],
@@ -707,9 +708,9 @@ def _write_final_assembly_info(data_structures: Dict[str, Any], paths: Dict[str,
     with open(paths['construct_base'] + '_' + FILE_CONFIG.OUTPUT_FILES['INFO']['FINAL_ASSEMBLIES'],
                   'w', newline='') as csvfile:
         csvwriter = csv.writer(csvfile)
-        for final_assembly_dict in data_structures['final_assembly_dict_list']:
-            for final_assembly_well, construct_clips in final_assembly_dict.items():
-                csvwriter.writerow([final_assembly_well, construct_clips])
+        for plate_number, final_assembly_dict in data_structures['final_assembly_dict_list'].items():
+            for well, construct_clips in final_assembly_dict.items():
+                csvwriter.writerow([plate_number, well, construct_clips])
 
 
 def _write_well_output_info(user_config: Dict[str, Union[str, List[str], int]], 
@@ -764,7 +765,7 @@ def _write_assembly_to_clip_mapping(assembly_to_clip_mapping: Dict[int, List[int
     print(f"✓ Assembly to clip mapping saved to: {paths['construct_base']}_assembly_to_clip_mapping.csv")
 
 
-def generate_constructs_list(path: str, keep_layout: bool = False) -> Dict[Tuple[int, int, str], pd.DataFrame]:
+def generate_constructs_list(path: str, keep_layout: bool = True) -> Dict[Tuple[int, int, str], pd.DataFrame]:
     """Generates a dictionary mapping construct positions to their dataframes.
     
     Each dataframe lists components of the CLIP reactions required for that construct,
@@ -922,14 +923,32 @@ def generate_constructs_list(path: str, keep_layout: bool = False) -> Dict[Tuple
                 # Use the format determined from header
                 if has_plate_column:
                     # New format: Plate, Well, Linker1, Part1, ...
-                    plate_number = int(row[0]) if row[0].strip() else 1
+                    plate_str = row[0].strip() if row[0] else "1"
                     well_position = row[1] if len(row) > 1 else ""
                     construct_components = row[2:]  # Start from column 3 (after Plate, Well)
+                    
+                    # Validate plate number
+                    try:
+                        plate_number = int(plate_str)
+                        if plate_number < 1:
+                            raise ValueError(f"Plate number must be a positive integer, got {plate_number} at row {index + 1}")
+                    except ValueError as e:
+                        if "invalid literal" in str(e):
+                            raise ValueError(f"Plate number must be a valid integer, got '{plate_str}' at row {index + 1}")
+                        else:
+                            raise ValueError(f"Plate number error at row {index + 1}: {str(e)}")
                 else:
                     # Old format: Well, Linker1, Part1, ...
                     plate_number = 1  # Default to plate 1
                     well_position = row[0] if row else ""
                     construct_components = row[1:]  # Start from column 2
+                
+                # Validate well position if not empty
+                if well_position.strip():
+                    try:
+                        validate_well_format(well_position)
+                    except ValueError as e:
+                        raise ValueError(f"Well position error at row {index + 1}: {str(e)}")
                 
                 # Filter out empty strings
                 construct_components = list(filter(None, construct_components))
@@ -939,8 +958,7 @@ def generate_constructs_list(path: str, keep_layout: bool = False) -> Dict[Tuple
                     continue
                 
                 if keep_layout:
-                    # In keep_layout mode, track all rows including empty ones
-                    # Valid construct
+                    # In keep_layout mode, use plate and well from CSV
                     try:
                         construct_df = process_construct(construct_components, index)
                         # Use plate number from CSV and well position from CSV
@@ -950,15 +968,17 @@ def generate_constructs_list(path: str, keep_layout: bool = False) -> Dict[Tuple
                     except ValueError as e:
                         raise ValueError(f"Error processing construct at Plate {plate_number}, Well {well_position} (row {index + 1}): {str(e)}")
                 else:
-                    # Original behavior - skip empty rows
+                    # When keep_layout=False, assign new plate and well positions based on order
                     try:
                         construct_df = process_construct(construct_components, index)
-                        # Use plate number from CSV and well position from CSV
+                        # Calculate new plate and well based on order
+                        new_plate = (valid_construct_index // 96) + 1  # 96 wells per plate
+                        new_well = tip_counter(valid_construct_index % 96)  # Convert index to well coordinate
                         order = valid_construct_index
-                        constructs_dict[(order, plate_number, well_position)] = construct_df
+                        constructs_dict[(order, new_plate, new_well)] = construct_df
                         valid_construct_index += 1
                     except ValueError as e:
-                        raise ValueError(f"Error processing construct at Plate {plate_number}, Well {well_position} (row {index + 1}): {str(e)}")
+                        raise ValueError(f"Error processing construct at row {index + 1}: {str(e)}")
         
         if keep_layout:
             print(f"... Successfully loaded {len(constructs_dict)} constructs with layout preserved")
@@ -1336,16 +1356,17 @@ def generate_final_assembly_dict(constructs_dict: Dict[Tuple[int, int, str], pd.
 
             clips_count[clip_num] = clips_count[clip_num] + 1
 
-        # Use the well from the position tuple as the destination well
+        # Use the plate and well from the position tuple as the destination key
         order, plate, well = position
-        final_assembly_dict_keys.append(well)
+        destination_key = (plate, well)  # Use tuple of (plate, well) as key
+        final_assembly_dict_keys.append(destination_key)
         final_assembly_dict_values.append([construct_well_list, construct_plate_list])
 
     return final_assembly_dict_keys, final_assembly_dict_values                     # return list of dict keys and values
 
 
 def generate_final_assembly_dict_list(constructs_dict: Dict[Tuple[int, int, str], pd.DataFrame], 
-                                     clips_df: pd.DataFrame) -> List[Dict[str, List]]:
+                                     clips_df: pd.DataFrame) -> Dict[int, Dict[str, List]]:
     """
     Generate a list of assembly dictionaries, each representing a subset of constructs
     that can be assembled on a single plate while respecting tip and well constraints.
@@ -1361,8 +1382,8 @@ def generate_final_assembly_dict_list(constructs_dict: Dict[Tuple[int, int, str]
         clips_df: DataFrame containing all unique CLIP reactions with their locations
         
     Returns:
-        List of dictionaries, where each dictionary maps destination wells to 
-        [clip_wells_list, clip_plates_list] for the constructs in that assembly plate
+        Dictionary where outer keys are plate numbers and inner dictionaries map destination wells to 
+        [clip_wells_list, clip_plates_list] for the constructs in that plate
         
     Raises:
         ValueError: If the number of constructs exceeds protocol limits
@@ -1377,48 +1398,21 @@ def generate_final_assembly_dict_list(constructs_dict: Dict[Tuple[int, int, str]
     unique_construct_lengths = {len(assembly_value[0]) for assembly_value in assembly_values}
     master_mix_tip_count = len(unique_construct_lengths)
     
-    # Initialize tracking variables
-    current_assembly_plate = []
-    current_tip_count = master_mix_tip_count
-    current_well_count = 0  # Track well count within current plate
-    assembly_plates = []
+    # Group constructs by their original plate numbers
+    assembly_by_plate = {}
     
-    for construct_index, (_, construct_value) in enumerate(zip(assembly_keys, assembly_values)):
-        # Calculate tips needed for this construct
-        construct_tips_needed = len(construct_value[0])  # Number of CLIP reactions in this construct
+    for construct_index, (original_key, construct_value) in enumerate(zip(assembly_keys, assembly_values)):
+        # Unpack the original key (plate, well)
+        plate, well = original_key
         
-        # Check if we need to start a new assembly plate
-        tips_would_exceed_limit = (
-            current_tip_count + construct_tips_needed > 
-            PROTOCOL_CONFIG.ASSEMBLY_TIPS_PER_BOX * PROTOCOL_CONFIG.ASSEMBLY_MAX_FINAL_ASSEMBLY_TIPRACKS
-        )
-        wells_would_exceed_limit = current_well_count >= PROTOCOL_CONFIG.ASSEMBLY_MAX_ASSEMBLIES_PER_PLATE - 1
-        is_last_construct = construct_index == total_constructs - 1
+        # Initialize plate dictionary if it doesn't exist
+        if plate not in assembly_by_plate:
+            assembly_by_plate[plate] = {}
         
-        # Add construct to current plate first
-        construct_key = tip_counter(current_well_count)  # Generate well coordinate for current plate
-        current_assembly_plate.append((construct_key, construct_value))
-        current_tip_count += construct_tips_needed
-        current_well_count += 1
-        
-        # Then check if we need to finalise this plate
-        start_new_plate = (
-            tips_would_exceed_limit or 
-            wells_would_exceed_limit or 
-            is_last_construct
-        )
-        
-        if start_new_plate:
-            # Finalize current assembly plate
-            assembly_plates.append(dict(current_assembly_plate))
-            
-            # Reset for next plate (unless this was the last construct)
-            if not is_last_construct:
-                current_assembly_plate = []
-                current_tip_count = master_mix_tip_count
-                current_well_count = 0  # Reset well count to start from A1
+        # Add construct to its original plate using well as key
+        assembly_by_plate[plate][well] = construct_value
     
-    return assembly_plates
+    return assembly_by_plate
 
 
 def calculate_final_assembly_tipracks(final_assembly_dict: Dict[str, List]) -> int:
@@ -1532,7 +1526,7 @@ def generate_ot2_script(ot2_script_path, template_path, **kwargs):
         raise
 
 
-def generate_new_constructs_df(construct_path, final_assembly_dict_list, keep_layout=False):
+def generate_new_constructs_df(construct_path, final_assembly_dict_list, constructs_dict):
     """Takes the user supplied constructs csv and reallocates the constructs 
     according to the new order applied in the 
     'generate_final_assembly_dict_list' function, returning a new constructs
@@ -1540,8 +1534,8 @@ def generate_new_constructs_df(construct_path, final_assembly_dict_list, keep_la
     
     Args:
         construct_path (str): Path to the original constructs CSV file
-        final_assembly_dict_list (List[Dict]): List of assembly dictionaries
-        keep_layout (bool): If True, preserve original layout including empty rows
+        final_assembly_dict_list (Dict[int, Dict[str, List]]): Dictionary of assembly dictionaries by plate
+        constructs_dict (Dict[Tuple[int, int, str], pd.DataFrame]): Processed constructs dictionary
         
     Returns:
         pd.DataFrame: DataFrame with the original construct data plus new
@@ -1552,126 +1546,77 @@ def generate_new_constructs_df(construct_path, final_assembly_dict_list, keep_la
         construct ID/name and subsequent columns containing the construct
         components (linkers, parts, etc.).
     """
+    # Create a mapping from original positions to new assembly positions
+    # Sort constructs by their original order to maintain consistency
+    sorted_constructs = sorted(constructs_dict.items(), key=lambda x: x[0][0])  # Sort by order (first element of tuple)
+    
+    # Create lists for assembly and well assignments
     assembly_list = []
     well_list = []
-
-    for assembly_count, assembly_dict in enumerate(final_assembly_dict_list):
-        for well in assembly_dict.keys():
-            assembly_list.append(assembly_count + 1)
-            well_list.append(well)
     
-    # Read the CSV and handle based on keep_layout parameter
+    # Map each construct to its new assembly position
+    for (order, original_plate, original_well), construct_df in sorted_constructs:
+        # Find which assembly plate this construct ended up in
+        for assembly_plate, assembly_dict in final_assembly_dict_list.items():
+            if original_well in assembly_dict:
+                assembly_list.append(assembly_plate)
+                well_list.append(original_well)
+                break
+    
+    # Read the original CSV to preserve the layout
     constructs_df = pd.read_csv(construct_path)
     
-    if keep_layout:
-        # Preserve original layout - keep all rows including empty ones
-        print(f"Debug: Keeping original layout with {len(constructs_df)} rows")
-        print(f"Debug: Assembly data has {len(assembly_list)} entries")
+    # Determine format from the header
+    header_row = constructs_df.columns.tolist()
+    has_plate_column = len(header_row) >= 2 and header_row[0].strip().lower() == 'plate'
+    
+    # Create assembly and well lists that match the original layout
+    layout_assembly_list = []
+    layout_well_list = []
+    construct_index = 0
+    
+    for index, row in constructs_df.iterrows():
+        # Use the format determined from header
+        if has_plate_column:
+            # New format: Plate, Well, Linker1, Part1, ...
+            construct_components = row.iloc[2:].tolist()  # Start from column 3 (after Plate, Well)
+        else:
+            # Old format: Well, Linker1, Part1, ...
+            construct_components = row.iloc[1:].tolist()  # Start from column 2
         
-        # Determine format from the header (same as main processing)
-        header_row = constructs_df.columns.tolist()
-        has_plate_column = len(header_row) >= 2 and header_row[0].strip().lower() == 'plate'
+        # Filter out empty strings and NaN values
+        construct_components = [comp for comp in construct_components if comp and str(comp).strip() and str(comp).strip() != 'nan']
         
-        # Use the exact same logic as the main processing function
-        valid_constructs = 0
-        for index, row in constructs_df.iterrows():
-            # Use the format determined from header
-            if has_plate_column:
-                # New format: Plate, Well, Linker1, Part1, ...
-                construct_components = row.iloc[2:].tolist()  # Start from column 3 (after Plate, Well)
-            else:
-                # Old format: Well, Linker1, Part1, ...
-                construct_components = row.iloc[1:].tolist()  # Start from column 2
-            
-            # Filter out empty strings and NaN values using the same logic as main processing
-            construct_components = [comp for comp in construct_components if comp and str(comp).strip() and str(comp).strip() != 'nan']
-            
-            # Skip rows with no construct components (empty rows) - same as main processing
-            if not construct_components:
-                continue
-                
-            valid_constructs += 1
+        # Check if this row has valid construct data
+        if not construct_components:
+            # Empty row - use empty values
+            layout_assembly_list.append("")
+            layout_well_list.append("")
+            continue
         
-        if valid_constructs != len(assembly_list):
-            raise ValueError(
-                f"Mismatch between number of valid constructs ({valid_constructs}) "
-                f"and assembly data ({len(assembly_list)})."
-            )
-        
-        # Create assembly and well lists that match the original layout
-        layout_assembly_list = []
-        layout_well_list = []
-        assembly_index = 0
-        
-        for index, row in constructs_df.iterrows():
-            # Use the format determined from header
-            if has_plate_column:
-                # New format: Plate, Well, Linker1, Part1, ...
-                construct_components = row.iloc[2:].tolist()  # Start from column 3 (after Plate, Well)
-            else:
-                # Old format: Well, Linker1, Part1, ...
-                construct_components = row.iloc[1:].tolist()  # Start from column 2
-            
-            # Filter out empty strings and NaN values using the same logic as main processing
-            construct_components = [comp for comp in construct_components if comp and str(comp).strip() and str(comp).strip() != 'nan']
-            
-            # Skip rows with no construct components (empty rows) - same as main processing
-            if not construct_components:
-                # Empty row - use empty values
-                layout_assembly_list.append("")
-                layout_well_list.append("")
-                continue
-                
-            # Valid construct - use assembly data
-            layout_assembly_list.append(assembly_list[assembly_index])
-            layout_well_list.append(well_list[assembly_index])
-            assembly_index += 1
-        
-        assembly_list = layout_assembly_list
-        well_list = layout_well_list
-        
-    else:
-        # Filter out rows that have no meaningful construct data
-        filtered_rows = []
-        for index, row in constructs_df.iterrows():
-            # Skip the first column (Well) and get construct components
-            construct_components = row.iloc[1:].tolist()
-            
-            # Filter out empty strings and NaN values
-            construct_components = [comp for comp in construct_components if comp and str(comp).strip() and str(comp).strip() != 'nan']
-            
-            # Keep row if it has components
-            if construct_components:
-                filtered_rows.append(row)
-        
-        # Create new DataFrame with only valid constructs
-        constructs_df = pd.DataFrame(filtered_rows)
-        
-        print(f"Debug: Original CSV had {len(pd.read_csv(construct_path))} rows")
-        print(f"Debug: After filtering, {len(constructs_df)} rows remain")
-        print(f"Debug: Assembly data has {len(assembly_list)} entries")
-        
-        # Verify the number of constructs matches the assembly data
-        if len(constructs_df) != len(assembly_list):
-            raise ValueError(
-                f"Mismatch between number of constructs ({len(constructs_df)}) "
-                f"and assembly data ({len(assembly_list)}). "
-                f"This may be due to empty rows in the constructs CSV."
-            )
+        # Valid construct - use assembly data
+        if construct_index < len(assembly_list):
+            layout_assembly_list.append(assembly_list[construct_index])
+            layout_well_list.append(well_list[construct_index])
+            construct_index += 1
+        else:
+            # This shouldn't happen, but just in case
+            layout_assembly_list.append("")
+            layout_well_list.append("")
     
     # Handle column insertion based on format
     if has_plate_column:
         # New format: Plate, Well, Linker1, Part1, ...
         # Remove the first two columns (Plate, Well) and add Assembly and Well columns
         constructs_df.drop(constructs_df.columns[0:2], axis=1, inplace=True)
-        constructs_df.insert(0, "Assembly", assembly_list)
-        constructs_df.insert(1, "Well", well_list)
+        constructs_df.insert(0, "Assembly", layout_assembly_list)
+        constructs_df.insert(1, "Well", layout_well_list)
     else:
         # Old format: Well, Linker1, Part1, ...
         # Remove the first column (Well) and add Assembly and Well columns
         constructs_df.drop(constructs_df.columns[0], axis=1, inplace=True)
-        constructs_df.insert(0, "Assembly", assembly_list)
-        constructs_df.insert(1, "Well", well_list)
+        constructs_df.insert(0, "Assembly", layout_assembly_list)
+        constructs_df.insert(1, "Well", layout_well_list)
 
     return constructs_df
 
