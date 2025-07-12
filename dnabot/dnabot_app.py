@@ -32,6 +32,7 @@ import json
 import tkinter as tk
 import dnabot_gui as gui
 import regex as re
+import datetime
 
 
 @dataclass
@@ -292,6 +293,71 @@ def _ensure_output_dir(output_dir: str) -> None:
     os.chdir(output_dir)
 
 
+def _create_timestamped_output_dir(base_output_dir: str) -> str:
+    """
+    Create a timestamped subdirectory within the base output directory.
+    
+    Args:
+        base_output_dir: Base directory where the timestamped folder will be created
+        
+    Returns:
+        Path to the newly created timestamped directory
+    """
+    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    timestamped_dir = os.path.join(base_output_dir, f"dnabot_run_{timestamp}")
+    
+    if not os.path.exists(timestamped_dir):
+        print(f"Creating timestamped output directory: {timestamped_dir}")
+        os.makedirs(timestamped_dir)
+    
+    return timestamped_dir
+
+
+def _generate_clip_script_name(base_name: str, clip_plate: int) -> str:
+    """
+    Generate CLIP script name with new naming convention (1a, 1b, 2a, 2b, etc.).
+    
+    Args:
+        base_name: Base name from FILE_CONFIG (e.g., 'A_clip_ot2_APIv2.8')
+        clip_plate: 0-based clip plate index
+        
+    Returns:
+        Script name with new convention (e.g., 'A1a_clip_ot2_APIv2.8.py')
+    """
+    # Calculate plate number and half (a or b)
+    plate_num = (clip_plate // 2) + 1
+    half_letter = 'a' if clip_plate % 2 == 0 else 'b'
+    
+    # Insert the number and letter after the stage letter
+    # e.g., 'A_clip_ot2_APIv2.8' -> 'A1a_clip_ot2_APIv2.8'
+    stage_letter = base_name[0]  # Extract the stage letter (A, B, C, D)
+    rest_of_name = base_name[1:]  # Get the rest of the name
+    
+    return f"{stage_letter}{plate_num}{half_letter}{rest_of_name}.py"
+
+
+def _generate_script_name_with_number(base_name: str, script_number: int) -> str:
+    """
+    Generate script name with number moved after the stage letter.
+    
+    Args:
+        base_name: Base name from FILE_CONFIG (e.g., 'C_assembly_ot2_APIv2.8')
+        script_number: Script number (1-based)
+        
+    Returns:
+        Script name with new convention (e.g., 'C1_assembly_ot2_APIv2.8.py')
+    """
+    # Extract the stage letter and rest of the name
+    stage_letter = base_name[0]  # Extract the stage letter (A, B, C, D)
+    rest_of_name = base_name[1:]  # Get the rest of the name
+    
+    # Check if the name already ends with .py
+    if rest_of_name.endswith('.py'):
+        return f"{stage_letter}{script_number}{rest_of_name}"
+    else:
+        return f"{stage_letter}{script_number}{rest_of_name}.py"
+
+
 def main() -> None:
     """
     Main function to run the DNA-BOT application.
@@ -415,10 +481,13 @@ def _setup_directories(user_config: Dict[str, Union[str, List[str], int]]) -> Di
     output_dir = user_config.get('output_dir')
     template_dir = user_config.get('template_dir')
     
-    # Resolve output directory
+    # Resolve base output directory
     if output_dir is None:
         output_dir = os.path.dirname(os.path.abspath(construct_path))
-        print(f"Using construct file directory as output: {output_dir}")
+        print(f"Using construct file directory as base output: {output_dir}")
+    
+    # Create timestamped output directory
+    timestamped_output_dir = _create_timestamped_output_dir(output_dir)
     
     # Resolve template directory
     template_dir_path = _resolve_template_dir(template_dir, construct_path)
@@ -427,10 +496,12 @@ def _setup_directories(user_config: Dict[str, Union[str, List[str], int]]) -> Di
     if not os.path.exists(template_dir_path):
         raise FileNotFoundError(f"Template directory not found at: {template_dir_path}")
     
-    _ensure_output_dir(output_dir)
+    # Change to timestamped output directory
+    _ensure_output_dir(timestamped_output_dir)
 
     return {
-        'output_dir': output_dir,
+        'output_dir': timestamped_output_dir,
+        'base_output_dir': output_dir,
         'template_dir': template_dir_path,
         'construct_base': os.path.splitext(os.path.basename(construct_path))[0]
     }
@@ -577,16 +648,18 @@ def _generate_clip_scripts(sub_clip_dict: Dict[str, List],
     """Generate CLIP reaction scripts for a single plate."""
     template_dir = paths['template_dir']
     
-    # Generate standard CLIP script
+    # Generate standard CLIP script with new naming convention
+    clip_script_name = _generate_clip_script_name(FILE_CONFIG.OUTPUT_FILES['CLIP']['V2_8'], clip_plate)
     generate_ot2_script(
-        FILE_CONFIG.OUTPUT_FILES['CLIP']['V2_8'] + f'_SCRIPT_{clip_plate+1}.py',
+        clip_script_name,
         os.path.join(template_dir, FILE_CONFIG.TEMPLATE_FILES['CLIP']['V2_8']),
         clips_dict=sub_clip_dict
     )
     
-    # Generate thermocycler CLIP script
+    # Generate thermocycler CLIP script with new naming convention
+    clip_tc_script_name = _generate_clip_script_name(FILE_CONFIG.OUTPUT_FILES['CLIP']['V2_8_TC'], clip_plate)
     generate_ot2_script(
-        FILE_CONFIG.OUTPUT_FILES['CLIP']['V2_8_TC'] + f'_SCRIPT_{clip_plate+1}.py',
+        clip_tc_script_name,
         os.path.join(template_dir, FILE_CONFIG.TEMPLATE_FILES['CLIP']['V2_8_TC']),
         clips_dict=sub_clip_dict
     )
@@ -599,8 +672,10 @@ def _generate_magbead_scripts(magbead_sample_number: int,
     """Generate magnetic bead purification scripts."""
     template_dir = paths['template_dir']
     
+    # Generate script with new naming convention
+    magbead_script_name = _generate_script_name_with_number(FILE_CONFIG.OUTPUT_FILES['MAGBEAD']['V2_8'], script_index + 1)
     generate_ot2_script(
-        FILE_CONFIG.OUTPUT_FILES['MAGBEAD']['V2_8'] + f'_SCRIPT_{script_index+1}.py',
+        magbead_script_name,
         os.path.join(template_dir, FILE_CONFIG.TEMPLATE_FILES['MAGBEAD']['V2_8']),
         sample_number=magbead_sample_number,
         ethanol_well=user_config['etoh_well']
@@ -614,17 +689,19 @@ def _generate_assembly_scripts(final_assembly_dict: Dict[str, List],
     template_dir = paths['template_dir']
     final_assembly_tipracks = calculate_final_assembly_tipracks(final_assembly_dict)
     
-    # Generate standard assembly script
+    # Generate standard assembly script with new naming convention
+    assembly_script_name = _generate_script_name_with_number(FILE_CONFIG.OUTPUT_FILES['F_ASSEMBLY']['V2_8'], plate_number)
     generate_ot2_script(
-        FILE_CONFIG.OUTPUT_FILES['F_ASSEMBLY']['V2_8'] + f'_SCRIPT_{plate_number}.py',
+        assembly_script_name,
         os.path.join(template_dir, FILE_CONFIG.TEMPLATE_FILES['F_ASSEMBLY']['V2_8']),
         final_assembly_dict=final_assembly_dict,
         tiprack_num=final_assembly_tipracks
     )
     
-    # Generate thermocycler assembly script
+    # Generate thermocycler assembly script with new naming convention
+    assembly_tc_script_name = _generate_script_name_with_number(FILE_CONFIG.OUTPUT_FILES['F_ASSEMBLY']['V2_8_TC'], plate_number)
     generate_ot2_script(
-        FILE_CONFIG.OUTPUT_FILES['F_ASSEMBLY']['V2_8_TC'] + f'_SCRIPT_{plate_number}.py',
+        assembly_tc_script_name,
         os.path.join(template_dir, FILE_CONFIG.TEMPLATE_FILES['F_ASSEMBLY']['V2_8_TC']),
         final_assembly_dict=final_assembly_dict,
         tiprack_num=final_assembly_tipracks
