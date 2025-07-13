@@ -12,7 +12,7 @@ metadata = {
 # Protocol Configuration
 PROTOCOL_CONFIG = {
     # Sample Configuration
-    'clips_number': 50,    # Number of CLIP reactions to process
+    'sample_number': 50,    # Number of samples to process
     'sample_volume': 40,    # Volume of sample in µL
     'bead_ratio': 1.8,      # Ratio of beads to sample volume
     'elution_volume': 40,   # Volume of elution buffer in µL
@@ -50,8 +50,6 @@ PROTOCOL_CONFIG = {
         'elution': 20       # Number of mix repetitions for elution
     }
 }
-
-# PLACEHOLDER_PROTOCOL_CONFIG - This will be replaced by the parser
 
 class WellManager:
     """Manages well positions and column operations."""
@@ -220,6 +218,9 @@ class TipManager:
         self.current_rack = 0
         self._initialise_tip_arrays()
 
+PROTOCOL_CONFIG={"sample_number": 37, "sample_volume": 40, "bead_ratio": 1.8, "elution_volume": 40, "ethanol_well": "A11", "elution_well": "A10"}
+
+
 def calculate_transfer_time_duration(num_columns: int) -> float:
     """
     Calculate transfer time duration based on number of columns.
@@ -254,13 +255,13 @@ def run(protocol: protocol_api.ProtocolContext):
     
     # Load second source plate if needed
     # NB: clips are generated in sets of up to 48 in the clip reaction but the purification protocol can handle up to 96 (2 plates)
-    if PROTOCOL_CONFIG['clips_number'] > 48:
+    if PROTOCOL_CONFIG['sample_number'] > 48:
         source_plate2 = protocol.load_labware('4ti0960rig_96_wellplate_200ul', 2)
     else:
         source_plate2 = None
     
     # Initialise managers
-    well_manager = WellManager(protocol, PROTOCOL_CONFIG['clips_number'])
+    well_manager = WellManager(protocol, PROTOCOL_CONFIG['sample_number'])
     
     # Initialise separate tip managers for different stages
     sample_tip_manager = TipManager(protocol, 3, multi_pipette, 'p300')
@@ -298,7 +299,7 @@ def run(protocol: protocol_api.ProtocolContext):
         protocol.delay(minutes=adjusted_delay)
     
     # Prompt user to replace source plate 2 with final plate
-    if PROTOCOL_CONFIG['clips_number'] > 48:
+    if PROTOCOL_CONFIG['sample_number'] > 48:
         protocol.pause("Please remove source plate 2 from slot 2 and add the final plate in its place")
         final_plate = protocol.load_labware('4ti0960rig_96_wellplate_200ul', 2)
     else:

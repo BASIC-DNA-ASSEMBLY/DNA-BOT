@@ -83,7 +83,8 @@ class FileConfig:
         'V2_8_TC': 'clip_template_Thermocycler_module_APIv2.8.py'
     },
     'MAGBEAD': {
-        'V2_8': 'purification_template_APIv2.8.py'
+        'V2_8': 'purification_template_APIv2.8.py',
+        'V2_10': 'purification_template_APIv2.10.py'
     },
     'F_ASSEMBLY': {
         'V2_8': 'assembly_template_APIv2.8.py',
@@ -102,7 +103,8 @@ class FileConfig:
         'V2_8_TC': 'A_clip_ot2_Thermocycler_APIv2.8'
     },
     'MAGBEAD': {
-        'V2_8': 'B_purification_ot2_APIv2.8'
+        'V2_8': 'B_purification_ot2_APIv2.8',
+        'V2_10': 'B_purification_ot2_APIv2.10'
     },
     'F_ASSEMBLY': {
         'V2_8': 'C_assembly_ot2_APIv2.8',
@@ -204,7 +206,7 @@ def __cli() -> argparse.Namespace:
     parser_nogui = subparsers.add_parser('nogui')
     parser_nogui.add_argument('--construct_path', help='Construct CSV file.', required=True)
     parser_nogui.add_argument('--source_paths', help='Source CSV files.', nargs='+', required=True)
-    parser_nogui.add_argument('--etoh_well', help='Well coordinate for Ethanol. Default: A11', default='A11', type=str)
+    parser_nogui.add_argument('--etoh_well', help='Well coordinate for Ethanol. Default: A3', default='A3', type=str)
     parser_nogui.add_argument('--soc_column', help='Column coordinate for SOC. Default: 1', default=1, type=int)
     parser_nogui.add_argument('--output_dir',
                               help='Output directory. Default: same directory than the one containing the '
@@ -573,14 +575,61 @@ def _process_input_files(user_config: Dict[str, Union[str, List[str], int]],
         clips_dict_list, assembly_to_clip_mapping, optimised_clips_df = generate_optimised_clips_dict_list(constructs_dict, sources_dict)
         print(f"✓ Generated {len(clips_dict_list)} clip plate(s)")
 
-        # Calculate magbead sample distribution
-        magbead_sample_number_total = clips_df['number'].sum()
-        full_plates = magbead_sample_number_total // 96
-        remaining_samples = magbead_sample_number_total % 96
-        magbead_sample_list = [96] * full_plates
-        if remaining_samples > 0:
-            magbead_sample_list.append(remaining_samples)
-
+        # Calculate magbead sample distribution based on actual CLIP reactions needed for each optimised plate
+        # We need to calculate the CLIP count for each subset of constructs that goes into each optimised plate
+        magbead_sample_list = []
+        
+        # Get the assembly plates to understand the split
+        assembly_plates = set()
+        for (order, plate, well) in constructs_dict.keys():
+            assembly_plates.add(plate)
+        assembly_plates = sorted(assembly_plates)
+        
+        if len(assembly_plates) <= 1:
+            # Single assembly plate - use total count
+            total_clips = count_clips_for_constructs(constructs_dict)
+            # Split into 96-sample plates
+            full_plates = total_clips // 96
+            remaining_samples = total_clips % 96
+            magbead_sample_list = [96] * full_plates
+            if remaining_samples > 0:
+                magbead_sample_list.append(remaining_samples)
+        else:
+            # Multiple assembly plates - calculate for each half
+            # Split constructs by assembly plates
+            mid_point = (len(assembly_plates) + 1) // 2
+            first_half_plates = assembly_plates[:mid_point]
+            second_half_plates = assembly_plates[mid_point:]
+            
+            # Create construct subsets
+            first_half = {}
+            second_half = {}
+            for (order, plate, well), construct_df in constructs_dict.items():
+                if plate in first_half_plates:
+                    first_half[(order, plate, well)] = construct_df
+                else:
+                    second_half[(order, plate, well)] = construct_df
+            
+            # Calculate CLIP counts for each half
+            if first_half:
+                first_half_clips = count_clips_for_constructs(first_half)
+                # Split first half into 96-sample plates
+                first_full_plates = first_half_clips // 96
+                first_remaining = first_half_clips % 96
+                magbead_sample_list.extend([96] * first_full_plates)
+                if first_remaining > 0:
+                    magbead_sample_list.append(first_remaining)
+            
+            if second_half:
+                second_half_clips = count_clips_for_constructs(second_half)
+                # Split second half into 96-sample plates
+                second_full_plates = second_half_clips // 96
+                second_remaining = second_half_clips % 96
+                magbead_sample_list.extend([96] * second_full_plates)
+                if second_remaining > 0:
+                    magbead_sample_list.append(second_remaining)
+        
+        magbead_sample_number_total = sum(magbead_sample_list)
         print(f"✓ Total magbead samples: {magbead_sample_number_total}")
         
         # Generate final assembly plans
@@ -670,16 +719,49 @@ def _generate_magbead_scripts(magbead_sample_number: int,
                              paths: Dict[str, str],
                              user_config: Dict[str, Union[str, List[str], int]]) -> None:
     """Generate magnetic bead purification scripts."""
+    import re
     template_dir = paths['template_dir']
     
-    # Generate script with new naming convention
-    magbead_script_name = _generate_script_name_with_number(FILE_CONFIG.OUTPUT_FILES['MAGBEAD']['V2_8'], script_index + 1)
-    generate_ot2_script(
-        magbead_script_name,
-        os.path.join(template_dir, FILE_CONFIG.TEMPLATE_FILES['MAGBEAD']['V2_8']),
-        sample_number=magbead_sample_number,
-        ethanol_well=user_config['etoh_well']
+    # Generate script with new naming convention using v2.10 template
+    magbead_script_name = _generate_script_name_with_number(FILE_CONFIG.OUTPUT_FILES['MAGBEAD']['V2_10'], script_index + 1)
+    
+    # Convert NumPy types to native Python types to avoid JSON serialisation issues
+    clips_number = int(magbead_sample_number) if hasattr(magbead_sample_number, 'item') else magbead_sample_number
+    print(f"Clips number: {clips_number}")
+    
+    template_path = os.path.join(template_dir, FILE_CONFIG.TEMPLATE_FILES['MAGBEAD']['V2_10'])
+    with open(template_path, 'r') as f:
+        template_content = f.read()
+    
+    # Replace only the specific lines that need to be dynamic
+    # Replace clips_number line
+    template_content = re.sub(
+        r"'clips_number': \d+,",
+        f"'clips_number': {clips_number},",
+        template_content
     )
+    
+    # Replace ethanol_well line
+    ethanol_well = user_config.get('etoh_well', 'A3')
+    template_content = re.sub(
+        r"'ethanol_well': '[^']*',",
+        f"'ethanol_well': '{ethanol_well}',",
+        template_content
+    )
+    
+    # Replace elution_well line (if it needs to be different from default)
+    elution_well = user_config.get('elution_well', 'A10')
+    template_content = re.sub(
+        r"'elution_well': '[^']*',",
+        f"'elution_well': '{elution_well}',",
+        template_content
+    )
+    
+    # Write the modified template to the output file
+    with open(magbead_script_name, 'w') as f:
+        f.write(template_content)
+    
+    print(f"    ✓ {os.path.basename(magbead_script_name)}")
 
 
 def _generate_assembly_scripts(final_assembly_dict: Dict[str, List], 
@@ -1555,6 +1637,22 @@ def generate_ot2_script(ot2_script_path, template_path, **kwargs):
         FileNotFoundError: If template file is not found
         IOError: If there are issues reading/writing files
     """
+    def convert_numpy_types(obj):
+        """Convert NumPy types to native Python types for JSON serialisation."""
+        import numpy as np
+        if isinstance(obj, np.integer):
+            return int(obj)
+        elif isinstance(obj, np.floating):
+            return float(obj)
+        elif isinstance(obj, np.ndarray):
+            return obj.tolist()
+        elif isinstance(obj, dict):
+            return {key: convert_numpy_types(value) for key, value in obj.items()}
+        elif isinstance(obj, list):
+            return [convert_numpy_types(item) for item in obj]
+        else:
+            return obj
+    
     try:
         if not os.path.exists(template_path):
             raise FileNotFoundError(f"Template file not found: {template_path}")
@@ -1577,19 +1675,42 @@ def generate_ot2_script(ot2_script_path, template_path, **kwargs):
                 for key, value in kwargs.items():
                     wf.write('{}='.format(key))
                     if type(value) == dict:
-                        wf.write(json.dumps(value))
+                        # Convert NumPy types before JSON serialisation
+                        converted_value = convert_numpy_types(value)
+                        wf.write(json.dumps(converted_value))
                     elif type(value) == str:
                         wf.write("'{}'".format(value))
                     else:
-                        wf.write(str(value))
+                        # Convert NumPy types for other types too
+                        converted_value = convert_numpy_types(value)
+                        wf.write(str(converted_value))
                     wf.write('\n')
                 wf.write('\n')
                 
-            # Write the rest of the template
+            # Write the rest of the template, but skip any existing variable definitions
             with open(template_path, 'r') as rf:
-                for index, line in enumerate(rf):
-                    if index >= function_start - 1:
-                        wf.write(line)
+                lines = rf.readlines()
+                skip_until_function = False
+                
+                for index, line in enumerate(lines):
+                    # Skip lines until we find the function definition
+                    if index < function_start - 1:
+                        continue
+                    
+                    # Check if this line defines a variable that we're overriding
+                    should_skip_line = False
+                    for key in kwargs.keys():
+                        # Check for both 'key=' and 'key =' patterns
+                        stripped_line = line.strip()
+                        if (stripped_line.startswith(f'{key}=') or 
+                            stripped_line.startswith(f'{key} =')):
+                            should_skip_line = True
+                            break
+                    
+                    if should_skip_line:
+                        continue
+                    
+                    wf.write(line)
                         
         print(f"    ✓ {os.path.basename(ot2_script_path)}")
         
@@ -2122,6 +2243,29 @@ def validate_csv_columns(reader: csv.DictReader, required_columns: List[str], fi
         raise ValueError(f"CSV file '{file_name}' is missing required columns: {', '.join(missing_columns)}")
 
 
+def count_clips_for_constructs(constructs_dict: Dict[Tuple[int, int, str], pd.DataFrame]) -> int:
+    """Count total number of clips needed for a set of constructs."""
+    if not constructs_dict:
+        return 0
+    
+    # Merge all constructs and find unique CLIP reactions
+    valid_constructs = list(constructs_dict.values())
+    merged_construct_dfs = pd.concat(valid_constructs, ignore_index=True)
+    unique_clips_df = merged_construct_dfs.drop_duplicates().reset_index(drop=True)
+    
+    # Count occurrences of each unique CLIP reaction
+    clip_count = np.zeros(len(unique_clips_df.index))
+    for i, unique_clip in unique_clips_df.iterrows():
+        for _, clip in merged_construct_dfs.iterrows():
+            if unique_clip.equals(clip):
+                clip_count[i] += 1
+    
+    # Calculate number of reactions needed based on final assemblies per CLIP
+    clip_count = clip_count // PROTOCOL_CONFIG.ASSEMBLY_FINAL_ASSEMBLIES_PER_CLIP + 1
+    
+    return int(clip_count.sum())
+
+
 def generate_optimised_clips_dict_list(constructs_dict: Dict[Tuple[int, int, str], pd.DataFrame], 
                                       sources_dict: Dict[str, Tuple[str, ...]]) -> Tuple[List[Dict[str, List]], Dict[int, List[str]], pd.DataFrame]:
     """
@@ -2143,28 +2287,6 @@ def generate_optimised_clips_dict_list(constructs_dict: Dict[Tuple[int, int, str
         - List of clip dictionaries for OT-2 scripts
         - Dictionary mapping assembly plate numbers to lists of required clip script names (e.g., ['1a', '1b'])
     """
-    
-    def count_clips_for_constructs(constructs_dict: Dict[Tuple[int, int, str], pd.DataFrame]) -> int:
-        """Count total number of clips needed for a set of constructs."""
-        if not constructs_dict:
-            return 0
-        
-        # Merge all constructs and find unique CLIP reactions
-        valid_constructs = list(constructs_dict.values())
-        merged_construct_dfs = pd.concat(valid_constructs, ignore_index=True)
-        unique_clips_df = merged_construct_dfs.drop_duplicates().reset_index(drop=True)
-        
-        # Count occurrences of each unique CLIP reaction
-        clip_count = np.zeros(len(unique_clips_df.index))
-        for i, unique_clip in unique_clips_df.iterrows():
-            for _, clip in merged_construct_dfs.iterrows():
-                if unique_clip.equals(clip):
-                    clip_count[i] += 1
-        
-        # Calculate number of reactions needed based on final assemblies per CLIP
-        clip_count = clip_count // PROTOCOL_CONFIG.ASSEMBLY_FINAL_ASSEMBLIES_PER_CLIP + 1
-        
-        return int(clip_count.sum())
     
     def split_constructs_by_assembly_plates(constructs_dict: Dict[Tuple[int, int, str], pd.DataFrame]) -> Tuple[Dict, Dict]:
         """
