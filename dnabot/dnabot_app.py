@@ -694,23 +694,23 @@ def _generate_ot2_scripts(data_structures: Dict[str, Any],
 def _generate_clip_scripts(sub_clip_dict: Dict[str, List], 
                           clip_plate: int, 
                           paths: Dict[str, str]) -> None:
-    """Generate CLIP reaction scripts for a single plate."""
+    """Generate CLIP reaction scripts for a single plate using Media Bot-style parameterisation."""
     template_dir = paths['template_dir']
     
     # Generate standard CLIP script with new naming convention
     clip_script_name = _generate_clip_script_name(FILE_CONFIG.OUTPUT_FILES['CLIP']['V2_8'], clip_plate)
-    generate_ot2_script(
+    _generate_clip_script_media_bot_style(
         clip_script_name,
         os.path.join(template_dir, FILE_CONFIG.TEMPLATE_FILES['CLIP']['V2_8']),
-        clips_dict=sub_clip_dict
+        sub_clip_dict
     )
     
     # Generate thermocycler CLIP script with new naming convention
     clip_tc_script_name = _generate_clip_script_name(FILE_CONFIG.OUTPUT_FILES['CLIP']['V2_8_TC'], clip_plate)
-    generate_ot2_script(
+    _generate_clip_script_media_bot_style(
         clip_tc_script_name,
         os.path.join(template_dir, FILE_CONFIG.TEMPLATE_FILES['CLIP']['V2_8_TC']),
-        clips_dict=sub_clip_dict
+        sub_clip_dict
     )
 
 
@@ -767,26 +767,26 @@ def _generate_magbead_scripts(magbead_sample_number: int,
 def _generate_assembly_scripts(final_assembly_dict: Dict[str, List], 
                               plate_number: int, 
                               paths: Dict[str, str]) -> None:
-    """Generate final assembly scripts."""
+    """Generate final assembly scripts using Media Bot-style parameterisation."""
     template_dir = paths['template_dir']
     final_assembly_tipracks = calculate_final_assembly_tipracks(final_assembly_dict)
     
     # Generate standard assembly script with new naming convention
     assembly_script_name = _generate_script_name_with_number(FILE_CONFIG.OUTPUT_FILES['F_ASSEMBLY']['V2_8'], plate_number)
-    generate_ot2_script(
+    _generate_assembly_script_media_bot_style(
         assembly_script_name,
         os.path.join(template_dir, FILE_CONFIG.TEMPLATE_FILES['F_ASSEMBLY']['V2_8']),
-        final_assembly_dict=final_assembly_dict,
-        tiprack_num=final_assembly_tipracks
+        final_assembly_dict,
+        final_assembly_tipracks
     )
     
     # Generate thermocycler assembly script with new naming convention
     assembly_tc_script_name = _generate_script_name_with_number(FILE_CONFIG.OUTPUT_FILES['F_ASSEMBLY']['V2_8_TC'], plate_number)
-    generate_ot2_script(
+    _generate_assembly_script_media_bot_style(
         assembly_tc_script_name,
         os.path.join(template_dir, FILE_CONFIG.TEMPLATE_FILES['F_ASSEMBLY']['V2_8_TC']),
-        final_assembly_dict=final_assembly_dict,
-        tiprack_num=final_assembly_tipracks
+        final_assembly_dict,
+        final_assembly_tipracks
     )
 
 
@@ -1716,6 +1716,166 @@ def generate_ot2_script(ot2_script_path, template_path, **kwargs):
         
     except Exception as e:
         print(f"\nError generating OT-2 script {os.path.basename(ot2_script_path)}:")
+        print(f"Error: {str(e)}")
+        print(f"Error type: {type(e)}")
+        import traceback
+        print("\nFull traceback:")
+        traceback.print_exc()
+        raise
+
+
+def _generate_clip_script_media_bot_style(ot2_script_path: str, template_path: str, clips_dict: Dict[str, List]) -> None:
+    """Generate CLIP script using Media Bot-style parameterisation.
+    
+    This function replaces the JSON file loading code in the template with embedded JSON data,
+    similar to how Media Bot parameterises its templates.
+    
+    Args:
+        ot2_script_path (str): Path where the OT-2 script will be written
+        template_path (str): Path to the template file
+        clips_dict (Dict[str, List]): CLIP reaction data dictionary
+        
+    Raises:
+        FileNotFoundError: If template file is not found
+        IOError: If there are issues reading/writing files
+    """
+    def convert_numpy_types(obj):
+        """Convert NumPy types to native Python types for JSON serialisation."""
+        import numpy as np
+        if isinstance(obj, np.integer):
+            return int(obj)
+        elif isinstance(obj, np.floating):
+            return float(obj)
+        elif isinstance(obj, np.ndarray):
+            return obj.tolist()
+        elif isinstance(obj, dict):
+            return {key: convert_numpy_types(value) for key, value in obj.items()}
+        elif isinstance(obj, list):
+            return [convert_numpy_types(item) for item in obj]
+        else:
+            return obj
+    
+    try:
+        if not os.path.exists(template_path):
+            raise FileNotFoundError(f"Template file not found: {template_path}")
+            
+        with open(template_path, 'r') as f:
+            template_content = f.read()
+        
+        # Convert clips_dict to JSON string
+        converted_clips_dict = convert_numpy_types(clips_dict)
+        clips_json = json.dumps(converted_clips_dict, indent=4)
+        
+        # Replace the JSON file loading code with embedded JSON data
+        modified_protocol = template_content.replace(
+            "with open('clips_data.json') as f:\n    clips_dict = json.load(f)",
+            f"clips_dict = {clips_json}"
+        )
+        
+        # Write the modified protocol
+        with open(ot2_script_path, 'w') as f:
+            f.write(modified_protocol)
+            
+        print(f"    ✓ {os.path.basename(ot2_script_path)}")
+        
+    except Exception as e:
+        print(f"\nError generating CLIP script {os.path.basename(ot2_script_path)}:")
+        print(f"Error: {str(e)}")
+        print(f"Error type: {type(e)}")
+        import traceback
+        print("\nFull traceback:")
+        traceback.print_exc()
+        raise
+
+
+def _generate_assembly_script_media_bot_style(ot2_script_path: str, template_path: str, 
+                                             final_assembly_dict: Dict[str, List], tiprack_num: int) -> None:
+    """Generate assembly script using Media Bot-style parameterisation.
+    
+    This function replaces the JSON file loading code in the template with embedded JSON data,
+    similar to how Media Bot parameterises its templates.
+    
+    Args:
+        ot2_script_path (str): Path where the OT-2 script will be written
+        template_path (str): Path to the template file
+        final_assembly_dict (Dict[str, List]): Final assembly data dictionary
+        tiprack_num (int): Number of tipracks required
+        
+    Raises:
+        FileNotFoundError: If template file is not found
+        IOError: If there are issues reading/writing files
+    """
+    def convert_numpy_types(obj):
+        """Convert NumPy types to native Python types for JSON serialisation."""
+        import numpy as np
+        if isinstance(obj, np.integer):
+            return int(obj)
+        elif isinstance(obj, np.floating):
+            return float(obj)
+        elif isinstance(obj, np.ndarray):
+            return obj.tolist()
+        elif isinstance(obj, dict):
+            return {key: convert_numpy_types(value) for key, value in obj.items()}
+        elif isinstance(obj, list):
+            return [convert_numpy_types(item) for item in obj]
+        else:
+            return obj
+    
+    try:
+        if not os.path.exists(template_path):
+            raise FileNotFoundError(f"Template file not found: {template_path}")
+            
+        with open(template_path, 'r') as f:
+            template_content = f.read()
+        
+        # Create assembly data dictionary
+        assembly_data = {
+            'final_assembly_dict': final_assembly_dict,
+            'tiprack_num': tiprack_num
+        }
+        
+        # Convert to JSON string with compact formatting
+        converted_assembly_data = convert_numpy_types(assembly_data)
+        
+        # Create a more compact and readable format for the assembly data
+        final_assembly_dict = converted_assembly_data['final_assembly_dict']
+        tiprack_num = converted_assembly_data['tiprack_num']
+        
+        # Format the final_assembly_dict in a more compact way
+        assembly_dict_lines = []
+        assembly_dict_lines.append("final_assembly_dict = {")
+        
+        for i, (well, (clips, plates)) in enumerate(final_assembly_dict.items()):
+            # Format clips as individual list items
+            clips_list = [f'"{clip}"' for clip in clips]
+            clips_str = f'[{", ".join(clips_list)}]'
+            plates_str = f'[{", ".join(map(str, plates))}]'
+            
+            if i == len(final_assembly_dict) - 1:
+                # Last item - no comma
+                assembly_dict_lines.append(f'    "{well}": [{clips_str}, {plates_str}]')
+            else:
+                assembly_dict_lines.append(f'    "{well}": [{clips_str}, {plates_str}],')
+        
+        assembly_dict_lines.append("}")
+        
+        # Create the compact assembly data string
+        compact_assembly_data = "\n".join(assembly_dict_lines)
+        
+        # Replace the JSON file loading code with embedded compact data
+        modified_protocol = template_content.replace(
+            "with open('assembly_data.json') as f:\n    assembly_data = json.load(f)\n    final_assembly_dict = assembly_data['final_assembly_dict']\n    tiprack_num = assembly_data['tiprack_num']",
+            f"{compact_assembly_data}\ntiprack_num = {tiprack_num}"
+        )
+        
+        # Write the modified protocol
+        with open(ot2_script_path, 'w') as f:
+            f.write(modified_protocol)
+            
+        print(f"    ✓ {os.path.basename(ot2_script_path)}")
+        
+    except Exception as e:
+        print(f"\nError generating assembly script {os.path.basename(ot2_script_path)}:")
         print(f"Error: {str(e)}")
         print(f"Error type: {type(e)}")
         import traceback

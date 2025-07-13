@@ -1,11 +1,20 @@
 from opentrons import protocol_api
 import numpy as np
+import json
+
 # metadata
 metadata = {
 'protocolName': 'My Protocol',
 'description': 'Simple protocol to get started using OT2',
 'apiLevel': '2.8'
 }
+
+# Load assembly data from JSON file
+# This will be replaced by the parser with embedded JSON data
+with open('assembly_data.json') as f:
+    assembly_data = json.load(f)
+    final_assembly_dict = assembly_data['final_assembly_dict']
+    tiprack_num = assembly_data['tiprack_num']
 
 # protocol run function. the part after the colon lets your editor know
 
