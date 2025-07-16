@@ -133,7 +133,7 @@ class DeckConfig:
     
     def __post_init__(self):
         if self.SOURCE_POSITIONS is None:
-            self.SOURCE_POSITIONS = ['1', '2']  # NB for thermocycler protocols, the thermocycler takes up slots 7, 8, 10, 11
+            self.SOURCE_POSITIONS = ['1', '2']  # Note: thermocycler protocols use slots 7, 8, 10, 11
         if self.SPOTTING_VOLS is None:
             self.SPOTTING_VOLS = {2: 5, 3: 5, 4: 5, 5: 5, 6: 5, 7: 5}
 
@@ -581,7 +581,6 @@ def _process_input_files(user_config: Dict[str, Union[str, List[str], int]],
             # Count total clip wells (including duplicates) on this plate
             n_total = len(long_clip_df)
             magbead_sample_list.append(n_total)
-            print(f"[DEBUG] Clip plate {i+1} has {n_total} total clip wells")
         magbead_sample_number_total = sum(magbead_sample_list)
         print(f"✓ Total magbead samples: {magbead_sample_number_total}")
         
@@ -648,12 +647,12 @@ def _generate_ot2_scripts(data_structures: Dict[str, Any],
 def _generate_clip_scripts(sub_clip_dict: Dict[str, List], 
                           clip_plate: int, 
                           paths: Dict[str, str]) -> None:
-    """Generate CLIP reaction scripts for a single plate using Media Bot-style parameterisation."""
+    """Generate CLIP reaction scripts for a single plate using embedded parameterisation."""
     template_dir = paths['template_dir']
     
     # Generate standard CLIP script with new naming convention
     clip_script_name = _generate_clip_script_name(FILE_CONFIG.OUTPUT_FILES['CLIP']['V2_8'], clip_plate)
-    _generate_clip_script_media_bot_style(
+    _generate_clip_script_embedded(
         clip_script_name,
         os.path.join(template_dir, FILE_CONFIG.TEMPLATE_FILES['CLIP']['V2_8']),
         sub_clip_dict
@@ -661,7 +660,7 @@ def _generate_clip_scripts(sub_clip_dict: Dict[str, List],
     
     # Generate thermocycler CLIP script with new naming convention
     clip_tc_script_name = _generate_clip_script_name(FILE_CONFIG.OUTPUT_FILES['CLIP']['V2_8_TC'], clip_plate)
-    _generate_clip_script_media_bot_style(
+    _generate_clip_script_embedded(
         clip_tc_script_name,
         os.path.join(template_dir, FILE_CONFIG.TEMPLATE_FILES['CLIP']['V2_8_TC']),
         sub_clip_dict
@@ -721,13 +720,13 @@ def _generate_magbead_scripts(magbead_sample_number: int,
 def _generate_assembly_scripts(final_assembly_dict: Dict[str, List], 
                               plate_number: int, 
                               paths: Dict[str, str]) -> None:
-    """Generate final assembly scripts using Media Bot-style parameterisation."""
+    """Generate final assembly scripts using embedded parameterisation."""
     template_dir = paths['template_dir']
     final_assembly_tipracks = calculate_final_assembly_tipracks(final_assembly_dict)
     
     # Generate standard assembly script with new naming convention
     assembly_script_name = _generate_script_name_with_number(FILE_CONFIG.OUTPUT_FILES['F_ASSEMBLY']['V2_8'], plate_number)
-    _generate_assembly_script_media_bot_style(
+    _generate_assembly_script_embedded(
         assembly_script_name,
         os.path.join(template_dir, FILE_CONFIG.TEMPLATE_FILES['F_ASSEMBLY']['V2_8']),
         final_assembly_dict,
@@ -736,7 +735,7 @@ def _generate_assembly_scripts(final_assembly_dict: Dict[str, List],
     
     # Generate thermocycler assembly script with new naming convention
     assembly_tc_script_name = _generate_script_name_with_number(FILE_CONFIG.OUTPUT_FILES['F_ASSEMBLY']['V2_8_TC'], plate_number)
-    _generate_assembly_script_media_bot_style(
+    _generate_assembly_script_embedded(
         assembly_tc_script_name,
         os.path.join(template_dir, FILE_CONFIG.TEMPLATE_FILES['F_ASSEMBLY']['V2_8_TC']),
         final_assembly_dict,
@@ -773,7 +772,7 @@ def _output_metadata_files(data_structures: Dict[str, Any],
         # Generate source plate information
         sources_paths_df = generate_sources_paths_df(
             user_config['sources_paths'], 
-            DECK_CONFIG.SOURCE_POSITIONS
+            data_structures['sources_dict']
         )
         
         # Write CLIP run information
@@ -923,32 +922,40 @@ def generate_constructs_list(path: str, keep_layout: bool = True) -> Dict[Tuple[
     valid_construct_index = 0
     try:
         with open(path, 'r') as csvfile:
-            csv_reader = csv.reader(csvfile)
             csv_reader_list = list(csv.reader(open(path, 'r')))
             if not csv_reader_list:
                 raise ValueError("Constructs file is empty.")
             header_row = csv_reader_list[0]
-            # Only accept new format: Plate, Well, ...
+            # Only accept format: Plate, Well, ...
             if not (len(header_row) >= 2 and header_row[0].strip().lower() == 'plate' and header_row[1].strip().lower() == 'well'):
-                raise ValueError(f"Constructs file must use the new format with header: Plate, Well, ...\nFound header: {header_row}")
+                raise ValueError(f"Constructs file must use the format with header: Plate, Well, ...\nFound header: {header_row}")
             print(f"... Validated CSV structure: Plate, Well format detected")
             for index, row in enumerate(csv_reader_list):
                 if index == 0:
                     continue
-                plate_str = row[0].strip() if row[0] else "1"
-                well_position = row[1] if len(row) > 1 else ""
+                plate_str = row[0].strip() if row[0] else None
+                well_position = row[1] if len(row) > 1 else None
                 construct_components = row[2:]
+                
+                # Validate plate number is provided and valid
+                if not plate_str:
+                    raise ValueError(f"Plate number is missing at row {index + 1}. Plate column cannot be empty.")
                 try:
                     plate_number = int(plate_str)
                     if plate_number < 1:
                         raise ValueError(f"Plate number must be a positive integer, got {plate_number} at row {index + 1}")
                 except ValueError as e:
                     raise ValueError(f"Plate number must be a valid integer, got '{plate_str}' at row {index + 1}")
-                if well_position.strip():
-                    try:
-                        validate_well_format(well_position)
-                    except ValueError as e:
-                        raise ValueError(f"Well position error at row {index + 1}: {str(e)}")
+                
+                # Validate well position is provided and valid
+                if not well_position:
+                    raise ValueError(f"Well position is missing at row {index + 1}. Well column cannot be empty.")
+                if not well_position.strip():
+                    raise ValueError(f"Well position is empty at row {index + 1}. Well column cannot be blank.")
+                try:
+                    validate_well_format(well_position)
+                except ValueError as e:
+                    raise ValueError(f"Well position error at row {index + 1}: {str(e)}")
                 construct_components = list(filter(None, construct_components))
                 if not construct_components:
                     continue
@@ -985,9 +992,10 @@ def generate_sources_dict(paths: List[str]) -> Dict[str, Tuple[str, ...]]:
     Args:
         paths (List[str]): List of paths to source CSV files containing part/linker
             information. Each file should have columns:
-            - Part/linker identifier (first column)
+            - Deck position (first column) - must be one of the allowed deck positions
             - Well location (second column)
-            - Concentration (optional, third column)
+            - Component name (third column)
+            - Concentration (optional, fourth column)
             - Other information (optional, additional columns)
 
     Returns:
@@ -1001,53 +1009,89 @@ def generate_sources_dict(paths: List[str]) -> Dict[str, Tuple[str, ...]]:
 
     Raises:
         FileNotFoundError: If any source file cannot be found
-        ValueError: If source files are malformed
+        ValueError: If source files are malformed or use invalid deck positions
     """
     sources_dict = {}
     
-    for deck_index, path in enumerate(paths):
+    for path in paths:
         print(f"\n... Loading source data from: {path}")
         
         try:
             with open(path, 'r') as csvfile:
-                csv_reader = csv.reader(csvfile)
+                csv_reader_list = list(csv.reader(csvfile))
                 
-                for index, source in enumerate(csv_reader):
-                    if index == 0:  # Skip header row if present
+                if not csv_reader_list:
+                    raise ValueError(f"Source file is empty: {path}")
+                
+                header_row = csv_reader_list[0]
+                
+                # Validate CSV structure - must have Deck position, Well, Component name columns
+                if len(header_row) < 3:
+                    raise ValueError(f"Source file must have at least 3 columns: Deck position, Well, Component name. "
+                                   f"Found {len(header_row)} columns in {path}")
+                
+                # Check header format (case-insensitive)
+                header_lower = [col.strip().lower() for col in header_row]
+                expected_headers = ['deck position', 'well', 'component name']
+                
+                for i, expected in enumerate(expected_headers):
+                    if i < len(header_lower) and expected not in header_lower[i]:
+                        raise ValueError(f"Source file header column {i+1} should be '{expected}' but found '{header_row[i]}' in {path}")
+                
+                print(f"... Validated CSV structure: Deck position, Well, Component name format detected")
+                
+                for index, row in enumerate(csv_reader_list):
+                    if index == 0:  # Skip header row
                         continue
                     
-                    # Strip whitespace from part name
-                    part_name = str(source[0]).strip()
+                    # Validate minimum required data
+                    if len(row) < 3:
+                        raise ValueError(f"Row {index + 1}: Insufficient data. Need at least deck position, well, and component name.")
                     
-                    # Skip rows with empty part names (blank wells)
-                    if not part_name:
+                    # Extract and validate deck position
+                    deck_position = row[0].strip() if row[0] else None
+                    if not deck_position:
+                        raise ValueError(f"Deck position is missing at row {index + 1}. Deck position column cannot be empty.")
+                    
+                    # Validate deck position is one of the allowed positions
+                    if deck_position not in DECK_CONFIG.SOURCE_POSITIONS:
+                        raise ValueError(f"Invalid deck position '{deck_position}' at row {index + 1}. "
+                                       f"Allowed positions are: {', '.join(DECK_CONFIG.SOURCE_POSITIONS)}")
+                    
+                    # Extract and validate well position
+                    well_position = row[1].strip() if row[1] else None
+                    if not well_position:
+                        raise ValueError(f"Well position is missing at row {index + 1}. Well column cannot be empty.")
+                    if not well_position.strip():
+                        raise ValueError(f"Well position is empty at row {index + 1}. Well column cannot be blank.")
+                    try:
+                        validate_well_format(well_position)
+                    except ValueError as e:
+                        raise ValueError(f"Well position error at row {index + 1}: {str(e)}")
+                    
+                    # Extract component name
+                    component_name = row[2].strip() if row[2] else ""
+                    
+                    # Skip rows with empty component names (blank wells)
+                    if not component_name:
                         continue
                     
-                    # Validate row has minimum required data
-                    if len(source) < 2:
-                        raise ValueError(f"Row {index + 1}: Insufficient data. Need at least part name and well location.")
+                    # Extract concentration and additional data
+                    concentration = row[3].strip() if len(row) > 3 and row[3] else ""
+                    additional_data = row[4:] if len(row) > 4 else []
                     
-                    # Extract values and add deck position
-                    csv_values = source[1:]
-                    csv_values.append(DECK_CONFIG.SOURCE_POSITIONS[deck_index])
+                    # Build the data tuple: (well, concentration, deck_position, additional_data...)
+                    csv_values = [well_position, concentration, deck_position] + additional_data
                     
-                    # Validate well format (only for non-empty wells)
-                    well = source[1] if len(source) > 1 else ""
-                    if well.strip():  # Only validate if well is not empty
-                        try:
-                            validate_well_format(well)
-                        except ValueError as e:
-                            raise ValueError(f"Row {index + 1}, part '{part_name}': {str(e)}")
-                    
-                    # Check for duplicate parts
-                    if part_name in sources_dict:
-                        raise ValueError(f"Duplicate part '{part_name}' found in source files. "
+                    # Check for duplicate components
+                    if component_name in sources_dict:
+                        raise ValueError(f"Duplicate component '{component_name}' found in source files. "
                                        f"First occurrence in file {paths.index(path) + 1}, "
-                                       f"second occurrence in file {deck_index + 1}")
+                                       f"second occurrence in file {paths.index(path) + 1}")
                     
-                    sources_dict[part_name] = tuple(csv_values)
+                    sources_dict[component_name] = tuple(csv_values)
             
-            print(f"... Successfully loaded {len([k for k in sources_dict.keys() if k in sources_dict])} parts from file {deck_index + 1}")
+            print(f"... Successfully loaded {len([k for k in sources_dict.keys() if k in sources_dict])} components from file {paths.index(path) + 1}")
             
         except FileNotFoundError:
             raise FileNotFoundError(f"Source file not found: {path}")
@@ -1055,7 +1099,7 @@ def generate_sources_dict(paths: List[str]) -> Dict[str, Tuple[str, ...]]:
             print(f"[ERROR] Failed to load source file {path}: {str(e)}")
             raise
     
-    print(f"\n... Total parts loaded: {len(sources_dict)}")
+    print(f"\n... Total components loaded: {len(sources_dict)}")
     return sources_dict
 
 
@@ -1550,11 +1594,11 @@ def generate_ot2_script(ot2_script_path, template_path, **kwargs):
         raise
 
 
-def _generate_clip_script_media_bot_style(ot2_script_path: str, template_path: str, clips_dict: Dict[str, List]) -> None:
-    """Generate CLIP script using Media Bot-style parameterisation.
+def _generate_clip_script_embedded(ot2_script_path: str, template_path: str, clips_dict: Dict[str, List]) -> None:
+    """Generate CLIP script using embedded parameterisation.
     
     This function replaces the JSON file loading code in the template with embedded JSON data,
-    similar to how Media Bot parameterises its templates.
+    similar to how embedded parameterisation works in templates.
     
     Args:
         ot2_script_path (str): Path where the OT-2 script will be written
@@ -1614,18 +1658,18 @@ def _generate_clip_script_media_bot_style(ot2_script_path: str, template_path: s
         raise
 
 
-def _generate_assembly_script_media_bot_style(ot2_script_path: str, template_path: str, 
+def _generate_assembly_script_embedded(ot2_script_path: str, template_path: str, 
                                              final_assembly_dict: Dict[str, List], tiprack_num: int) -> None:
-    """Generate assembly script using Media Bot-style parameterisation.
+    """Generate assembly script using embedded parameterisation.
     
     This function replaces the JSON file loading code in the template with embedded JSON data,
-    similar to how Media Bot parameterises its templates.
+    similar to how embedded parameterisation works in templates.
     
     Args:
         ot2_script_path (str): Path where the OT-2 script will be written
         template_path (str): Path to the template file
         final_assembly_dict (Dict[str, List]): Final assembly data dictionary
-        tiprack_num (int): Number of tipracks required
+        tiprack_num (int): Number of tipracks needed
         
     Raises:
         FileNotFoundError: If template file is not found
@@ -1831,19 +1875,44 @@ def generate_master_mix_df(clip_number):
     return master_mix_df
 
 
-def generate_sources_paths_df(paths, deck_positions):
+def generate_sources_paths_df(paths, sources_dict):
     """Generates a dataframe detailing source plate information.
 
     Args:
         paths (list): list of strings specifying paths to source plates.
-        deck_positions (list): list of strings specifying candidate deck positions.
+        sources_dict (dict): dictionary mapping components to their source data.
 
+    Returns:
+        pd.DataFrame: DataFrame with deck positions, source plate names, and paths
     """
     source_plates_dict = {'Deck position': [], 'Source plate': [], 'Path': []}
-    for index, path in enumerate(paths):
-        source_plates_dict['Deck position'].append(DECK_CONFIG.SOURCE_POSITIONS[index])
-        source_plates_dict['Source plate'].append(os.path.basename(path))
-        source_plates_dict['Path'].append(path)
+    
+    # Extract unique deck positions from the sources_dict
+    deck_positions_used = set()
+    for source_data in sources_dict.values():
+        if len(source_data) >= 3:
+            deck_positions_used.add(source_data[2])  # deck_position is at index 2
+    
+    # Create entries for each deck position used
+    for deck_position in sorted(deck_positions_used):
+        # Find which file contains this deck position
+        file_index = None
+        for i, path in enumerate(paths):
+            # Check if this file contains the deck position
+            with open(path, 'r') as csvfile:
+                csv_reader = csv.reader(csvfile)
+                for row in csv_reader:
+                    if row and len(row) >= 1 and row[0].strip() == deck_position:
+                        file_index = i
+                        break
+                if file_index is not None:
+                    break
+        
+        if file_index is not None:
+            source_plates_dict['Deck position'].append(deck_position)
+            source_plates_dict['Source plate'].append(os.path.basename(paths[file_index]))
+            source_plates_dict['Path'].append(paths[file_index])
+    
     return pd.DataFrame(source_plates_dict)
 
 
@@ -1906,8 +1975,8 @@ def normalize_source_data(data_tuple: Union[Tuple, List]) -> Tuple[str, str, str
     """
     Normalize source data to ensure consistent 3-column format.
     
-    This function handles both 2-column and 3-column CSV formats by ensuring
-    the concentration field is always present (empty string if not provided).
+    This function handles the new source data format where data_tuple contains:
+    (well, concentration, deck_position, additional_data...)
     
     Args:
         data_tuple: Tuple or list containing source data
@@ -1916,22 +1985,19 @@ def normalize_source_data(data_tuple: Union[Tuple, List]) -> Tuple[str, str, str
         Normalized 3-element tuple: (well, concentration, deck_position)
         
     Examples:
-        >>> normalize_source_data(('A8', '2'))
-        ('A8', '', '2')
-        >>> normalize_source_data(('A8', '', '2'))
-        ('A8', '', '2')
+        >>> normalize_source_data(('A8', '', '1'))
+        ('A8', '', '1')
+        >>> normalize_source_data(('A8', '100', '2', 'extra_data'))
+        ('A8', '100', '2')
     """
     if isinstance(data_tuple, list):
         data_tuple = data_tuple[0]
     
-    if len(data_tuple) == 2:
-        # Insert empty concentration field
-        return (data_tuple[0], "", data_tuple[1])
-    elif len(data_tuple) >= 3:
-        # Return first three elements
+    if len(data_tuple) >= 3:
+        # New format: (well, concentration, deck_position, ...)
         return (data_tuple[0], data_tuple[1], data_tuple[2])
     else:
-        raise ValueError(f"Expected 2 or more elements, got {len(data_tuple)}")
+        raise ValueError(f"Expected at least 3 elements (well, concentration, deck_position), got {len(data_tuple)}")
 
 
 def validate_construct_data(constructs_dict: Dict[Tuple[int, int, str], pd.DataFrame], clips_df: pd.DataFrame) -> None:
@@ -2309,49 +2375,44 @@ def generate_optimised_clips_dict_list(constructs_dict: Dict[Tuple[int, int, str
     # Default: no split
     best_constructs_dicts = [constructs_dict]
     best_split_type = 'no_split'
-    print(f"START best_constructs_dicts len: {[(len(i), count_clips_for_constructs(i)) for i in best_constructs_dicts]}")
 
     if total_clips < 96 or len(assembly_plates) == 1:
         # Simple case: all fits on one plate or only one assembly plate
-        print(f"[Split] No split needed. All assemblies: {assembly_plates}, Total clips: {total_clips}")
+        print(f"No split needed. All assemblies: {assembly_plates}, Total clips: {total_clips}")
     else:
         # Try to split by assembly plates
         plates = assembly_plates.copy()
-        print(f"SPLIT best_constructs_dicts len: {[(len(i), count_clips_for_constructs(i)) for i in best_constructs_dicts]}")
         while True:
             mid = len(plates) // 2
             first_half_plates = plates[:mid]
             second_half_plates = plates[mid:]
             if not first_half_plates or not second_half_plates:
-                print(f"[Split] Cannot split further. Plates: {plates}")
+                print(f"Cannot split further. Plates: {plates}")
                 break  # Can't split further
             # Build construct dicts for each half
             first_half = {k: v for k, v in constructs_dict.items() if k[1] in first_half_plates}
             second_half = {k: v for k, v in constructs_dict.items() if k[1] in second_half_plates}
             first_clips = count_clips_for_constructs(first_half)
             second_clips = count_clips_for_constructs(second_half)
-            print(f"[Split] First half plates: {first_half_plates}, Constructs: {len(first_half)}, Clips: {first_clips}")
-            print(f"[Split] Second half plates: {second_half_plates}, Constructs: {len(second_half)}, Clips: {second_clips}")
+            print(f"First half plates: {first_half_plates}, Constructs: {len(first_half)}, Clips: {first_clips}")
+            print(f"Second half plates: {second_half_plates}, Constructs: {len(second_half)}, Clips: {second_clips}")
             if first_clips <= 96 and second_clips <= 96:
                 best_constructs_dicts = [first_half, second_half]
                 best_split_type = 'split'
-                print(f"[Split] Successful split found.")
-                print(f"SPLIT SUCCESS best_constructs_dicts len: {[(len(i), count_clips_for_constructs(i)) for i in best_constructs_dicts]}")
+                print(f"Successful split found.")
                 break
             elif first_clips > 96 and second_clips > 96:
-                print(f"[Split] Both halves exceed 96 clips. Falling back to no split.")
-                print(f"SPLIT FAIL best_constructs_dicts len: {[(len(i), count_clips_for_constructs(i)) for i in best_constructs_dicts]}")
+                print(f"Both halves exceed 96 clips. Falling back to no split.")
                 break
             else:
                 # Move the middle plate to the other half and try again
-                print(f"SPLIT MOVE best_constructs_dicts len: {[(len(i), count_clips_for_constructs(i)) for i in best_constructs_dicts]}")
                 if first_clips > 96:
                     move_plate = first_half_plates[-1]
-                    print(f"[Split] Moving plate {move_plate} from first to second half.")
+                    print(f"Moving plate {move_plate} from first to second half.")
                     plates.remove(move_plate)
                 else:
                     move_plate = second_half_plates[0]
-                    print(f"[Split] Moving plate {move_plate} from second to first half.")
+                    print(f"Moving plate {move_plate} from second to first half.")
                     plates.remove(move_plate)
         # If no good split found, best_constructs_dicts remains as [constructs_dict]
 
@@ -2360,7 +2421,6 @@ def generate_optimised_clips_dict_list(constructs_dict: Dict[Tuple[int, int, str
     all_clips_df = []
     assembly_to_clip_mapping = {}
     plate_counter = 1
-    print(f"END best_constructs_dicts len: {[(len(i), count_clips_for_constructs(i)) for i in best_constructs_dicts]}")
     for i, sub_constructs_dict in enumerate(best_constructs_dicts):
         sub_clip_dicts, plate_numbers, sub_clips_df, sub_long_clip_dfs = generate_clip_dicts_for_constructs(sub_constructs_dict, sources_dict)
         clips_dict_list.extend(sub_clip_dicts)
