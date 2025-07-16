@@ -572,63 +572,16 @@ def _process_input_files(user_config: Dict[str, Union[str, List[str], int]],
         print('\n6. Calculating OT-2 variables...')
         
         # Generate CLIP dictionaries for OT-2 scripts using optimised assignment
-        clips_dict_list, assembly_to_clip_mapping, optimised_clips_df = generate_optimised_clips_dict_list(constructs_dict, sources_dict)
+        clips_dict_list, assembly_to_clip_mapping, optimised_clips_df, long_clip_dfs = generate_optimised_clips_dict_list(constructs_dict, sources_dict)
         print(f"✓ Generated {len(clips_dict_list)} clip plate(s)")
 
-        # Calculate magbead sample distribution based on actual CLIP reactions needed for each optimised plate
-        # We need to calculate the CLIP count for each subset of constructs that goes into each optimised plate
+        # Calculate magbead sample distribution based on actual CLIP plates generated
         magbead_sample_list = []
-        
-        # Get the assembly plates to understand the split
-        assembly_plates = set()
-        for (order, plate, well) in constructs_dict.keys():
-            assembly_plates.add(plate)
-        assembly_plates = sorted(assembly_plates)
-        
-        if len(assembly_plates) <= 1:
-            # Single assembly plate - use total count
-            total_clips = count_clips_for_constructs(constructs_dict)
-            # Split into 96-sample plates
-            full_plates = total_clips // 96
-            remaining_samples = total_clips % 96
-            magbead_sample_list = [96] * full_plates
-            if remaining_samples > 0:
-                magbead_sample_list.append(remaining_samples)
-        else:
-            # Multiple assembly plates - calculate for each half
-            # Split constructs by assembly plates
-            mid_point = (len(assembly_plates) + 1) // 2
-            first_half_plates = assembly_plates[:mid_point]
-            second_half_plates = assembly_plates[mid_point:]
-            
-            # Create construct subsets
-            first_half = {}
-            second_half = {}
-            for (order, plate, well), construct_df in constructs_dict.items():
-                if plate in first_half_plates:
-                    first_half[(order, plate, well)] = construct_df
-                else:
-                    second_half[(order, plate, well)] = construct_df
-            
-            # Calculate CLIP counts for each half
-            if first_half:
-                first_half_clips = count_clips_for_constructs(first_half)
-                # Split first half into 96-sample plates
-                first_full_plates = first_half_clips // 96
-                first_remaining = first_half_clips % 96
-                magbead_sample_list.extend([96] * first_full_plates)
-                if first_remaining > 0:
-                    magbead_sample_list.append(first_remaining)
-            
-            if second_half:
-                second_half_clips = count_clips_for_constructs(second_half)
-                # Split second half into 96-sample plates
-                second_full_plates = second_half_clips // 96
-                second_remaining = second_half_clips % 96
-                magbead_sample_list.extend([96] * second_full_plates)
-                if second_remaining > 0:
-                    magbead_sample_list.append(second_remaining)
-        
+        for i, long_clip_df in enumerate(long_clip_dfs):
+            # Count total clip wells (including duplicates) on this plate
+            n_total = len(long_clip_df)
+            magbead_sample_list.append(n_total)
+            print(f"[DEBUG] Clip plate {i+1} has {n_total} total clip wells")
         magbead_sample_number_total = sum(magbead_sample_list)
         print(f"✓ Total magbead samples: {magbead_sample_number_total}")
         
@@ -647,7 +600,8 @@ def _process_input_files(user_config: Dict[str, Union[str, List[str], int]],
             'clips_dict_list': clips_dict_list,
             'magbead_sample_list': magbead_sample_list,
             'final_assembly_dict_list': final_assembly_dict_list,
-            'assembly_to_clip_mapping': assembly_to_clip_mapping
+            'assembly_to_clip_mapping': assembly_to_clip_mapping,
+            'long_clip_dfs': long_clip_dfs
         }
         
     except Exception as e:
@@ -2276,7 +2230,11 @@ def validate_csv_columns(reader: csv.DictReader, required_columns: List[str], fi
 
 
 def count_clips_for_constructs(constructs_dict: Dict[Tuple[int, int, str], pd.DataFrame]) -> int:
-    """Count total number of clips needed for a set of constructs."""
+    """Count total number of clip wells needed for a set of constructs.
+    
+    This uses the same logic as generate_clips_df to calculate how many wells/copies
+    of each clip are needed, accounting for ASSEMBLY_FINAL_ASSEMBLIES_PER_CLIP.
+    """
     if not constructs_dict:
         return 0
     
@@ -2292,7 +2250,8 @@ def count_clips_for_constructs(constructs_dict: Dict[Tuple[int, int, str], pd.Da
             if unique_clip.equals(clip):
                 clip_count[i] += 1
     
-    # Calculate number of reactions needed based on final assemblies per CLIP
+    # Calculate number of wells needed based on final assemblies per CLIP
+    # This is the same logic as in generate_clips_df
     clip_count = clip_count // PROTOCOL_CONFIG.ASSEMBLY_FINAL_ASSEMBLIES_PER_CLIP + 1
     
     return int(clip_count.sum())
@@ -2306,31 +2265,29 @@ def generate_clip_dicts_for_constructs(constructs_dict, sources_dict):
     total_clips = clips_df['number'].sum()
     clip_dict_list = []
     plate_numbers = []
+    long_clip_dfs = []
     # Split into sets of 96
     start = 0
     plate_idx = 1
+    long_clip_df = []
+    for idx, row in clips_df.iterrows():
+        for _ in range(row['number']):
+            long_clip_df.append(row)
+    long_clip_df = pd.DataFrame(long_clip_df)
     while start < total_clips:
         end = min(start + 96, total_clips)
-        # Find the rows in the long format corresponding to this chunk
-        long_clip_df = []
-        count = 0
-        for idx, row in clips_df.iterrows():
-            for _ in range(row['number']):
-                if start <= count < end:
-                    long_clip_df.append(row)
-                count += 1
-        if long_clip_df:
-            chunk_df = pd.DataFrame(long_clip_df)
-            clip_dict = generate_clips_dict(chunk_df, sources_dict)
-            clip_dict_list.append(clip_dict)
-            plate_numbers.append(plate_idx)
+        chunk_df = long_clip_df.iloc[start:end, :]
+        clip_dict = generate_clips_dict(chunk_df, sources_dict)
+        clip_dict_list.append(clip_dict)
+        plate_numbers.append(plate_idx)
+        long_clip_dfs.append(chunk_df)
         start = end
         plate_idx += 1
-    return clip_dict_list, plate_numbers, clips_df
+    return clip_dict_list, plate_numbers, clips_df, long_clip_dfs
 
 
 def generate_optimised_clips_dict_list(constructs_dict: Dict[Tuple[int, int, str], pd.DataFrame], 
-                                      sources_dict: Dict[str, Tuple[str, ...]]) -> Tuple[List[Dict[str, List]], Dict[int, list], pd.DataFrame]:
+                                      sources_dict: Dict[str, Tuple[str, ...]]):
     """
     New staged logic for clip distribution:
     1. Calculate total clips, error if >= max allowed
@@ -2338,6 +2295,7 @@ def generate_optimised_clips_dict_list(constructs_dict: Dict[Tuple[int, int, str
     3. Generate clip dicts for each plate (up to 96 clips at a time)
     4. Validate assignments
     """
+    all_long_clip_dfs = []
     # --- Stage 1: Initial check ---
     total_clips = count_clips_for_constructs(constructs_dict)
     max_clips_allowed = PROTOCOL_CONFIG.ASSEMBLY_MAX_CLIPS_TOTAL * 2
@@ -2351,6 +2309,7 @@ def generate_optimised_clips_dict_list(constructs_dict: Dict[Tuple[int, int, str
     # Default: no split
     best_constructs_dicts = [constructs_dict]
     best_split_type = 'no_split'
+    print(f"START best_constructs_dicts len: {[(len(i), count_clips_for_constructs(i)) for i in best_constructs_dicts]}")
 
     if total_clips < 96 or len(assembly_plates) == 1:
         # Simple case: all fits on one plate or only one assembly plate
@@ -2358,6 +2317,7 @@ def generate_optimised_clips_dict_list(constructs_dict: Dict[Tuple[int, int, str
     else:
         # Try to split by assembly plates
         plates = assembly_plates.copy()
+        print(f"SPLIT best_constructs_dicts len: {[(len(i), count_clips_for_constructs(i)) for i in best_constructs_dicts]}")
         while True:
             mid = len(plates) // 2
             first_half_plates = plates[:mid]
@@ -2370,18 +2330,21 @@ def generate_optimised_clips_dict_list(constructs_dict: Dict[Tuple[int, int, str
             second_half = {k: v for k, v in constructs_dict.items() if k[1] in second_half_plates}
             first_clips = count_clips_for_constructs(first_half)
             second_clips = count_clips_for_constructs(second_half)
-            print(f"[Split] First half plates: {first_half_plates}, Clips: {first_clips}")
-            print(f"[Split] Second half plates: {second_half_plates}, Clips: {second_clips}")
+            print(f"[Split] First half plates: {first_half_plates}, Constructs: {len(first_half)}, Clips: {first_clips}")
+            print(f"[Split] Second half plates: {second_half_plates}, Constructs: {len(second_half)}, Clips: {second_clips}")
             if first_clips <= 96 and second_clips <= 96:
                 best_constructs_dicts = [first_half, second_half]
                 best_split_type = 'split'
                 print(f"[Split] Successful split found.")
+                print(f"SPLIT SUCCESS best_constructs_dicts len: {[(len(i), count_clips_for_constructs(i)) for i in best_constructs_dicts]}")
                 break
             elif first_clips > 96 and second_clips > 96:
                 print(f"[Split] Both halves exceed 96 clips. Falling back to no split.")
+                print(f"SPLIT FAIL best_constructs_dicts len: {[(len(i), count_clips_for_constructs(i)) for i in best_constructs_dicts]}")
                 break
             else:
                 # Move the middle plate to the other half and try again
+                print(f"SPLIT MOVE best_constructs_dicts len: {[(len(i), count_clips_for_constructs(i)) for i in best_constructs_dicts]}")
                 if first_clips > 96:
                     move_plate = first_half_plates[-1]
                     print(f"[Split] Moving plate {move_plate} from first to second half.")
@@ -2397,10 +2360,12 @@ def generate_optimised_clips_dict_list(constructs_dict: Dict[Tuple[int, int, str
     all_clips_df = []
     assembly_to_clip_mapping = {}
     plate_counter = 1
+    print(f"END best_constructs_dicts len: {[(len(i), count_clips_for_constructs(i)) for i in best_constructs_dicts]}")
     for i, sub_constructs_dict in enumerate(best_constructs_dicts):
-        sub_clip_dicts, plate_numbers, sub_clips_df = generate_clip_dicts_for_constructs(sub_constructs_dict, sources_dict)
+        sub_clip_dicts, plate_numbers, sub_clips_df, sub_long_clip_dfs = generate_clip_dicts_for_constructs(sub_constructs_dict, sources_dict)
         clips_dict_list.extend(sub_clip_dicts)
         all_clips_df.append(sub_clips_df)
+        all_long_clip_dfs.extend(sub_long_clip_dfs)
         # Map assembly plates in this subdict to the corresponding plate numbers
         plates_in_subdict = sorted({k[1] for k in sub_constructs_dict.keys()})
         for plate in plates_in_subdict:
@@ -2420,7 +2385,7 @@ def generate_optimised_clips_dict_list(constructs_dict: Dict[Tuple[int, int, str
     print(f"  Total clip plates: {len(clips_dict_list)}")
     print(f"  Assembly to clip mapping: {assembly_to_clip_mapping}")
 
-    return clips_dict_list, assembly_to_clip_mapping, combined_clips_df
+    return clips_dict_list, assembly_to_clip_mapping, combined_clips_df, all_long_clip_dfs
 
 
 def validate_clip_assignments(constructs_dict, clips_df, sources_dict):
