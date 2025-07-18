@@ -122,8 +122,10 @@ def run(protocol: protocol_api.ProtocolContext):
         pipette.drop_tip()
 
         # transfer water into destination wells
-            # added blowout into destination wells ('blowout_location' only works for API 2.8 and above)
-        pipette.transfer(water_vols, water, destination_wells, blow_out=True, blowout_location='destination well', new_tip='always')
+        # added blowout into destination wells ('blowout_location' only works for API 2.8 and above)
+        if any([wv > 0 for wv in water_vols]):
+            pipette.transfer(water_vols, water, destination_wells, blow_out=True, blowout_location='destination well', new_tip='always')
+        # else: no water transfer needed if all water_vols are 0
 
         #transfer prefixes, suffixes, and parts into destination wells
             # added blowout into destination wells ('blowout_location' only works for API 2.8 and above)

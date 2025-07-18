@@ -48,7 +48,7 @@ class ProtocolConfig:
     CLIP_MAST_WATER: float = 15.5
     CLIP_PART_PER_CLIP: int = 200
     CLIP_MIN_VOL: float = 1.0
-    CLIP_DEFAULT_PART_VOL: float = 1.0
+    CLIP_DEFAULT_PART_CONC: float = 200.0  # Default concentration in ng/µl if not specified
     
     # Assembly parameters
     ASSEMBLY_MAX_CLIPS_PER_PLATE: int = 48
@@ -552,6 +552,15 @@ def _process_input_files(user_config: Dict[str, Union[str, List[str], int]],
         sources_dict = generate_sources_dict(user_config['sources_paths'])
         print(f"✓ Processed {len(sources_dict)} sources")
 
+        # Check if all parts/linkers are at default concentration
+        all_default_conc = True
+        for comp, data in sources_dict.items():
+            conc = data[1]
+            if conc and float(conc) != PROTOCOL_CONFIG.CLIP_DEFAULT_PART_CONC:
+                all_default_conc = False
+                break
+        print(f"✓ All parts/linkers at default concentration: {all_default_conc}")
+
         # Validate source data
         validate_sources_data(sources_dict)
         print("✓ Source data validation passed")
@@ -572,7 +581,7 @@ def _process_input_files(user_config: Dict[str, Union[str, List[str], int]],
         print('\n6. Calculating OT-2 variables...')
         
         # Generate CLIP dictionaries for OT-2 scripts using optimised assignment
-        clips_dict_list, assembly_to_clip_mapping, optimised_clips_df, long_clip_dfs = generate_optimised_clips_dict_list(constructs_dict, sources_dict)
+        clips_dict_list, assembly_to_clip_mapping, optimised_clips_df, long_clip_dfs = generate_optimised_clips_dict_list(constructs_dict, sources_dict, all_default_conc)
         print(f"✓ Generated {len(clips_dict_list)} clip plate(s)")
 
         # Calculate magbead sample distribution based on actual CLIP plates generated
@@ -600,7 +609,8 @@ def _process_input_files(user_config: Dict[str, Union[str, List[str], int]],
             'magbead_sample_list': magbead_sample_list,
             'final_assembly_dict_list': final_assembly_dict_list,
             'assembly_to_clip_mapping': assembly_to_clip_mapping,
-            'long_clip_dfs': long_clip_dfs
+            'long_clip_dfs': long_clip_dfs,
+            'all_default_conc': all_default_conc
         }
         
     except Exception as e:
@@ -631,7 +641,7 @@ def _generate_ot2_scripts(data_structures: Dict[str, Any],
     # Generate CLIP scripts
     for clip_plate, sub_clip_dict in enumerate(data_structures['clips_dict_list']):
         print(f"  Clip plate {clip_plate + 1}...")
-        _generate_clip_scripts(sub_clip_dict, clip_plate, paths)
+        _generate_clip_scripts(sub_clip_dict, clip_plate, paths, data_structures.get('all_default_conc', False))
 
     # Generate magbead purification scripts
     for i, magbead_sample_number in enumerate(data_structures['magbead_sample_list']):
@@ -646,7 +656,8 @@ def _generate_ot2_scripts(data_structures: Dict[str, Any],
 
 def _generate_clip_scripts(sub_clip_dict: Dict[str, List], 
                           clip_plate: int, 
-                          paths: Dict[str, str]) -> None:
+                          paths: Dict[str, str],
+                          all_default_conc: bool = False) -> None:
     """Generate CLIP reaction scripts for a single plate using embedded parameterisation."""
     template_dir = paths['template_dir']
     
@@ -655,7 +666,8 @@ def _generate_clip_scripts(sub_clip_dict: Dict[str, List],
     _generate_clip_script_embedded(
         clip_script_name,
         os.path.join(template_dir, FILE_CONFIG.TEMPLATE_FILES['CLIP']['V2_8']),
-        sub_clip_dict
+        sub_clip_dict,
+        all_default_conc
     )
     
     # Generate thermocycler CLIP script with new naming convention
@@ -663,7 +675,8 @@ def _generate_clip_scripts(sub_clip_dict: Dict[str, List],
     _generate_clip_script_embedded(
         clip_tc_script_name,
         os.path.join(template_dir, FILE_CONFIG.TEMPLATE_FILES['CLIP']['V2_8_TC']),
-        sub_clip_dict
+        sub_clip_dict,
+        all_default_conc
     )
 
 
@@ -767,7 +780,10 @@ def _output_metadata_files(data_structures: Dict[str, Any],
     
     try:
         # Generate master mix information
-        master_mix_df = generate_master_mix_df(data_structures['clips_df']['number'].sum())
+        master_mix_df = generate_master_mix_df(
+            data_structures['clips_df']['number'].sum(),
+            data_structures.get('all_default_conc', False)
+        )
         
         # Generate source plate information
         sources_paths_df = generate_sources_paths_df(
@@ -1180,27 +1196,9 @@ def generate_clips_df(constructs_dict: Dict[Tuple[int, int, str], pd.DataFrame])
     return clips_df
 
 
-def generate_clips_dict(clips_df: pd.DataFrame, sources_dict: Dict[str, Tuple[str, ...]]) -> Dict[str, List]:
+def generate_clips_dict(clips_df: pd.DataFrame, sources_dict: Dict[str, Tuple[str, ...]], all_default_conc: bool = False) -> Dict[str, List]:
     """Generates dictionary of CLIP reaction information for OT-2 script.
-    
-    Args:
-        clips_df (pd.DataFrame): DataFrame containing CLIP reaction information
-        sources_dict (Dict[str, Tuple[str, ...]]): Dictionary mapping parts/linkers
-            to their source locations
-
-    Returns:
-        Dict[str, List]: Dictionary containing:
-            - prefixes_wells: List of prefix linker well locations
-            - prefixes_plates: List of prefix linker plate numbers
-            - suffixes_wells: List of suffix linker well locations
-            - suffixes_plates: List of suffix linker plate numbers
-            - parts_wells: List of part well locations
-            - parts_plates: List of part plate numbers
-            - parts_vols: List of part volumes
-            - water_vols: List of water volumes
-
-    Raises:
-        ValueError: If required parts/linkers are missing from sources_dict
+    If all_default_conc is True, set water_vols to 0 for all clips (no separate water transfer).
     """
     # Calculate maximum part volume based on total reaction volume
     max_part_vol = PROTOCOL_CONFIG.CLIP_VOL - (
@@ -1264,18 +1262,21 @@ def generate_clips_dict(clips_df: pd.DataFrame, sources_dict: Dict[str, Tuple[st
             
             # Calculate part and water volumes
             if not sources_dict[part][1]:  # No concentration specified
-                clips_dict['parts_vols'].append(
-                    [float(PROTOCOL_CONFIG.CLIP_DEFAULT_PART_VOL)] * clip_info['number'])
-                clips_dict['water_vols'].append(
-                    [float(max_part_vol - PROTOCOL_CONFIG.CLIP_DEFAULT_PART_VOL)] * clip_info['number'])
-            else:  # Use specified concentration
-                part_vol = round(
-                    PROTOCOL_CONFIG.CLIP_PART_PER_CLIP / float(sources_dict[part][1]), 1)
-                part_vol = max(PROTOCOL_CONFIG.CLIP_MIN_VOL,
-                             min(part_vol, max_part_vol))
+                part_conc = PROTOCOL_CONFIG.CLIP_DEFAULT_PART_CONC
+            else:
+                part_conc = float(sources_dict[part][1])
+
+            part_vol = round(
+                PROTOCOL_CONFIG.CLIP_PART_PER_CLIP / float(part_conc), 1)
+            part_vol = max(PROTOCOL_CONFIG.CLIP_MIN_VOL,
+                         min(part_vol, max_part_vol))
+            # If all_default_conc, set water_vol to 0 (no separate water transfer)
+            if all_default_conc:
+                water_vol = 0.0
+            else:
                 water_vol = max_part_vol - part_vol
-                clips_dict['parts_vols'].append([float(part_vol)] * clip_info['number'])
-                clips_dict['water_vols'].append([float(water_vol)] * clip_info['number'])
+            clips_dict['parts_vols'].append([float(part_vol)] * clip_info['number'])
+            clips_dict['water_vols'].append([float(water_vol)] * clip_info['number'])
                     
         # Flatten nested lists
         for key, value in clips_dict.items():
@@ -1293,7 +1294,7 @@ def generate_clips_dict(clips_df: pd.DataFrame, sources_dict: Dict[str, Tuple[st
         raise
 
 
-def generate_clips_dict_list(clips_df, sources_dict):
+def generate_clips_dict_list(clips_df, sources_dict, all_default_conc=False):
     '''Subsets the clips df into chunks of 48, runs the generate_clips_dict function 
     for each and returns a list of the resulting sub clips dicts'''
 
@@ -1339,7 +1340,7 @@ def generate_clips_dict_list(clips_df, sources_dict):
             subset_upper = CLIP_COUNT
     
         sub_clip_df = long_clip_df.iloc[subset_lower:subset_upper, :]
-        sub_clip_dict = generate_clips_dict(sub_clip_df, sources_dict)
+        sub_clip_dict = generate_clips_dict(sub_clip_df, sources_dict, all_default_conc)
         clips_dict_list.append(sub_clip_dict)                           # generate and append sub_clip_dict to list - allows for multiple clip reactions
 
     return clips_dict_list
@@ -1594,23 +1595,11 @@ def generate_ot2_script(ot2_script_path, template_path, **kwargs):
         raise
 
 
-def _generate_clip_script_embedded(ot2_script_path: str, template_path: str, clips_dict: Dict[str, List]) -> None:
+def _generate_clip_script_embedded(ot2_script_path: str, template_path: str, clips_dict: Dict[str, List], all_default_conc: bool = False) -> None:
     """Generate CLIP script using embedded parameterisation.
-    
-    This function replaces the JSON file loading code in the template with embedded JSON data,
-    similar to how embedded parameterisation works in templates.
-    
-    Args:
-        ot2_script_path (str): Path where the OT-2 script will be written
-        template_path (str): Path to the template file
-        clips_dict (Dict[str, List]): CLIP reaction data dictionary
-        
-    Raises:
-        FileNotFoundError: If template file is not found
-        IOError: If there are issues reading/writing files
+    If all_default_conc is True, water_vols are all 0 and script should check for this.
     """
     def convert_numpy_types(obj):
-        """Convert NumPy types to native Python types for JSON serialisation."""
         import numpy as np
         if isinstance(obj, np.integer):
             return int(obj)
@@ -1624,30 +1613,26 @@ def _generate_clip_script_embedded(ot2_script_path: str, template_path: str, cli
             return [convert_numpy_types(item) for item in obj]
         else:
             return obj
-    
     try:
         if not os.path.exists(template_path):
             raise FileNotFoundError(f"Template file not found: {template_path}")
-            
         with open(template_path, 'r') as f:
             template_content = f.read()
-        
         # Convert clips_dict to JSON string
         converted_clips_dict = convert_numpy_types(clips_dict)
+        # If all_default_conc, ensure water_vols are all 0
+        if all_default_conc:
+            converted_clips_dict['water_vols'] = [0.0 for _ in converted_clips_dict['water_vols']]
         clips_json = json.dumps(converted_clips_dict, indent=4)
-        
         # Replace the JSON file loading code with embedded JSON data
         modified_protocol = template_content.replace(
             "with open('clips_data.json') as f:\n    clips_dict = json.load(f)",
             f"clips_dict = {clips_json}"
         )
-        
         # Write the modified protocol
         with open(ot2_script_path, 'w') as f:
             f.write(modified_protocol)
-            
         print(f"    ✓ {os.path.basename(ot2_script_path)}")
-        
     except Exception as e:
         print(f"\nError generating CLIP script {os.path.basename(ot2_script_path)}:")
         print(f"Error: {str(e)}")
@@ -1849,30 +1834,46 @@ def generate_new_constructs_df(construct_path, final_assembly_dict_list, constru
     return constructs_df
 
 
-def generate_master_mix_df(clip_number):
-    """Generates a dataframe detailing the components required in the clip
-    reaction master mix.
-
+def generate_master_mix_df(clip_number, all_default_conc):
+    """Generates a dataframe detailing the components required in the clip reaction master mix.
+    If all_default_conc is True, use the optimised mastermix (no separate water transfer).
+    Always outputs both per-reaction (1x) and total (Nx) columns.
     """
-    COMPONENTS = {'Component': ['Promega T4 DNA Ligase buffer, 10X',
-                                'Water', 'NEB BsaI-HFv2',
-                                'Promega T4 DNA Ligase']}
-    VOL_COLUMN = 'Volume (uL)'
-    master_mix_df = pd.DataFrame.from_dict(COMPONENTS)
-    
-    # Calculate volumes for each component
-    clip_vol = PROTOCOL_CONFIG.CLIP_VOL
-    dead_vol = PROTOCOL_CONFIG.CLIP_DEAD_VOL
-    t4_buff_vol = PROTOCOL_CONFIG.CLIP_T4_BUFF_VOL
-    mast_water = PROTOCOL_CONFIG.CLIP_MAST_WATER
-    bsai_vol = PROTOCOL_CONFIG.CLIP_BSAI_VOL
-    t4_lig_vol = PROTOCOL_CONFIG.CLIP_T4_LIG_VOL
-    
-    # Ensure float calculation to avoid integer results
-    multiplier = float(clip_number + dead_vol/clip_vol)
-    master_mix_df[VOL_COLUMN] = multiplier * \
-        np.array([t4_buff_vol, mast_water, bsai_vol, t4_lig_vol])
-    return master_mix_df
+    if all_default_conc:
+        COMPONENTS = {'Component': [
+            'Promega T4 DNA Ligase buffer, 10X',
+            'Water',
+            'NEB BsaI-HFv2',
+            'Promega T4 DNA Ligase'
+        ]}
+        PER_REACTION = [3.0, 22.5, 1.0, 0.5]
+        VOL_COLUMN_1X = 'Volume per reaction (uL)'
+        VOL_COLUMN_TOTAL = 'Total volume (uL)'
+        master_mix_df = pd.DataFrame.from_dict(COMPONENTS)
+        master_mix_df[ VOL_COLUMN_1X ] = PER_REACTION
+        # Add dead volume as before
+        multiplier = float(clip_number + PROTOCOL_CONFIG.CLIP_DEAD_VOL / PROTOCOL_CONFIG.CLIP_VOL)
+        master_mix_df[ VOL_COLUMN_TOTAL ] = [round(x * multiplier, 2) for x in PER_REACTION]
+        return master_mix_df
+    else:
+        COMPONENTS = {'Component': ['Promega T4 DNA Ligase buffer, 10X',
+                                    'Water', 'NEB BsaI-HFv2',
+                                    'Promega T4 DNA Ligase']}
+        VOL_COLUMN_1X = 'Volume per reaction (uL)'
+        VOL_COLUMN_TOTAL = 'Total volume (uL)'
+        master_mix_df = pd.DataFrame.from_dict(COMPONENTS)
+        # Calculate volumes for each component
+        clip_vol = PROTOCOL_CONFIG.CLIP_VOL
+        dead_vol = PROTOCOL_CONFIG.CLIP_DEAD_VOL
+        t4_buff_vol = PROTOCOL_CONFIG.CLIP_T4_BUFF_VOL
+        mast_water = PROTOCOL_CONFIG.CLIP_MAST_WATER
+        bsai_vol = PROTOCOL_CONFIG.CLIP_BSAI_VOL
+        t4_lig_vol = PROTOCOL_CONFIG.CLIP_T4_LIG_VOL
+        per_reaction = [t4_buff_vol, mast_water, bsai_vol, t4_lig_vol]
+        multiplier = float(clip_number + dead_vol/clip_vol)
+        master_mix_df[VOL_COLUMN_1X] = per_reaction
+        master_mix_df[VOL_COLUMN_TOTAL] = [round(x * multiplier, 2) for x in per_reaction]
+        return master_mix_df
 
 
 def generate_sources_paths_df(paths, sources_dict):
@@ -2323,7 +2324,7 @@ def count_clips_for_constructs(constructs_dict: Dict[Tuple[int, int, str], pd.Da
     return int(clip_count.sum())
 
 
-def generate_clip_dicts_for_constructs(constructs_dict, sources_dict):
+def generate_clip_dicts_for_constructs(constructs_dict, sources_dict, all_default_conc=False):
     """
     Given a constructs_dict, generate the clips DataFrame, split into sets of up to 96 (whole plates), and return a list of clip dicts, a list of plate numbers, and the combined DataFrame.
     """
@@ -2343,7 +2344,7 @@ def generate_clip_dicts_for_constructs(constructs_dict, sources_dict):
     while start < total_clips:
         end = min(start + 96, total_clips)
         chunk_df = long_clip_df.iloc[start:end, :]
-        clip_dict = generate_clips_dict(chunk_df, sources_dict)
+        clip_dict = generate_clips_dict(chunk_df, sources_dict, all_default_conc)
         clip_dict_list.append(clip_dict)
         plate_numbers.append(plate_idx)
         long_clip_dfs.append(chunk_df)
@@ -2353,7 +2354,8 @@ def generate_clip_dicts_for_constructs(constructs_dict, sources_dict):
 
 
 def generate_optimised_clips_dict_list(constructs_dict: Dict[Tuple[int, int, str], pd.DataFrame], 
-                                      sources_dict: Dict[str, Tuple[str, ...]]):
+                                      sources_dict: Dict[str, Tuple[str, ...]],
+                                      all_default_conc: bool = False):
     """
     New staged logic for clip distribution:
     1. Calculate total clips, error if >= max allowed
@@ -2422,7 +2424,7 @@ def generate_optimised_clips_dict_list(constructs_dict: Dict[Tuple[int, int, str
     assembly_to_clip_mapping = {}
     plate_counter = 1
     for i, sub_constructs_dict in enumerate(best_constructs_dicts):
-        sub_clip_dicts, plate_numbers, sub_clips_df, sub_long_clip_dfs = generate_clip_dicts_for_constructs(sub_constructs_dict, sources_dict)
+        sub_clip_dicts, plate_numbers, sub_clips_df, sub_long_clip_dfs = generate_clip_dicts_for_constructs(sub_constructs_dict, sources_dict, all_default_conc)
         clips_dict_list.extend(sub_clip_dicts)
         all_clips_df.append(sub_clips_df)
         all_long_clip_dfs.extend(sub_long_clip_dfs)
