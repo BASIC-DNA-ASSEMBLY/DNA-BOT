@@ -12,8 +12,98 @@ metadata = {
 
 # Load CLIP data from JSON file
 # This will be replaced by the parser with embedded JSON data
-with open('clips_data.json') as f:
-    clips_dict = json.load(f)
+clips_dict = {
+    "A7": {
+        "prefix_well": "F12",
+        "prefix_plate": "1",
+        "suffix_well": "E12",
+        "suffix_plate": "1",
+        "part_well": "E4",
+        "part_plate": "1",
+        "part_vol": 1.0,
+        "water_vol": 0.0
+    },
+    "B7": {
+        "prefix_well": "B12",
+        "prefix_plate": "1",
+        "suffix_well": "G12",
+        "suffix_plate": "1",
+        "part_well": "C2",
+        "part_plate": "1",
+        "part_vol": 1.0,
+        "water_vol": 0.0
+    },
+    "C7": {
+        "prefix_well": "F12",
+        "prefix_plate": "1",
+        "suffix_well": "E12",
+        "suffix_plate": "1",
+        "part_well": "G3",
+        "part_plate": "1",
+        "part_vol": 1.0,
+        "water_vol": 0.0
+    },
+    "D7": {
+        "prefix_well": "B12",
+        "prefix_plate": "1",
+        "suffix_well": "G12",
+        "suffix_plate": "1",
+        "part_well": "F6",
+        "part_plate": "1",
+        "part_vol": 1.0,
+        "water_vol": 0.0
+    },
+    "E7": {
+        "prefix_well": "F12",
+        "prefix_plate": "1",
+        "suffix_well": "E12",
+        "suffix_plate": "1",
+        "part_well": "G4",
+        "part_plate": "1",
+        "part_vol": 1.0,
+        "water_vol": 0.0
+    },
+    "F7": {
+        "prefix_well": "F12",
+        "prefix_plate": "1",
+        "suffix_well": "E12",
+        "suffix_plate": "1",
+        "part_well": "A8",
+        "part_plate": "1",
+        "part_vol": 1.0,
+        "water_vol": 0.0
+    },
+    "G7": {
+        "prefix_well": "B12",
+        "prefix_plate": "1",
+        "suffix_well": "G12",
+        "suffix_plate": "1",
+        "part_well": "A2",
+        "part_plate": "1",
+        "part_vol": 1.0,
+        "water_vol": 0.0
+    },
+    "H7": {
+        "prefix_well": "B12",
+        "prefix_plate": "1",
+        "suffix_well": "G12",
+        "suffix_plate": "1",
+        "part_well": "G8",
+        "part_plate": "1",
+        "part_vol": 1.0,
+        "water_vol": 0.0
+    },
+    "A8": {
+        "prefix_well": "F12",
+        "prefix_plate": "1",
+        "suffix_well": "E12",
+        "suffix_plate": "1",
+        "part_well": "G8",
+        "part_plate": "1",
+        "part_vol": 1.0,
+        "water_vol": 0.0
+    }
+}
 
 # example dictionary produced by DNA-BOT for a single construct containing 5 parts, un-comment and run to test the template
 #clips_dict={"prefixes_wells": ["A8", "A7", "C5", "C7", "C10"], "prefixes_plates": ["2", "2", "2", "2", "2"], "suffixes_wells": ["B7", "C1", "C2", "C3", "B8"], "suffixes_plates": ["2", "2", "2", "2", "2"], "parts_wells": ["E2", "F2", "C2", "B2", "D2"], "parts_plates": ["5", "5", "5", "5", "5"], "parts_vols": [1, 1, 1, 1, 1], "water_vols": [7.0, 7.0, 7.0, 7.0, 7.0]}

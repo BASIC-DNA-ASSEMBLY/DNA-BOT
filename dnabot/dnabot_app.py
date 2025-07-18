@@ -2,7 +2,7 @@
 """
 DNA-BOT: DNA assembly using BASIC on OpenTrons
 
-@author: mh2210
+@author: mh2210, ljh119
 
 TO DO
     - add in new transformation protocol
@@ -19,6 +19,7 @@ import os
 import sys
 from dataclasses import dataclass
 from pathlib import Path
+import shutil
 
 #add dnabot module to syspath
 abs_path = os.path.dirname(os.path.abspath(__file__))
@@ -500,7 +501,14 @@ def _setup_directories(user_config: Dict[str, Union[str, List[str], int]]) -> Di
     
     # Change to timestamped output directory
     _ensure_output_dir(timestamped_output_dir)
-
+    # Copy input CSVs to output directory
+    try:
+        shutil.copy(construct_path, timestamped_output_dir)
+        for src in user_config['sources_paths']:
+            shutil.copy(src, timestamped_output_dir)
+        print("✓ Input CSVs copied to output directory.")
+    except Exception as e:
+        print(f"Warning: Failed to copy input CSVs to output directory: {e}")
     return {
         'output_dir': timestamped_output_dir,
         'base_output_dir': output_dir,
@@ -654,30 +662,43 @@ def _generate_ot2_scripts(data_structures: Dict[str, Any],
         _generate_assembly_scripts(final_assembly_dict, plate_number, paths)
 
 
-def _generate_clip_scripts(sub_clip_dict: Dict[str, List], 
-                          clip_plate: int, 
-                          paths: Dict[str, str],
-                          all_default_conc: bool = False) -> None:
-    """Generate CLIP reaction scripts for a single plate using embedded parameterisation."""
+def _generate_clip_scripts(sub_clip_dict: dict, clip_plate: int, paths: dict, all_default_conc: bool = False) -> None:
+    """Generate CLIP reaction scripts for a single plate using embedded parameterisation.
+    If there are more than 48 clips, split into two scripts (a and b) for the same plate number.
+    """
     template_dir = paths['template_dir']
-    
-    # Generate standard CLIP script with new naming convention
-    clip_script_name = _generate_clip_script_name(FILE_CONFIG.OUTPUT_FILES['CLIP']['V2_8'], clip_plate)
-    _generate_clip_script_embedded(
-        clip_script_name,
-        os.path.join(template_dir, FILE_CONFIG.TEMPLATE_FILES['CLIP']['V2_8']),
-        sub_clip_dict,
-        all_default_conc
-    )
-    
-    # Generate thermocycler CLIP script with new naming convention
-    clip_tc_script_name = _generate_clip_script_name(FILE_CONFIG.OUTPUT_FILES['CLIP']['V2_8_TC'], clip_plate)
-    _generate_clip_script_embedded(
-        clip_tc_script_name,
-        os.path.join(template_dir, FILE_CONFIG.TEMPLATE_FILES['CLIP']['V2_8_TC']),
-        sub_clip_dict,
-        all_default_conc
-    )
+    # Get all destination wells for this plate
+    dest_wells = list(sub_clip_dict.keys())
+    n_clips = len(dest_wells)
+    # Split into halves if needed
+    halves = []
+    if n_clips > 48:
+        halves.append((dest_wells[:48], 'a'))
+        halves.append((dest_wells[48:], 'b'))
+    else:
+        halves.append((dest_wells, 'a'))
+    for wells, half in halves:
+        # Build a sub-dictionary for this half
+        half_clip_dict = {w: sub_clip_dict[w] for w in wells}
+        # Script name: e.g. A1a_clip_ot2_APIv2.8.py
+        base_name = FILE_CONFIG.OUTPUT_FILES['CLIP']['V2_8']
+        stage_letter = base_name[0]
+        script_name = f"{stage_letter}{clip_plate+1}{half}{base_name[1:]}.py"
+        _generate_clip_script_embedded(
+            script_name,
+            os.path.join(template_dir, FILE_CONFIG.TEMPLATE_FILES['CLIP']['V2_8']),
+            half_clip_dict,
+            all_default_conc
+        )
+        # Thermocycler version
+        tc_base_name = FILE_CONFIG.OUTPUT_FILES['CLIP']['V2_8_TC']
+        tc_script_name = f"{tc_base_name[0]}{clip_plate+1}{half}{tc_base_name[1:]}.py"
+        _generate_clip_script_embedded(
+            tc_script_name,
+            os.path.join(template_dir, FILE_CONFIG.TEMPLATE_FILES['CLIP']['V2_8_TC']),
+            half_clip_dict,
+            all_default_conc
+        )
 
 
 def _generate_magbead_scripts(magbead_sample_number: int, 
@@ -1196,10 +1217,8 @@ def generate_clips_df(constructs_dict: Dict[Tuple[int, int, str], pd.DataFrame])
     return clips_df
 
 
-def generate_clips_dict(clips_df: pd.DataFrame, sources_dict: Dict[str, Tuple[str, ...]], all_default_conc: bool = False) -> Dict[str, List]:
-    """Generates dictionary of CLIP reaction information for OT-2 script.
-    If all_default_conc is True, set water_vols to 0 for all clips (no separate water transfer).
-    """
+def generate_clips_dict(clips_df: pd.DataFrame, sources_dict: Dict[str, Tuple[str, ...]], all_default_conc: bool = False) -> Dict[str, dict]:
+    """Generates a dictionary for CLIP reactions keyed by destination well, with all info for that well as a dict value."""
     # Calculate maximum part volume based on total reaction volume
     max_part_vol = PROTOCOL_CONFIG.CLIP_VOL - (
         PROTOCOL_CONFIG.CLIP_T4_BUFF_VOL + 
@@ -1207,91 +1226,40 @@ def generate_clips_dict(clips_df: pd.DataFrame, sources_dict: Dict[str, Tuple[st
         PROTOCOL_CONFIG.CLIP_T4_LIG_VOL + 
         PROTOCOL_CONFIG.CLIP_MAST_WATER + 2
     )
-
-    # Initialize dictionary for CLIP reaction information
-    clips_dict = {
-        'prefixes_wells': [],
-        'prefixes_plates': [],
-        'suffixes_wells': [],
-        'suffixes_plates': [],
-        'parts_wells': [],
-        'parts_plates': [],
-        'parts_vols': [],
-        'water_vols': []
-    }
-
-    # Check for missing parts in sources_dict
-    missing_parts = []
-    for _, clip_info in clips_df.iterrows():
+    clips_dict = {}
+    # For each row in clips_df, assign a destination well (A1, A2, ...)
+    for idx, clip_info in clips_df.iterrows():
+        dest_well = tip_counter(idx)  # e.g. A1, A2, ...
         prefix_linker = clip_info['prefixes'].strip()
         suffix_linker = clip_info['suffixes'].strip()
         part = clip_info['parts'].strip()
-        
-        if prefix_linker not in sources_dict:
-            missing_parts.append(f"Prefix linker: {prefix_linker}")
-        if suffix_linker not in sources_dict:
-            missing_parts.append(f"Suffix linker: {suffix_linker}")
-        if part not in sources_dict:
-            missing_parts.append(f"Part: {part}")
-    
-    if missing_parts:
-        error_msg = "The following parts/linkers are in the constructs but not in the parts plate:\n"
-        error_msg += "\n".join(missing_parts)
-        raise ValueError(error_msg)
-
-    try:
-        # Generate CLIP reaction information
-        for _, clip_info in clips_df.iterrows():
-            # Process prefix linker
-            prefix_linker = clip_info['prefixes'].strip()
-            clips_dict['prefixes_wells'].append([sources_dict[prefix_linker][0]] * clip_info['number'])
-            clips_dict['prefixes_plates'].append(
-                [normalize_source_data(sources_dict[prefix_linker])[2]] * clip_info['number'])
-            
-            # Process suffix linker
-            suffix_linker = clip_info['suffixes'].strip()
-            clips_dict['suffixes_wells'].append([sources_dict[suffix_linker][0]] * clip_info['number'])
-            clips_dict['suffixes_plates'].append(
-                [normalize_source_data(sources_dict[suffix_linker])[2]] * clip_info['number'])
-            
-            # Process part
-            part = clip_info['parts'].strip()
-            clips_dict['parts_wells'].append([sources_dict[part][0]] * clip_info['number'])
-            clips_dict['parts_plates'].append(
-                [normalize_source_data(sources_dict[part])[2]] * clip_info['number'])
-            
-            # Calculate part and water volumes
-            if not sources_dict[part][1]:  # No concentration specified
-                part_conc = PROTOCOL_CONFIG.CLIP_DEFAULT_PART_CONC
-            else:
-                part_conc = float(sources_dict[part][1])
-
-            part_vol = round(
-                PROTOCOL_CONFIG.CLIP_PART_PER_CLIP / float(part_conc), 1)
-            part_vol = max(PROTOCOL_CONFIG.CLIP_MIN_VOL,
-                         min(part_vol, max_part_vol))
-            # If all_default_conc, set water_vol to 0 (no separate water transfer)
-            if all_default_conc:
-                water_vol = 0.0
-            else:
-                water_vol = max_part_vol - part_vol
-            clips_dict['parts_vols'].append([float(part_vol)] * clip_info['number'])
-            clips_dict['water_vols'].append([float(water_vol)] * clip_info['number'])
-                    
-        # Flatten nested lists
-        for key, value in clips_dict.items():
-            clips_dict[key] = [item for sublist in value for item in sublist]
-
-        return clips_dict
-        
-    except Exception as e:
-        print(f"\nError generating clips dictionary:")
-        print(f"Error: {str(e)}")
-        print(f"Error type: {type(e)}")
-        import traceback
-        print("\nFull traceback:")
-        traceback.print_exc()
-        raise
+        prefix_well = sources_dict[prefix_linker][0]
+        prefix_plate = normalize_source_data(sources_dict[prefix_linker])[2]
+        suffix_well = sources_dict[suffix_linker][0]
+        suffix_plate = normalize_source_data(sources_dict[suffix_linker])[2]
+        part_well = sources_dict[part][0]
+        part_plate = normalize_source_data(sources_dict[part])[2]
+        if not sources_dict[part][1]:
+            part_conc = PROTOCOL_CONFIG.CLIP_DEFAULT_PART_CONC
+        else:
+            part_conc = float(sources_dict[part][1])
+        part_vol = round(PROTOCOL_CONFIG.CLIP_PART_PER_CLIP / float(part_conc), 1)
+        part_vol = max(PROTOCOL_CONFIG.CLIP_MIN_VOL, min(part_vol, max_part_vol))
+        if all_default_conc:
+            water_vol = 0.0
+        else:
+            water_vol = max_part_vol - part_vol
+        clips_dict[dest_well] = {
+            'prefix_well': prefix_well,
+            'prefix_plate': prefix_plate,
+            'suffix_well': suffix_well,
+            'suffix_plate': suffix_plate,
+            'part_well': part_well,
+            'part_plate': part_plate,
+            'part_vol': float(part_vol),
+            'water_vol': float(water_vol)
+        }
+    return clips_dict
 
 
 def generate_clips_dict_list(clips_df, sources_dict, all_default_conc=False):
@@ -1595,9 +1563,9 @@ def generate_ot2_script(ot2_script_path, template_path, **kwargs):
         raise
 
 
-def _generate_clip_script_embedded(ot2_script_path: str, template_path: str, clips_dict: Dict[str, List], all_default_conc: bool = False) -> None:
+def _generate_clip_script_embedded(ot2_script_path: str, template_path: str, clips_dict: dict, all_default_conc: bool = False) -> None:
     """Generate CLIP script using embedded parameterisation.
-    If all_default_conc is True, water_vols are all 0 and script should check for this.
+    Embeds the new per-well dictionary structure directly.
     """
     def convert_numpy_types(obj):
         import numpy as np
@@ -1620,9 +1588,6 @@ def _generate_clip_script_embedded(ot2_script_path: str, template_path: str, cli
             template_content = f.read()
         # Convert clips_dict to JSON string
         converted_clips_dict = convert_numpy_types(clips_dict)
-        # If all_default_conc, ensure water_vols are all 0
-        if all_default_conc:
-            converted_clips_dict['water_vols'] = [0.0 for _ in converted_clips_dict['water_vols']]
         clips_json = json.dumps(converted_clips_dict, indent=4)
         # Replace the JSON file loading code with embedded JSON data
         modified_protocol = template_content.replace(

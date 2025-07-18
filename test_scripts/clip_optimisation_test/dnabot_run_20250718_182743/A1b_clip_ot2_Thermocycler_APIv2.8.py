@@ -11,8 +11,98 @@ metadata = {
 
 # Load CLIP data from JSON file
 # This will be replaced by the parser with embedded JSON data
-with open('clips_data.json') as f:
-    clips_dict = json.load(f)
+clips_dict = {
+    "A7": {
+        "prefix_well": "F12",
+        "prefix_plate": "1",
+        "suffix_well": "E12",
+        "suffix_plate": "1",
+        "part_well": "E4",
+        "part_plate": "1",
+        "part_vol": 1.0,
+        "water_vol": 0.0
+    },
+    "B7": {
+        "prefix_well": "B12",
+        "prefix_plate": "1",
+        "suffix_well": "G12",
+        "suffix_plate": "1",
+        "part_well": "C2",
+        "part_plate": "1",
+        "part_vol": 1.0,
+        "water_vol": 0.0
+    },
+    "C7": {
+        "prefix_well": "F12",
+        "prefix_plate": "1",
+        "suffix_well": "E12",
+        "suffix_plate": "1",
+        "part_well": "G3",
+        "part_plate": "1",
+        "part_vol": 1.0,
+        "water_vol": 0.0
+    },
+    "D7": {
+        "prefix_well": "B12",
+        "prefix_plate": "1",
+        "suffix_well": "G12",
+        "suffix_plate": "1",
+        "part_well": "F6",
+        "part_plate": "1",
+        "part_vol": 1.0,
+        "water_vol": 0.0
+    },
+    "E7": {
+        "prefix_well": "F12",
+        "prefix_plate": "1",
+        "suffix_well": "E12",
+        "suffix_plate": "1",
+        "part_well": "G4",
+        "part_plate": "1",
+        "part_vol": 1.0,
+        "water_vol": 0.0
+    },
+    "F7": {
+        "prefix_well": "F12",
+        "prefix_plate": "1",
+        "suffix_well": "E12",
+        "suffix_plate": "1",
+        "part_well": "A8",
+        "part_plate": "1",
+        "part_vol": 1.0,
+        "water_vol": 0.0
+    },
+    "G7": {
+        "prefix_well": "B12",
+        "prefix_plate": "1",
+        "suffix_well": "G12",
+        "suffix_plate": "1",
+        "part_well": "A2",
+        "part_plate": "1",
+        "part_vol": 1.0,
+        "water_vol": 0.0
+    },
+    "H7": {
+        "prefix_well": "B12",
+        "prefix_plate": "1",
+        "suffix_well": "G12",
+        "suffix_plate": "1",
+        "part_well": "G8",
+        "part_plate": "1",
+        "part_vol": 1.0,
+        "water_vol": 0.0
+    },
+    "A8": {
+        "prefix_well": "F12",
+        "prefix_plate": "1",
+        "suffix_well": "E12",
+        "suffix_plate": "1",
+        "part_well": "G8",
+        "part_plate": "1",
+        "part_vol": 1.0,
+        "water_vol": 0.0
+    }
+}
 
 # opentrons_simulate.exe dnabot\template_ot2_scripts\clip_template_Thermocycler_module_APIv2.8.py --custom-labware-path 'labware\Labware definitions'
 
