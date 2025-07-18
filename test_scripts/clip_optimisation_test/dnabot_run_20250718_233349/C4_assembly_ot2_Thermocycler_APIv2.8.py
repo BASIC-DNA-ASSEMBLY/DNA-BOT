@@ -12,10 +12,37 @@ metadata = {
 
 # Load assembly data from JSON file
 # This will be replaced by the parser with embedded JSON data
-with open('assembly_data.json') as f:
-    assembly_data = json.load(f)
-    final_assembly_dict = assembly_data['final_assembly_dict']
-    tiprack_num = assembly_data['tiprack_num']
+final_assembly_dict = {
+    "A1": [["E1", "A4", "C9"], [1, 1, 1]],
+    "B1": [["F1", "D9", "D11"], [1, 1, 1]],
+    "C1": [["F1", "E4", "F4"], [1, 1, 1]],
+    "D1": [["F1", "G4", "H4"], [1, 1, 1]],
+    "E1": [["F1", "F6", "H2"], [1, 1, 1]],
+    "F1": [["F1", "A7", "F7"], [1, 1, 1]],
+    "G1": [["F1", "C7", "F7"], [1, 1, 1]],
+    "H1": [["F1", "E7", "F7"], [1, 1, 1]],
+    "A2": [["F1", "A9", "H7"], [1, 1, 1]],
+    "B2": [["F1", "A8", "B8"], [1, 1, 1]],
+    "C2": [["F1", "C8", "D7"], [1, 1, 1]],
+    "D2": [["F1", "E4", "A6"], [1, 1, 1]],
+    "E2": [["F1", "G4", "H4"], [1, 1, 1]],
+    "F2": [["F1", "G2", "H2"], [1, 1, 1]],
+    "G2": [["G1", "E11", "F11"], [1, 1, 1]],
+    "H2": [["G1", "C8", "D10"], [1, 1, 1]],
+    "A3": [["G1", "E4", "A6"], [1, 1, 1]],
+    "B3": [["G1", "G11", "H4"], [1, 1, 1]],
+    "C3": [["G1", "G2", "H2"], [1, 1, 1]],
+    "D3": [["G1", "B6", "B3"], [1, 1, 1]],
+    "E3": [["G1", "A7", "F8"], [1, 1, 1]],
+    "F3": [["G1", "C7", "F7"], [1, 1, 1]],
+    "G3": [["G1", "E7", "F8"], [1, 1, 1]],
+    "H3": [["G1", "A9", "B3"], [1, 1, 1]]
+}
+tiprack_num = 1
+
+# Thermocycler generation setting
+# This will be replaced by the parser with embedded thermocycler generation
+thermocycler_gen = 'gen1'
 
 # It is possible to run 88 assemblies with this new module. The heat block module is removed. 
 # Assembly reactions is set up on thermocycler module.
@@ -28,7 +55,7 @@ with open('assembly_data.json') as f:
 # final_assembly_dict={"A1": [["A1", "C9", "B11"], [1, 2, 1]], "B1": [["A1", "C9", "C11"], [1, 2, 1]], "C1": [["A1", "C9", "D11"], [1, 2, 1]], "D1": [["A1", "C9", "E11"], [1, 2, 1]], "E1": [["A1", "C9", "F11"], [1, 2, 1]], "F1": [["A1", "C9", "G11"], [1, 2, 1]], "G1": [["A1", "C9", "H11"], [1, 2, 1]], "H1": [["A1", "C9", "A12"], [1, 2, 1]], "A2": [["A1", "C9", "B12"], [1, 2, 1]], "B2": [["A1", "D9", "B11"], [1, 2, 1]], "C2": [["A1", "D9", "C11"], [1, 2, 1]], "D2": [["A1", "D9", "D11"], [1, 2, 1]], "E2": [["A1", "D9", "E11"], [1, 2, 1]], "F2": [["A1", "D9", "F11"], [1, 2, 1]], "G2": [["A1", "D9", "G11"], [1, 2, 1]], "H2": [["B1", "D9", "H11"], [1, 2, 1]], "A3": [["B1", "D9", "A12"], [1, 2, 1]], "B3": [["B1", "D9", "B12"], [1, 2, 1]], "C3": [["B1", "E9", "F12"], [1, 2, 1]], "D3": [["B1", "E9", "G12"], [1, 2, 1]], "E3": [["B1", "E9", "H12"], [1, 2, 1]], "F3": [["B1", "E9", "A1"], [1, 2, 2]], "G3": [["B1", "E9", "B1"], [1, 2, 2]], "H3": [["B1", "E9", "C1"], [1, 2, 2]], "A4": [["B1", "E9", "D1"], [1, 2, 2]], "B4": [["B1", "E9", "E1"], [1, 2, 2]], "C4": [["B1", "E9", "F1"], [1, 2, 2]], "D4": [["B1", "F9", "F12"], [1, 2, 1]], "E4": [["B1", "F9", "G12"], [1, 2, 1]], "F4": [["B1", "F9", "H12"], [1, 2, 1]], "G4": [["C1", "F9", "A1"], [1, 2, 2]], "H4": [["C1", "F9", "B1"], [1, 2, 2]], "A5": [["C1", "F9", "C1"], [1, 2, 2]], "B5": [["C1", "F9", "D1"], [1, 2, 2]], "C5": [["C1", "F9", "E1"], [1, 2, 2]], "D5": [["C1", "F9", "F1"], [1, 2, 2]], "E5": [["C1", "G9", "F12"], [1, 2, 1]], "F5": [["C1", "G9", "G12"], [1, 2, 1]], "G5": [["C1", "G9", "H12"], [1, 2, 1]], "H5": [["C1", "G9", "A1"], [1, 2, 2]], "A6": [["C1", "G9", "B1"], [1, 2, 2]], "B6": [["C1", "G9", "C1"], [1, 2, 2]], "C6": [["C1", "G9", "D1"], [1, 2, 2]], "D6": [["C1", "G9", "E1"], [1, 2, 2]], "E6": [["C1", "G9", "F1"], [1, 2, 2]], "F6": [["D1", "H9", "B2"], [1, 2, 2]], "G6": [["D1", "H9", "C2"], [1, 2, 2]], "H6": [["D1", "H9", "D2"], [1, 2, 2]], "A7": [["D1", "H9", "E2"], [1, 2, 2]], "B7": [["D1", "H9", "F2"], [1, 2, 2]], "C7": [["D1", "H9", "G2"], [1, 2, 2]], "D7": [["D1", "H9", "H2"], [1, 2, 2]], "E7": [["D1", "H9", "A3"], [1, 2, 2]], "F7": [["D1", "H9", "B3"], [1, 2, 2]], "G7": [["D1", "A10", "B2"], [1, 2, 2]], "H7": [["D1", "A10", "C2"], [1, 2, 2]], "A8": [["D1", "A10", "D2"], [1, 2, 2]], "B8": [["D1", "A10", "E2"], [1, 2, 2]], "C8": [["D1", "A10", "F2"], [1, 2, 2]], "D8": [["D1", "A10", "G2"], [1, 2, 2]], "E8": [["E1", "A10", "H2"], [1, 2, 2]], "F8": [["E1", "A10", "A3"], [1, 2, 2]], "G8": [["E1", "A10", "B3"], [1, 2, 2]], "H8": [["E1", "B10", "B2"], [1, 2, 2]], "A9": [["E1", "B10", "C2"], [1, 2, 2]], "B9": [["E1", "B10", "D2"], [1, 2, 2]], "C9": [["E1", "B10", "E2"], [1, 2, 2]], "D9": [["E1", "B10", "F2"], [1, 2, 2]], "E9": [["E1", "B10", "G2"], [1, 2, 2]], "F9": [["E1", "B10", "H2"], [1, 2, 2]], "G9": [["E1", "B10", "A3"], [1, 2, 2]], "H9": [["E1", "B10", "B3"], [1, 2, 2]]}
 # tiprack_num=3
 
-# opentrons_simulate.exe dnabot\template_ot2_scripts\assembly_template_Thermocycler_module_APIv2.8.py --custom-labware-path 'labware\Labware definitions'
+# opentrons_simulate.exe dnabot\template_ot2_scripts\assembly_template_TC_APIv2.8.py --custom-labware-path 'labware\Labware definitions'
 
 def run(protocol: protocol_api.ProtocolContext):
     def final_assembly(final_assembly_dict, tiprack_num, tiprack_type="opentrons_96_tiprack_20ul"):
@@ -53,9 +80,9 @@ def run(protocol: protocol_api.ProtocolContext):
             # tiprack_num += 1                    # + 1 for one index ############################### I think(?)
 
             # Thermocycler Module
-            try:
+            if thermocycler_gen == 'gen1':
                 tc_mod = protocol.load_module('Thermocycler Module')
-            except:
+            else:  # gen2
                 tc_mod = protocol.load_module('thermocyclerModuleV2')
 
             destination_plate = tc_mod.load_labware(DESTINATION_PLATE_TYPE)

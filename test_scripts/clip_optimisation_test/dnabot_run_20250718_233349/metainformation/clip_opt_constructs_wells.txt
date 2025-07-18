@@ -1,0 +1,3 @@
+Magbead ethanol well: A11
+SOC column: 1
+Thermocycler generation: gen1
