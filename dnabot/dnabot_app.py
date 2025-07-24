@@ -2590,6 +2590,9 @@ def validate_assembly_reconstruction(assembly_dict: Dict[int, Dict[str, List]],
     print(f"Number of constructs: {len(constructs_dict)}")
     print(f"Sample wells provided: {sample_wells}")
     
+    # Build the reverse lookup dict once for efficiency
+    well_to_component = build_well_to_component_lookup(sources_dict)
+    
     # Select sample wells if not provided
     if sample_wells is None:
         all_wells = []
@@ -2659,28 +2662,28 @@ def validate_assembly_reconstruction(assembly_dict: Dict[int, Dict[str, List]],
             print(f"  Clip data type: {type(clip_info)}")
             
             # Extract prefix linker, part, and suffix linker from sources_dict
-            # We need to find the component names by matching well positions
-            print(f"  Extracting components from sources_dict...")
-            # print(f"  Prefix plate: {clip_info['prefix_plate']}, well: {clip_info['prefix_well']}")
-            # print(f"  Part plate: {clip_info['part_plate']}, well: {clip_info['part_well']}")
-            # print(f"  Suffix plate: {clip_info['suffix_plate']}, well: {clip_info['suffix_well']}")
+            # Use the new well_to_component lookup for efficiency
+            print(f"  Extracting components from well_to_component lookup...")
+            print(f"  Prefix plate: {clip_info['prefix_source_plate']}, well: {clip_info['prefix_source_well']}")
+            print(f"  Part plate: {clip_info['part_source_plate']}, well: {clip_info['part_source_well']}")
+            print(f"  Suffix plate: {clip_info['suffix_source_plate']}, well: {clip_info['suffix_source_well']}")
             
             try:
-                prefix_linker = find_component_by_well(clip_info['prefix_plate'], clip_info['prefix_well'], sources_dict)
+                prefix_linker = find_component_by_well(clip_info['prefix_source_plate'], clip_info['prefix_source_well'], well_to_component)
                 print(f"  Found prefix_linker: {prefix_linker}")
             except ValueError as e:
                 print(f"  ERROR finding prefix_linker: {e}")
                 raise
                 
             try:
-                part = find_component_by_well(clip_info['part_plate'], clip_info['part_well'], sources_dict)
+                part = find_component_by_well(clip_info['part_source_plate'], clip_info['part_source_well'], well_to_component)
                 print(f"  Found part: {part}")
             except ValueError as e:
                 print(f"  ERROR finding part: {e}")
                 raise
                 
             try:
-                suffix_linker = find_component_by_well(clip_info['suffix_plate'], clip_info['suffix_well'], sources_dict)
+                suffix_linker = find_component_by_well(clip_info['suffix_source_plate'], clip_info['suffix_source_well'], well_to_component)
                 print(f"  Found suffix_linker: {suffix_linker}")
             except ValueError as e:
                 print(f"  ERROR finding suffix_linker: {e}")
@@ -2829,9 +2832,9 @@ def reconstruct_construct_sequence(clip_components: List[List[str]]) -> List[str
         print(f"  RECONSTRUCTION DEBUG: Checking circular link: first prefix '{first_prefix}' (base: '{first_prefix_base}') vs last suffix '{last_suffix}' (base: '{last_suffix_base}')")
         
         if first_prefix_base == last_suffix_base:
-            # Unify the circular link
-            print(f"  RECONSTRUCTION DEBUG: Circular link found, unifying")
-            sequence[0] = first_prefix_base  # Replace first part with unified linker
+            # Unify the circular link (only update the last suffix, do not overwrite the first part)
+            print(f"  RECONSTRUCTION DEBUG: Circular link found, unifying last suffix only")
+            # sequence[0] = first_prefix_base  # Do NOT overwrite the first part (part should remain)
             sequence[-1] = last_suffix_base  # Replace last suffix with unified linker
         else:
             print(f"  RECONSTRUCTION DEBUG: No circular link")
@@ -2840,41 +2843,13 @@ def reconstruct_construct_sequence(clip_components: List[List[str]]) -> List[str
     return sequence
 
 
-def find_component_by_well(plate: str, well: str, sources_dict: Dict[str, Tuple[str, ...]]) -> str:
+def find_component_by_well(plate: str, well: str, well_to_component: dict) -> str:
     """
-    Find a component name by matching its well position in sources_dict.
-    
-    Args:
-        plate: Plate number as string
-        well: Well position (e.g., 'A1')
-        sources_dict: Dictionary mapping component names to (well, concentration, deck_position, ...)
-        
-    Returns:
-        Component name that matches the given plate and well
-        
-    Raises:
-        ValueError: If no component is found at the specified location
+    Find a component name by (plate, well) using a precomputed lookup dict.
     """
-    print(f"    FIND_COMPONENT DEBUG: Looking for plate '{plate}', well '{well}'")
-    print(f"    FIND_COMPONENT DEBUG: Sources dict has {len(sources_dict)} components")
-    
-    for component_name, source_info in sources_dict.items():
-        source_well = source_info[0]
-        source_plate = normalize_source_data(source_info)[2]  # Get deck position
-        
-        print(f"    FIND_COMPONENT DEBUG: Checking component '{component_name}' at well '{source_well}', plate '{source_plate}'")
-        
-        if source_well == well and source_plate == plate:
-            print(f"    FIND_COMPONENT DEBUG: FOUND! Component '{component_name}' matches")
-            return component_name
-    
-    print(f"    FIND_COMPONENT DEBUG: No component found at plate '{plate}', well '{well}'")
-    print(f"    FIND_COMPONENT DEBUG: Available components:")
-    for component_name, source_info in sources_dict.items():
-        source_well = source_info[0]
-        source_plate = normalize_source_data(source_info)[2]
-        print(f"      '{component_name}': well='{source_well}', plate='{source_plate}'")
-    
+    key = (plate, well)
+    if key in well_to_component:
+        return well_to_component[key]
     raise ValueError(f"No component found at plate {plate}, well {well}")
 
 
@@ -2966,6 +2941,17 @@ def clips_df_to_dict_list(clips_df):
 # 5. Add comments to clarify the new approach
 
 # ... existing code ...
+
+def build_well_to_component_lookup(sources_dict):
+    """
+    Build a lookup dict mapping (plate, well) → component_name for fast reverse lookup.
+    """
+    lookup = {}
+    for component_name, source_info in sources_dict.items():
+        well = source_info[0]
+        plate = normalize_source_data(source_info)[2]
+        lookup[(plate, well)] = component_name
+    return lookup
 
 if __name__ == '__main__':
     main()
