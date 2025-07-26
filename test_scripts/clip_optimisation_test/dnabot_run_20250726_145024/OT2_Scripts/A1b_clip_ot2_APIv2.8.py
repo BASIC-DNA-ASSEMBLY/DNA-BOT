@@ -1,39 +1,204 @@
-from __future__ import unicode_literals
 from opentrons import protocol_api
-import numpy as np
 import json
 import time
 from typing import Dict, List, Optional, Tuple, Union
 
-# metadata
+# Rename to 'clip_template' and paste into 'template_ot2_scripts' folder in DNA-BOT to use
+# Code has been reordered to better group relevant commands and take the constants out of def clip()
+
+#metadata
 metadata = {
-'protocolName': 'DNABOT Assembly Thermocycler',
-'description': 'DNABOT Assembly Step3 with Thermocycler',
-'apiLevel': '2.8'
+     'apiLevel': '2.8',
+     'protocolName': 'CLIP_No_Thermocycler',
+     'description': 'Implements linker ligation reactions using an opentrons OT-2. This version does not include the Thermocycler module.'}
+
+# Load CLIP data from JSON file
+# This will be replaced by the parser with embedded JSON data
+clips_dict = {
+    "A7": {
+        "prefix_linker": "LMP-P",
+        "prefix_source_well": "B12",
+        "prefix_source_plate": "1",
+        "part": "sucB_1",
+        "part_source_well": "C3",
+        "part_source_plate": "1",
+        "suffix_linker": "L1-S",
+        "suffix_source_well": "G12",
+        "suffix_source_plate": "1",
+        "Clip_Well": "A7",
+        "plate": 1,
+        "part_vol": 1.0,
+        "water_vol": 0.0
+    },
+    "B7": {
+        "prefix_linker": "L1-P",
+        "prefix_source_well": "F12",
+        "prefix_source_plate": "1",
+        "part": "alaC_1",
+        "part_source_well": "B2",
+        "part_source_plate": "1",
+        "suffix_linker": "LMS-S",
+        "suffix_source_well": "E12",
+        "suffix_source_plate": "1",
+        "Clip_Well": "B7",
+        "plate": 1,
+        "part_vol": 1.0,
+        "water_vol": 0.0
+    },
+    "C7": {
+        "prefix_linker": "LMP-P",
+        "prefix_source_well": "B12",
+        "prefix_source_plate": "1",
+        "part": "thiS_1",
+        "part_source_well": "C5",
+        "part_source_plate": "1",
+        "suffix_linker": "L1-S",
+        "suffix_source_well": "G12",
+        "suffix_source_plate": "1",
+        "Clip_Well": "C7",
+        "plate": 1,
+        "part_vol": 1.0,
+        "water_vol": 0.0
+    },
+    "D7": {
+        "prefix_linker": "L1-P",
+        "prefix_source_well": "F12",
+        "prefix_source_plate": "1",
+        "part": "serC_1",
+        "part_source_well": "E4",
+        "part_source_plate": "1",
+        "suffix_linker": "LMS-S",
+        "suffix_source_well": "E12",
+        "suffix_source_plate": "1",
+        "Clip_Well": "D7",
+        "plate": 1,
+        "part_vol": 1.0,
+        "water_vol": 0.0
+    },
+    "E7": {
+        "prefix_linker": "LMP-P",
+        "prefix_source_well": "B12",
+        "prefix_source_plate": "1",
+        "part": "alr_1",
+        "part_source_well": "C2",
+        "part_source_plate": "1",
+        "suffix_linker": "L1-S",
+        "suffix_source_well": "G12",
+        "suffix_source_plate": "1",
+        "Clip_Well": "E7",
+        "plate": 1,
+        "part_vol": 1.0,
+        "water_vol": 0.0
+    },
+    "F7": {
+        "prefix_linker": "L1-P",
+        "prefix_source_well": "F12",
+        "prefix_source_plate": "1",
+        "part": "dadX_1",
+        "part_source_well": "G3",
+        "part_source_plate": "1",
+        "suffix_linker": "LMS-S",
+        "suffix_source_well": "E12",
+        "suffix_source_plate": "1",
+        "Clip_Well": "F7",
+        "plate": 1,
+        "part_vol": 1.0,
+        "water_vol": 0.0
+    },
+    "G7": {
+        "prefix_linker": "LMP-P",
+        "prefix_source_well": "B12",
+        "prefix_source_plate": "1",
+        "part": "tdcB_2",
+        "part_source_well": "F6",
+        "part_source_plate": "1",
+        "suffix_linker": "L1-S",
+        "suffix_source_well": "G12",
+        "suffix_source_plate": "1",
+        "Clip_Well": "G7",
+        "plate": 1,
+        "part_vol": 1.0,
+        "water_vol": 0.0
+    },
+    "H7": {
+        "prefix_linker": "L1-P",
+        "prefix_source_well": "F12",
+        "prefix_source_plate": "1",
+        "part": "gadB_1",
+        "part_source_well": "G4",
+        "part_source_plate": "1",
+        "suffix_linker": "LMS-S",
+        "suffix_source_well": "E12",
+        "suffix_source_plate": "1",
+        "Clip_Well": "H7",
+        "plate": 1,
+        "part_vol": 1.0,
+        "water_vol": 0.0
+    },
+    "A8": {
+        "prefix_linker": "L1-P",
+        "prefix_source_well": "F12",
+        "prefix_source_plate": "1",
+        "part": "ilvA_1",
+        "part_source_well": "A8",
+        "part_source_plate": "1",
+        "suffix_linker": "LMS-S",
+        "suffix_source_well": "E12",
+        "suffix_source_plate": "1",
+        "Clip_Well": "A8",
+        "plate": 1,
+        "part_vol": 1.0,
+        "water_vol": 0.0
+    },
+    "B8": {
+        "prefix_linker": "LMP-P",
+        "prefix_source_well": "B12",
+        "prefix_source_plate": "1",
+        "part": "ilvH_1",
+        "part_source_well": "A2",
+        "part_source_plate": "1",
+        "suffix_linker": "L1-S",
+        "suffix_source_well": "G12",
+        "suffix_source_plate": "1",
+        "Clip_Well": "B8",
+        "plate": 1,
+        "part_vol": 1.0,
+        "water_vol": 0.0
+    },
+    "C8": {
+        "prefix_linker": "LMP-P",
+        "prefix_source_well": "B12",
+        "prefix_source_plate": "1",
+        "part": "menA_1",
+        "part_source_well": "G8",
+        "part_source_plate": "1",
+        "suffix_linker": "L1-S",
+        "suffix_source_well": "G12",
+        "suffix_source_plate": "1",
+        "Clip_Well": "C8",
+        "plate": 1,
+        "part_vol": 1.0,
+        "water_vol": 0.0
+    },
+    "D8": {
+        "prefix_linker": "L1-P",
+        "prefix_source_well": "F12",
+        "prefix_source_plate": "1",
+        "part": "menA_1",
+        "part_source_well": "G8",
+        "part_source_plate": "1",
+        "suffix_linker": "LMS-S",
+        "suffix_source_well": "E12",
+        "suffix_source_plate": "1",
+        "Clip_Well": "D8",
+        "plate": 1,
+        "part_vol": 1.0,
+        "water_vol": 0.0
+    }
 }
 
-# Load assembly data from JSON file
-# This will be replaced by the parser with embedded JSON data
-with open('assembly_data.json') as f:
-    assembly_data = json.load(f)
-    final_assembly_dict = assembly_data['final_assembly_dict']
-    tiprack_num = assembly_data['tiprack_num']
-
-# Thermocycler generation setting
-# This will be replaced by the parser with embedded thermocycler generation
-thermocycler_gen = 'gen2'
-
-# It is possible to run 88 assemblies with this new module. The heat block module is removed. 
-# Assembly reactions is set up on thermocycler module.
-
-# test dictionary can be used for simulation 3 or 88 assemblies
-#final_assembly_dict={"A1": [['A7', 'B7', 'C7', 'F7'], [1, 2, 1, 1]], "B1": [['A7', 'B7', 'D7', 'G7'], [1, 2, 1, 1]], "C1": [['A7', 'E7', 'H7'], [1, 2, 1]]}
-#tiprack_num=1
-
-# final_assembly_dict={"A1": [["A1", "C9", "B11"], [1, 2, 1]], "B1": [["A1", "C9", "C11"], [1, 2, 1]], "C1": [["A1", "C9", "D11"], [1, 2, 1]], "D1": [["A1", "C9", "E11"], [1, 2, 1]], "E1": [["A1", "C9", "F11"], [1, 2, 1]], "F1": [["A1", "C9", "G11"], [1, 2, 1]], "G1": [["A1", "C9", "H11"], [1, 2, 1]], "H1": [["A1", "C9", "A12"], [1, 2, 1]], "A2": [["A1", "C9", "B12"], [1, 2, 1]], "B2": [["A1", "D9", "B11"], [1, 2, 1]], "C2": [["A1", "D9", "C11"], [1, 2, 1]], "D2": [["A1", "D9", "D11"], [1, 2, 1]], "E2": [["A1", "D9", "E11"], [1, 2, 1]], "F2": [["A1", "D9", "F11"], [1, 2, 1]], "G2": [["A1", "D9", "G11"], [1, 2, 1]], "H2": [["B1", "D9", "H11"], [1, 2, 1]], "A3": [["B1", "D9", "A12"], [1, 2, 1]], "B3": [["B1", "D9", "B12"], [1, 2, 1]], "C3": [["B1", "E9", "F12"], [1, 2, 1]], "D3": [["B1", "E9", "G12"], [1, 2, 1]], "E3": [["B1", "E9", "H12"], [1, 2, 1]], "F3": [["B1", "E9", "A1"], [1, 2, 2]], "G3": [["B1", "E9", "B1"], [1, 2, 2]], "H3": [["B1", "E9", "C1"], [1, 2, 2]], "A4": [["B1", "E9", "D1"], [1, 2, 2]], "B4": [["B1", "E9", "E1"], [1, 2, 2]], "C4": [["B1", "E9", "F1"], [1, 2, 2]], "D4": [["B1", "F9", "F12"], [1, 2, 1]], "E4": [["B1", "F9", "G12"], [1, 2, 1]], "F4": [["B1", "F9", "H12"], [1, 2, 1]], "G4": [["C1", "F9", "A1"], [1, 2, 2]], "H4": [["C1", "F9", "B1"], [1, 2, 2]], "A5": [["C1", "F9", "C1"], [1, 2, 2]], "B5": [["C1", "F9", "D1"], [1, 2, 2]], "C5": [["C1", "F9", "E1"], [1, 2, 2]], "D5": [["C1", "F9", "F1"], [1, 2, 2]], "E5": [["C1", "G9", "F12"], [1, 2, 1]], "F5": [["C1", "G9", "G12"], [1, 2, 1]], "G5": [["C1", "G9", "H12"], [1, 2, 1]], "H5": [["C1", "G9", "A1"], [1, 2, 2]], "A6": [["C1", "G9", "B1"], [1, 2, 2]], "B6": [["C1", "G9", "C1"], [1, 2, 2]], "C6": [["C1", "G9", "D1"], [1, 2, 2]], "D6": [["C1", "G9", "E1"], [1, 2, 2]], "E6": [["C1", "G9", "F1"], [1, 2, 2]], "F6": [["D1", "H9", "B2"], [1, 2, 2]], "G6": [["D1", "H9", "C2"], [1, 2, 2]], "H6": [["D1", "H9", "D2"], [1, 2, 2]], "A7": [["D1", "H9", "E2"], [1, 2, 2]], "B7": [["D1", "H9", "F2"], [1, 2, 2]], "C7": [["D1", "H9", "G2"], [1, 2, 2]], "D7": [["D1", "H9", "H2"], [1, 2, 2]], "E7": [["D1", "H9", "A3"], [1, 2, 2]], "F7": [["D1", "H9", "B3"], [1, 2, 2]], "G7": [["D1", "A10", "B2"], [1, 2, 2]], "H7": [["D1", "A10", "C2"], [1, 2, 2]], "A8": [["D1", "A10", "D2"], [1, 2, 2]], "B8": [["D1", "A10", "E2"], [1, 2, 2]], "C8": [["D1", "A10", "F2"], [1, 2, 2]], "D8": [["D1", "A10", "G2"], [1, 2, 2]], "E8": [["E1", "A10", "H2"], [1, 2, 2]], "F8": [["E1", "A10", "A3"], [1, 2, 2]], "G8": [["E1", "A10", "B3"], [1, 2, 2]], "H8": [["E1", "B10", "B2"], [1, 2, 2]], "A9": [["E1", "B10", "C2"], [1, 2, 2]], "B9": [["E1", "B10", "D2"], [1, 2, 2]], "C9": [["E1", "B10", "E2"], [1, 2, 2]], "D9": [["E1", "B10", "F2"], [1, 2, 2]], "E9": [["E1", "B10", "G2"], [1, 2, 2]], "F9": [["E1", "B10", "H2"], [1, 2, 2]], "G9": [["E1", "B10", "A3"], [1, 2, 2]], "H9": [["E1", "B10", "B3"], [1, 2, 2]]}
-# tiprack_num=3
-
-# opentrons_simulate.exe dnabot\template_ot2_scripts\assembly_template_TC_APIv2.8.py --custom-labware-path 'labware\Labware definitions'
+# example dictionary produced by DNA-BOT for a single construct containing 5 parts, un-comment and run to test the template
+#clips_dict={"prefixes_wells": ["A8", "A7", "C5", "C7", "C10"], "prefixes_plates": ["2", "2", "2", "2", "2"], "suffixes_wells": ["B7", "C1", "C2", "C3", "B8"], "suffixes_plates": ["2", "2", "2", "2", "2"], "parts_wells": ["E2", "F2", "C2", "B2", "D2"], "parts_plates": ["5", "5", "5", "5", "5"], "parts_vols": [1, 1, 1, 1, 1], "water_vols": [7.0, 7.0, 7.0, 7.0, 7.0]}
 
 class TipManager:
     """Manages pipette tips and tracks usage."""
@@ -340,147 +505,148 @@ def batch_transfer(transfers, pipette, tip_manager, mix_after=None, mix_speed=1.
     process_batch(current_batch)
 
 def run(protocol: protocol_api.ProtocolContext):
-    def final_assembly(final_assembly_dict, tiprack_num, tiprack_type="opentrons_96_tiprack_20ul"):
-            ### Constants
+    # added run function for API 2.8
 
-            # Source plate(s)
-            SOURCE_PLATE_TYPE = '4ti0960rig_96_wellplate_200ul'
-            source_plate_list = [plate for value in final_assembly_dict.values() for plate in value[1]]     # list of source plates for all clips 
-            source_plate_slots = list(set(source_plate_list))                                               # unique source plates
-            source_plates = {plate: protocol.load_labware(SOURCE_PLATE_TYPE, plate) for plate in source_plate_slots}
+    ### Constants - these have been moved out of the def clip() for clarity
 
-            # Tuberack
-            TUBE_RACK_TYPE = 'e14151500starlab_24_tuberack_1500ul'
-            TUBE_RACK_POSITION = '4'
-            tube_rack = protocol.load_labware(TUBE_RACK_TYPE, TUBE_RACK_POSITION)
+    #Tiprack
+    tiprack_type="opentrons_96_tiprack_20ul"
+    INITIAL_TIP = 'A1'
+    CANDIDATE_TIPRACK_SLOTS = ['3', '6', '9']
 
-            # Destination plate
-            DESTINATION_PLATE_TYPE = '4ti0960rig_96_wellplate_200ul'
-            TOTAL_VOL = 15
-            PART_VOL = 1.5
-            MIX_SETTINGS = (1, 3)
-            # tiprack_num += 1                    # + 1 for one index ############################### I think(?)
+    # Pipettes - pipette instructions in a single location so redefining pipette type is simpler
+    PIPETTE_TYPE = 'p20_single_gen2'
+             # API 2 supports gen_1 pipettes like the p10_single
+    PIPETTE_MOUNT = 'right'
+        ### Load Pipette
+        # checks if it's a P10 Single pipette
+    if PIPETTE_TYPE != 'p20_single_gen2':
+        print('Define labware must be changed to use', PIPETTE_TYPE)
+        exit()
 
-            # Thermocycler Module
-            if thermocycler_gen == 'gen1':
-                tc_mod = protocol.load_module('Thermocycler Module')
-            else:  # gen2
-                tc_mod = protocol.load_module('thermocyclerModuleV2')
+    # Source Plates
+    SOURCE_PLATE_TYPE = '4ti0960rig_96_wellplate_200ul'
+            # modified from custom labware as API 2 doesn't support labware.create anymore, so the old add_labware script can't be used
 
-            destination_plate = tc_mod.load_labware(DESTINATION_PLATE_TYPE)
-            tc_mod.open_lid()
-            tc_mod.set_block_temperature(20)
+    # Destination Plates
+    DESTINATION_PLATE_TYPE = '4ti0960rig_96_wellplate_200ul'
+    DESTINATION_PLATE_POSITION = '1'
+            # INITIAL_DESTINATION_WELL constant removed, as destination_plate.wells() automatically starts from A1
 
-            # Error trapping
-            sample_number = len(final_assembly_dict.keys())
-            if sample_number > 96:
-                raise ValueError('Final assembly nummber cannot exceed 96.')
+    # Tube Rack
+    TUBE_RACK_TYPE = 'e14151500starlab_24_tuberack_1500ul'
+    TUBE_RACK_POSITION = '4'
+    MASTER_MIX_WELL = 'A1'
+    WATER_WELL = 'A2'
+    MASTER_MIX_VOLUME = 20
 
-            # Tiprack(s)
-            CANDIDATE_TIPRACK_SLOTS = ['3', '5', '6', '9']
+    # Mix settings
+    LINKER_MIX_SETTINGS = (1, 3)
+    PART_MIX_SETTINGS = (4, 5)
 
-            if 2 not in source_plate_slots:                  # if only one source plate used, deck slot 2 can be used for a tip rack
-                CANDIDATE_TIPRACK_SLOTS.append('2')
-
-            if tiprack_num > len(CANDIDATE_TIPRACK_SLOTS):
-                raise ValueError('Not enough tipracks available on deck to satisfy tip requirements. Consider either splitting into multiple builds each with fewer constructs or iterative rounds of building. ')
-                  
-            slots = CANDIDATE_TIPRACK_SLOTS[:tiprack_num]
-            tipracks = [protocol.load_labware(tiprack_type, slot) for slot in slots]
-
-            # Pipette
-            PIPETTE_MOUNT = 'right'      
-            pipette = protocol.load_instrument('p20_single_gen2', PIPETTE_MOUNT, tip_racks=tipracks)
-            
-            # Initialize tip manager
-            tip_manager = TipManager(protocol, int(slots[0]), pipette, 'p20')
-            for slot in slots[1:]:
-                tip_manager.add_tip_rack(int(slot))
-
-            # Initialize master mix manager
-            mm_manager = MasterMixManager(
-                protocol,
-                tube_rack,
-                [1500],  # Single master mix tube with 1500µL
-                TOTAL_VOL,
-                pipette,
-                dead_volume=15.0
-            )
-
-            # Master mix transfers
-            final_assembly_lens = [len(values[0]) for values in final_assembly_dict.values()]       # list of assembly lengths (number of clips)
-            unique_assemblies_lens = list(set(final_assembly_lens))                                 # unique lengths
-
-            destination_wells = np.array([key for key, value in final_assembly_dict.items()])
-            
-            # Group assemblies by length for efficient master mix distribution
-            for x in unique_assemblies_lens:
-                master_mix_well = tube_counter(x-2)    # select well in tube rack (-2 as one indexed and fewest clips possible is 2)
-                destination_inds = [i for i, lens in enumerate(final_assembly_lens) if lens == x]   # find all assemblies of length x
-                destination_wells_for_len = list(destination_wells[destination_inds])
-
-                # Calculate master mix volume for this assembly length
-                master_mix_volume = TOTAL_VOL - x * PART_VOL
-                
-                # Create master mix transfers for this assembly length
-                master_mix_transfers = []
-                for destination_well in destination_wells_for_len:
-                    master_mix_transfers.append({
-                        "source": tube_rack.wells(master_mix_well),
-                        "destination": destination_plate.wells(destination_well),
-                        "volume": master_mix_volume
-                    })
-                
-                # Perform batch transfer for master mix
-                protocol.comment(f"Transferring master mix for {len(destination_wells_for_len)} assemblies with {x} parts")
-                batch_transfer(master_mix_transfers, pipette, tip_manager)
-
-            # Part transfers
-            protocol.comment("Transferring parts")
-            part_transfers = []
-            for key, values in list(final_assembly_dict.items()):
-                for i in range(len(values[0])):                     # find well and plate for every clip in every assembly
-                    well  = values[0][i]
-                    plate = values[1][i]
-
-                    mix = MIX_SETTINGS
-                    # mix = (0,0)
-                    # if i == len(values[0])-1:                       # set to mix if on final clip transfer
-                    #     mix = MIX_SETTINGS
-
-                    part_transfers.append({
-                        "source": source_plates[plate].wells(well),
-                        "destination": destination_plate.wells(key),
-                        "volume": PART_VOL
-                    })
-            
-            # Perform batch transfer for parts
-            batch_transfer(part_transfers, pipette, tip_manager, mix_after=MIX_SETTINGS)
-
-            # Thermocycler Module
-            tc_mod.close_lid()
-            tc_mod.set_lid_temperature(105)
-            tc_mod.set_block_temperature(50, hold_time_minutes=45, block_max_volume=15)
-            tc_mod.set_block_temperature(8, block_max_volume=30)
-            tc_mod.set_lid_temperature(37)
-            # tc_mod.open_lid()                                     # leave lid shut to prevent evaporation
+    def clip(clips_dict):
+        ### Loading Tiprack
+        total_tips = 4 * len(clips_dict)
+        letter_dict = {'A': 0, 'B': 1, 'C': 2,
+                       'D': 3, 'E': 4, 'F': 5, 'G': 6, 'H': 7}
+        tiprack_1_tips = (
+            13 - int(INITIAL_TIP[1:])) * 8 - letter_dict[INITIAL_TIP[0]]
+        if total_tips > tiprack_1_tips:
+            tiprack_num = 1 + (total_tips - tiprack_1_tips) // 96 + \
+            (1 if (total_tips - tiprack_1_tips) % 96 > 0 else 0)
+        else:
+            tiprack_num = 1
+        slots = CANDIDATE_TIPRACK_SLOTS[:tiprack_num]
+        tipracks = [protocol.load_labware(tiprack_type, slot) for slot in slots]
+        pipette = protocol.load_instrument(PIPETTE_TYPE, mount=PIPETTE_MOUNT, tip_racks=tipracks)
         
+        # Initialize tip manager
+        tip_manager = TipManager(protocol, int(slots[0]), pipette, 'p20')
+        for slot in slots[1:]:
+            tip_manager.add_tip_rack(int(slot))
         
-    def counter(rows):
-
-        def inner(n):
-            """ Takes either a value or a well location and converts to other fomat """
-            
-            row_dict = {0: "A", 1: "B", 2: "C", 3: "D", 4: "E", 5: "F", 6: "G", 7: "H"}
-
-            if type(n) == int:
-                row = row_dict[n // rows]
-                col = 1 + n % rows
-                return row + f'{col}'
-                # return row + f'{col:02d}' # for if 2 sf number required (i.e. 'A01' rather than 'A1')
-
-        return inner
-    tube_counter = counter(6)
-
-
-    final_assembly(final_assembly_dict=final_assembly_dict, tiprack_num=tiprack_num)
+        destination_plate = protocol.load_labware(DESTINATION_PLATE_TYPE, DESTINATION_PLATE_POSITION)
+        tube_rack = protocol.load_labware(TUBE_RACK_TYPE, TUBE_RACK_POSITION)
+        master_mix = tube_rack.wells(MASTER_MIX_WELL)
+        water = tube_rack.wells(WATER_WELL)
+        
+        # Load source plates
+        source_plates = {}
+        all_plates = set()
+        for well_info in clips_dict.values():
+            all_plates.add(well_info['prefix_plate'])
+            all_plates.add(well_info['suffix_plate'])
+            all_plates.add(well_info['part_plate'])
+        for key in all_plates:
+            source_plates[key] = protocol.load_labware(SOURCE_PLATE_TYPE, key)
+        
+        # Get destination wells in order
+        dest_wells = list(clips_dict.keys())
+        destination_wells = [destination_plate.wells_by_name()[w] for w in dest_wells]
+        
+        # Initialize master mix manager
+        mm_manager = MasterMixManager(
+            protocol,
+            tube_rack,
+            [1500],  # Single master mix tube with 1500µL
+            MASTER_MIX_VOLUME,
+            pipette,
+            dead_volume=15.0
+        )
+        
+        # Master mix transfer using batch distribution
+        protocol.comment("Transferring master mix")
+        mm_manager.distribute_to_wells(destination_wells, pipette)
+        
+        # Water transfer (only if needed)
+        water_vols = [clips_dict[w]['water_vol'] for w in dest_wells]
+        if any([wv > 0 for wv in water_vols]):
+            protocol.comment("Transferring water")
+            water_transfers = []
+            for i, well in enumerate(dest_wells):
+                if water_vols[i] > 0:
+                    water_transfers.append({
+                        "source": water,
+                        "destination": destination_wells[i],
+                        "volume": water_vols[i]
+                    })
+            batch_transfer(water_transfers, pipette, tip_manager)
+        
+        # Prefix transfers
+        protocol.comment("Transferring prefixes")
+        prefix_transfers = []
+        for i, well in enumerate(dest_wells):
+            info = clips_dict[well]
+            prefix_transfers.append({
+                "source": source_plates[info['prefix_plate']].wells_by_name()[info['prefix_well']],
+                "destination": destination_wells[i],
+                "volume": 1
+            })
+        batch_transfer(prefix_transfers, pipette, tip_manager, mix_after=LINKER_MIX_SETTINGS)
+        
+        # Suffix transfers
+        protocol.comment("Transferring suffixes")
+        suffix_transfers = []
+        for i, well in enumerate(dest_wells):
+            info = clips_dict[well]
+            suffix_transfers.append({
+                "source": source_plates[info['suffix_plate']].wells_by_name()[info['suffix_well']],
+                "destination": destination_wells[i],
+                "volume": 1
+            })
+        batch_transfer(suffix_transfers, pipette, tip_manager, mix_after=LINKER_MIX_SETTINGS)
+        
+        # Part transfers
+        protocol.comment("Transferring parts")
+        part_transfers = []
+        for i, well in enumerate(dest_wells):
+            info = clips_dict[well]
+            part_transfers.append({
+                "source": source_plates[info['part_plate']].wells_by_name()[info['part_well']],
+                "destination": destination_wells[i],
+                "volume": info['part_vol']
+            })
+        batch_transfer(part_transfers, pipette, tip_manager, mix_after=PART_MIX_SETTINGS)
+    
+    # the run function will first define the CLIP function, and then run the CLIP function with the dictionary produced by DNA-BOT
+    clip(clips_dict)

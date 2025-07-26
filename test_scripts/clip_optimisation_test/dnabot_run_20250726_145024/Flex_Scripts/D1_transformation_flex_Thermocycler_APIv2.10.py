@@ -4,22 +4,31 @@ import time
 from typing import Dict, List, Optional, Tuple, Union
 
 metadata = {
-    'apiLevel': '2.10',
-    'protocolName': 'Transformation Protocol v2',
-    'description': 'Enhanced transformation protocol using thermocycler module',
+    'apiLevel': '2.15',
+    'robotType': 'Flex',
+    'protocolName': 'Transformation Protocol v2 Flex',
+    'description': 'Enhanced transformation protocol using thermocycler module for Opentrons Flex',
     'author': 'Liam Hallett'
 }
 
 # Load transformation data from JSON file
 # This will be replaced by the parser with embedded JSON data
-with open('transformation_data.json') as f:
-    transformation_dict = json.load(f)
+transformation_dict = {
+    "transformation_number": 16,
+    "source_wells": ["A2", "B2", "C2", "D2", "E2", "F2", "G2", "H2", "A3", "B3", "C3", "D3", "E3", "F3", "G3", "H3"],
+    "source_plates": ["1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1"],
+    "destination_wells": ["A2", "B2", "C2", "D2", "E2", "F2", "G2", "H2", "A3", "B3", "C3", "D3", "E3", "F3", "G3", "H3"],
+    "dna_volumes": [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3],
+    "cell_volumes": [30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30],
+    "soc_volumes": [100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100],
+    "plating_volumes": [100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100]
+}
 
 # Thermocycler generation setting
 # This will be replaced by the parser with embedded thermocycler generation
 thermocycler_gen = 'gen2'
 
-# opentrons_simulate.exe dnabot\template_ot2_scripts\transformation_template_TC_APIv2.10.py --custom-labware-path 'labware\Labware definitions'
+# opentrons_simulate.exe dnabot\template_flex_scripts\transformation_template_TC_APIv2.10.py --custom-labware-path 'labware\Labware definitions'
 
 # Example dictionary structure for transformation data:
 # transformation_dict = {
@@ -37,7 +46,7 @@ class TipManager:
     """Manages pipette tips and tracks usage."""
     
     def __init__(self, protocol: protocol_api.ProtocolContext, 
-                 slot: int,
+                 slot: str,
                  pipette: protocol_api.instrument_context.InstrumentContext,
                  tip_type: str):
         self.protocol = protocol
@@ -55,19 +64,19 @@ class TipManager:
         
         self._initialise_tip_arrays()
     
-    def add_tip_rack(self, slot: int, tip_type: Optional[str] = None) -> None:
+    def add_tip_rack(self, slot: str, tip_type: Optional[str] = None) -> None:
         """Add an additional tip rack to the manager."""
         tip_type = tip_type or self.tip_type
         
         # Check pipette compatibility
-        pipette_type = 'p300' if self.pipette.max_volume >= 300 else 'p20'
+        pipette_type = 'p1000' if self.pipette.max_volume >= 1000 else 'p300'
         if tip_type != pipette_type:
             raise ValueError(f"Tip type '{tip_type}' is incompatible with pipette type '{pipette_type}'")
             
-        if tip_type == 'p300':
-            self.tipracks.append(self.protocol.load_labware('opentrons_96_tiprack_300ul', slot))
-        elif tip_type == 'p20':
-            self.tipracks.append(self.protocol.load_labware('opentrons_96_tiprack_20ul', slot))
+        if tip_type == 'p1000':
+            self.tipracks.append(self.protocol.load_labware('opentrons_flex_96_tiprack_1000ul', slot))
+        elif tip_type == 'p300':
+            self.tipracks.append(self.protocol.load_labware('opentrons_flex_96_tiprack_300ul', slot))
         else:
             raise ValueError(f"Unsupported tip type: {tip_type}")
     
@@ -106,44 +115,32 @@ class TipManager:
         self.pipette.pick_up_tip(self.tipracks[self.current_rack].wells()[tip_index])
     
     def get_multi_tip(self, start_col: int = 0) -> None:
-        """Pick up multiple tips columnwise for multichannel pipetting."""
-        if not self.pipette.channels > 1:
-            raise ValueError("Multichannel pipetting requires a multichannel pipette")
-            
+        """Pick up a multichannel tip from the specified column."""
         if not self.normal_tips:  # If either array is empty, we need new tips
             if self.current_rack < len(self.tipracks) - 1:
                 # Switch to next tip rack
                 self.current_rack += 1
                 self._initialise_tip_arrays()
+                print(f"Switched to tip rack {self.current_rack + 1}")
             else:
                 self._prompt_tip_replacement()
         
-        # Find a column with enough consecutive tips
-        for col in range(start_col, self.cols):
-            # Get all tips in this column
-            tips_in_col = [t for t in self.normal_tips if t // self.rows == col]
-            
-            # Only use columns that are full
-            if len(tips_in_col) != self.rows:
-                continue
-                
-            # Sort tips in the column
-            tips_in_col.sort()
-            
-            # Check if we have a complete column of consecutive tips
-            expected_tips = [col * self.rows + row for row in range(self.rows)]
-            if tips_in_col == expected_tips:
-                # Remove tips from both arrays
-                for tip in tips_in_col:
-                    self.normal_tips.remove(tip)
-                    self.inverse_tips.remove(tip)
-                
-                self.pipette.pick_up_tip(self.tipracks[self.current_rack].wells()[tips_in_col[0]])
-                return
+        # Find the first available tip in the specified column
+        tip_index = None
+        for i in range(start_col * self.rows, (start_col + 1) * self.rows):
+            if i in self.normal_tips:
+                tip_index = i
+                break
         
-        # If we get here, no suitable column was found in the current rack
-        self.normal_tips = []  # Force the next call to switch racks
-        self.get_multi_tip(start_col)
+        if tip_index is None:
+            # If no tip available in this column, find the next available
+            tip_index = min(self.normal_tips)
+        
+        # Remove the tip from both arrays
+        self.normal_tips.remove(tip_index)
+        self.inverse_tips.remove(tip_index)
+        
+        self.pipette.pick_up_tip(self.tipracks[self.current_rack].wells()[tip_index])
     
     def _prompt_tip_replacement(self) -> None:
         """Prompt user to replace tip rack and flash lights."""
@@ -154,10 +151,12 @@ class TipManager:
             self.protocol.set_rail_lights(True)
             time.sleep(0.15)
         
-        self.protocol.pause("Please replace the tip rack")
+        # Keep lights on and prompt user
+        self.protocol.set_rail_lights(True)
+        print(f"Please replace the {self.tip_type} tip rack and press 'Resume'")
+        self.protocol.pause()
         
-        # Reset current rack and reinitialise tip arrays
-        self.current_rack = 0
+        # Reset tip arrays for the new rack
         self._initialise_tip_arrays()
 
 class WellManager:
@@ -167,25 +166,24 @@ class WellManager:
                  transformation_number: int):
         self.protocol = protocol
         self.transformation_number = transformation_number
-        self.rows = 8
-        self.cols = 12
     
     def get_columns_with_wells(self) -> List[int]:
-        """Get list of column indices that contain samples."""
-        columns = set()
+        """Get list of columns that contain wells."""
+        columns = []
         for i in range(self.transformation_number):
-            col = i % self.cols
-            columns.add(col)
-        return sorted(list(columns))
+            col = i // 8  # 8 wells per column
+            if col not in columns:
+                columns.append(col)
+        return columns
     
     def get_source_well(self, index: int, source_plate_a, source_plate_b, source_plates) -> str:
-        """Get the source well for a given transformation index."""
+        """Get source well for a given index."""
         source_plate = source_plate_a if source_plates[index] == '1' else source_plate_b
-        return source_plate.wells_by_name()[f'A{index + 1}']
+        return source_plate.wells()[index]
     
     def get_destination_well(self, index: int, tc_plate) -> str:
-        """Get the destination well for a given transformation index."""
-        return tc_plate.wells_by_name()[f'A{index + 1}']
+        """Get destination well for a given index."""
+        return tc_plate.wells()[index]
 
 def custom_transfer(pipette, volume, source, destination, mix_before=None, mix_after=None, mix_speed=1.0, dispense_speed=0.4, new_tip='once'):
     """
@@ -230,79 +228,71 @@ def custom_transfer(pipette, volume, source, destination, mix_before=None, mix_a
 
 def batch_transfer(transfers, pipette, tip_manager, mix_after=None, mix_speed=1.0, dispense_speed=0.4):
     """
-    Perform batch transfers similar to the Media Bot transfer function.
+    Efficiently transfer multiple volumes using batch processing.
     
     Args:
         transfers: List of dicts with 'source', 'destination', 'volume' keys
         pipette: The pipette to use
         tip_manager: TipManager instance
-        mix_after: Tuple of (repetitions, volume) for mixing after transfer, or None
-        mix_speed: Rate for mixing (0-1, default 1.0 = 100% speed)
-        dispense_speed: Rate for dispensing (0-1, default 0.4 = 40% speed)
+        mix_after: Optional tuple of (repetitions, volume) for mixing after each transfer
+        mix_speed: Rate for mixing (0-1)
+        dispense_speed: Rate for dispensing (0-1)
     """
     if not transfers:
         return
     
-    # Get maximum volume from pipette specifications
-    MAX_VOLUME = pipette.max_volume  # µl
+    # Get maximum volume from pipette
+    max_volume = pipette.max_volume
     excess_volume = 1.05  # 5% excess for blowout
+    
+    def process_batch(batch):
+        """Process a batch of transfers."""
+        if not batch:
+            return
+        
+        # Calculate total volume needed for batch
+        total_volume = sum(t['volume'] for t in batch) * excess_volume
+        
+        # Pick up tip
+        tip_manager.get_single_tip()
+        
+        # Aspirate total volume from first source
+        first_source = batch[0]['source']
+        pipette.aspirate(total_volume, first_source)
+        
+        # Dispense to each destination
+        for transfer in batch:
+            pipette.dispense(transfer['volume'], transfer['destination'])
+            
+            # Mix after if specified
+            if mix_after:
+                reps, mix_vol = mix_after
+                pipette.mix(reps, mix_vol, transfer['destination'], rate=mix_speed)
+        
+        # Blow out remaining volume
+        pipette.blow_out(first_source)
+        pipette.drop_tip()
     
     # Process transfers in batches
     current_batch = []
     current_volume = 0
     
-    def process_batch(batch):
-        """Helper function to process a batch of transfers."""
-        if not batch:
-            return
-        
-        # Pick up tip for this batch
-        tip_manager.get_single_tip()
-        
-        # Calculate total volume needed for this batch
-        total_volume = sum(t["volume"] for t in batch) * excess_volume
-        
-        # Use the first transfer's source for blowout
-        source_well = batch[0]["source"]
-        
-        # Aspirate the total volume
-        pipette.aspirate(total_volume, source_well)
-        
-        # Dispense to all wells in the batch
-        for t in batch:
-            pipette.dispense(t["volume"], t["destination"].top())
-            pipette.touch_tip()
-        
-        # Blow out remaining volume back to source well
-        remaining_volume = total_volume * (excess_volume - 1)
-        pipette.blow_out(source_well)
-        
-        # Mix after if specified
-        if mix_after:
-            reps, mix_vol = mix_after
-            for t in batch:
-                pipette.mix(reps, mix_vol, t["destination"], rate=mix_speed)
-        
-        # Drop the tip
-        pipette.drop_tip()
-    
-    # Process all transfers in appropriate batch sizes
     for transfer in transfers:
         # Check if adding this transfer would exceed max volume
-        volume_required = (current_volume + transfer["volume"]) * excess_volume
-        if volume_required > MAX_VOLUME:
-            # Process current batch if it exists
+        volume_required = (current_volume + transfer['volume']) * excess_volume
+        if volume_required > max_volume:
+            # Process current batch
             process_batch(current_batch)
             
-            # Start new batch with current transfer
+            # Start new batch
             current_batch = [transfer]
-            current_volume = transfer["volume"]
+            current_volume = transfer['volume']
         else:
             # Add to current batch
             current_batch.append(transfer)
-            current_volume += transfer["volume"]
+            current_volume += transfer['volume']
     
-    # Process the final batch
+    # Process final batch
     process_batch(current_batch)
 
 def run(protocol: protocol_api.ProtocolContext):
@@ -319,24 +309,24 @@ def run(protocol: protocol_api.ProtocolContext):
     plating_volumes = transformation_dict['plating_volumes']
     
     # Load hardware
-    left_pipette = protocol.load_instrument('p300_multi_gen2', 'left')
-    right_pipette = protocol.load_instrument('p20_single_gen2', 'right')
+    left_pipette = protocol.load_instrument('flex_8channel_1000', 'left')
+    right_pipette = protocol.load_instrument('flex_1channel_300', 'right')
     
     # Initialize tip managers
-    tip_manager_300 = TipManager(protocol, 6, left_pipette, 'p300')
-    tip_manager_20 = TipManager(protocol, 9, right_pipette, 'p20')
+    tip_manager_1000 = TipManager(protocol, '6', left_pipette, 'p1000')
+    tip_manager_300 = TipManager(protocol, '9', right_pipette, 'p300')
     
     # Load plates and vessels
-    source_plate_a = protocol.load_labware('biorad_96_wellplate_200ul_pcr', 1)
-    source_plate_b = protocol.load_labware('biorad_96_wellplate_200ul_pcr', 2)
-    plate_2 = protocol.load_labware('corning_12_wellplate_6.9ml_flat', 5)
-    tube_rack = protocol.load_labware('opentrons_24_tuberack_eppendorf_1.5ml_safelock_snapcap', 4)
+    source_plate_a = protocol.load_labware('biorad_96_wellplate_200ul_pcr', '1')
+    source_plate_b = protocol.load_labware('biorad_96_wellplate_200ul_pcr', '2')
+    plate_2 = protocol.load_labware('corning_12_wellplate_6.9ml_flat', '5')
+    tube_rack = protocol.load_labware('opentrons_24_tuberack_eppendorf_1.5ml_safelock_snapcap', '4')
     
     # Load thermocycler module
     if thermocycler_gen == 'gen1':
-        thermocycler = protocol.load_module('thermocycler', 7)
+        thermocycler = protocol.load_module('thermocycler module gen1', '7')
     else:  # gen2
-        thermocycler = protocol.load_module('thermocyclerModuleV2', 7)
+        thermocycler = protocol.load_module('thermocycler module gen2', '7')
     TC_plate = thermocycler.load_labware('biorad_96_wellplate_200ul_pcr')
     
     # Initialize well manager
@@ -397,7 +387,7 @@ def run(protocol: protocol_api.ProtocolContext):
         })
     
     # Perform batch transfer for cells
-    batch_transfer(cell_transfers, left_pipette, tip_manager_300)
+    batch_transfer(cell_transfers, left_pipette, tip_manager_1000)
     
     # Transfer DNA
     protocol.comment("Transferring DNA")
@@ -413,7 +403,7 @@ def run(protocol: protocol_api.ProtocolContext):
         })
     
     # Perform batch transfer for DNA
-    batch_transfer(dna_transfers, right_pipette, tip_manager_20, mix_after=(3, 10))
+    batch_transfer(dna_transfers, right_pipette, tip_manager_300, mix_after=(3, 10))
     
     # Heat shock protocol
     protocol.comment("Starting heat shock protocol")
@@ -437,7 +427,7 @@ def run(protocol: protocol_api.ProtocolContext):
         })
     
     # Perform batch transfer for SOC
-    batch_transfer(soc_transfers, left_pipette, tip_manager_300, mix_after=(2, 50))
+    batch_transfer(soc_transfers, left_pipette, tip_manager_1000, mix_after=(2, 50))
     
     # Recovery incubation
     protocol.comment("Recovery incubation")
@@ -466,9 +456,9 @@ def run(protocol: protocol_api.ProtocolContext):
         })
     
     # Perform batch transfer for plating
-    batch_transfer(plating_transfers, left_pipette, tip_manager_300)
+    batch_transfer(plating_transfers, left_pipette, tip_manager_1000)
     
     # Finish protocol
     thermocycler.deactivate()
     protocol.set_rail_lights(False)
-    protocol.comment("Transformation protocol complete")
+    protocol.comment("Transformation protocol complete") 
