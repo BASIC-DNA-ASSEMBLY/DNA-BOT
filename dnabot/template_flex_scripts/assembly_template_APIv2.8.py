@@ -6,9 +6,10 @@ from typing import Dict, List, Optional, Tuple, Union
 
 # metadata
 metadata = {
-'protocolName': 'DNABOT Assembly',
-'description': 'DNABOT Assembly Step3 without Thermocycler',
-'apiLevel': '2.8'
+'protocolName': 'DNABOT Assembly Flex',
+'description': 'DNABOT Assembly Step3 without Thermocycler for Opentrons Flex',
+'apiLevel': '2.15',
+'robotType': 'Flex'
 }
 
 # Load assembly data from JSON file
@@ -26,7 +27,7 @@ class TipManager:
     """Manages pipette tips and tracks usage."""
     
     def __init__(self, protocol: protocol_api.ProtocolContext, 
-                 slot: int,
+                 slot: str,
                  pipette: protocol_api.instrument_context.InstrumentContext,
                  tip_type: str):
         self.protocol = protocol
@@ -44,19 +45,19 @@ class TipManager:
         
         self._initialise_tip_arrays()
     
-    def add_tip_rack(self, slot: int, tip_type: Optional[str] = None) -> None:
+    def add_tip_rack(self, slot: str, tip_type: Optional[str] = None) -> None:
         """Add an additional tip rack to the manager."""
         tip_type = tip_type or self.tip_type
         
         # Check pipette compatibility
-        pipette_type = 'p300' if self.pipette.max_volume >= 300 else 'p20'
+        pipette_type = 'p1000' if self.pipette.max_volume >= 1000 else 'p300'
         if tip_type != pipette_type:
             raise ValueError(f"Tip type '{tip_type}' is incompatible with pipette type '{pipette_type}'")
             
-        if tip_type == 'p300':
-            self.tipracks.append(self.protocol.load_labware('opentrons_96_tiprack_300ul', slot))
-        elif tip_type == 'p20':
-            self.tipracks.append(self.protocol.load_labware('opentrons_96_tiprack_20ul', slot))
+        if tip_type == 'p1000':
+            self.tipracks.append(self.protocol.load_labware('opentrons_flex_96_tiprack_1000ul', slot))
+        elif tip_type == 'p300':
+            self.tipracks.append(self.protocol.load_labware('opentrons_flex_96_tiprack_300ul', slot))
         else:
             raise ValueError(f"Unsupported tip type: {tip_type}")
     
@@ -103,23 +104,16 @@ class TipManager:
             self.protocol.set_rail_lights(True)
             time.sleep(0.15)
         
-        self.protocol.pause("Please replace the tip rack")
+        # Keep lights on and prompt user
+        self.protocol.set_rail_lights(True)
+        print(f"Please replace the {self.tip_type} tip rack and press 'Resume'")
+        self.protocol.pause()
         
-        # Reset current rack and reinitialise tip arrays
-        self.current_rack = 0
+        # Reset tip arrays for the new rack
         self._initialise_tip_arrays()
 
 class MasterMixManager:
-    """Manages master mix tubes and tracks their volumes.
-    
-    Args:
-        protocol: The protocol context
-        labware: The labware containing the master mix tubes
-        tube_volumes: List of volumes in each tube (µL)
-        transfer_volume: Volume to transfer to each well (µL)
-        pipette: The pipette to use for transfers
-        dead_volume: Minimum volume to leave in each tube (µL)
-    """
+    """Manages master mix tubes and tracks volume usage."""
     
     def __init__(self, protocol: protocol_api.ProtocolContext, 
                  labware: protocol_api.labware.Labware,
@@ -129,84 +123,62 @@ class MasterMixManager:
                  dead_volume: float = 15.0):
         self.protocol = protocol
         self.labware = labware
-        self.tube_volumes = tube_volumes.copy()  # Make a copy to avoid modifying the original
+        self.tube_volumes = tube_volumes.copy()  # Copy to avoid modifying original
         self.transfer_volume = transfer_volume
-        self.current_tube = 0
-        self.max_volume = pipette.max_volume
+        self.pipette = pipette
         self.dead_volume = dead_volume
+        self.current_tube = 0
         
-        # Get the deck slot from the labware
-        deck_slot = labware.parent
-        
-        # Print tube locations and volumes
-        mm_locations = [f"Tube {i+1}: {labware.wells()[i].display_name} - {vol}µL (per well: {transfer_volume}µL)" 
-                       for i, vol in enumerate(tube_volumes)]
-        protocol.comment("Master Mix Tube Locations on slot " + str(deck_slot) + ": " + "; ".join(mm_locations))
-    
     def get_current_tube(self) -> protocol_api.labware.Well:
-        """Get the current tube's well object."""
+        """Get the current master mix tube."""
         return self.labware.wells()[self.current_tube]
     
     def can_aspirate(self, volume: float) -> bool:
-        """Check if we can aspirate the specified volume."""
-        if self.current_tube >= len(self.tube_volumes):
-            return False
+        """Check if current tube has enough volume for aspiration."""
         return self.tube_volumes[self.current_tube] >= volume + self.dead_volume
     
     def use_volume(self, volume: float) -> None:
-        """Use a specified volume from the current tube."""
-        self.tube_volumes[self.current_tube] -= volume
-        
-        # If current tube is nearly empty (less than transfer volume + dead volume), switch to next tube
-        if self.tube_volumes[self.current_tube] < self.transfer_volume + self.dead_volume:
+        """Use volume from current tube and switch if necessary."""
+        if not self.can_aspirate(volume):
+            # Switch to next tube
             self.current_tube += 1
-            if self.can_aspirate(self.transfer_volume):
-                self.protocol.comment(f"Switching to master mix tube {self.current_tube + 1}")
-            else:
-                self.protocol.comment("Warning: Not enough master mix to fill all wells!")
+            if self.current_tube >= len(self.tube_volumes):
+                raise ValueError("No more master mix tubes available")
+            print(f"Switched to master mix tube {self.current_tube + 1}")
+        
+        self.tube_volumes[self.current_tube] -= volume
     
     def distribute_to_wells(self, wells: List[protocol_api.labware.Well], pipette: protocol_api.instrument_context.InstrumentContext) -> None:
-        """Distribute master mix to a list of wells.
+        """Distribute master mix to multiple wells efficiently."""
+        if not wells:
+            return
         
-        Args:
-            wells: List of wells to distribute to
-            pipette: Pipette to use for distribution
-        """
-        wells_to_fill = wells.copy()
+        # Calculate total volume needed
+        total_volume = len(wells) * self.transfer_volume
         
-        while wells_to_fill:
-            # Calculate total volume needed for this aspiration
-            total_volume_needed = len(wells_to_fill) * self.transfer_volume
-            
-            # Calculate maximum volume we can aspirate
-            max_aspirate = min(
-                self.max_volume,  # Maximum volume of the pipette
-                total_volume_needed,  # Total volume needed for all wells
-                self.tube_volumes[self.current_tube] - self.dead_volume  # Available volume in current tube
-            )
-            
-            if not self.can_aspirate(max_aspirate):
-                break
-            
-            # Calculate how many wells we can fill with this aspiration
-            wells_per_aspirate = max_aspirate // self.transfer_volume
-            current_wells = wells_to_fill[:wells_per_aspirate]
-            
-            if not current_wells:
-                break
-                
-            # Aspirate the maximum possible volume
-            pipette.aspirate(max_aspirate, self.get_current_tube())
-            pipette.touch_tip()
-            
-            # Dispense into each well
-            for well in current_wells:
-                pipette.dispense(self.transfer_volume, well)
-                pipette.touch_tip()
-            
-            # Update remaining volume and wells to fill
-            self.use_volume(max_aspirate)
-            wells_to_fill = wells_to_fill[wells_per_aspirate:]
+        # Check if we have enough volume
+        if not self.can_aspirate(total_volume):
+            raise ValueError(f"Insufficient master mix volume. Need {total_volume}µL, have {self.tube_volumes[self.current_tube]}µL")
+        
+        # Pick up tip
+        pipette.pick_up_tip()
+        
+        # Aspirate total volume
+        source_well = self.get_current_tube()
+        pipette.aspirate(total_volume, source_well)
+        
+        # Distribute to all wells
+        for well in wells:
+            pipette.dispense(self.transfer_volume, well)
+        
+        # Blow out remaining volume
+        pipette.blow_out(source_well)
+        
+        # Drop tip
+        pipette.drop_tip()
+        
+        # Update volume tracking
+        self.use_volume(total_volume)
 
 def custom_transfer(pipette, volume, source, destination, mix_before=None, mix_after=None, mix_speed=1.0, dispense_speed=0.4, new_tip='once'):
     """
@@ -251,83 +223,75 @@ def custom_transfer(pipette, volume, source, destination, mix_before=None, mix_a
 
 def batch_transfer(transfers, pipette, tip_manager, mix_after=None, mix_speed=1.0, dispense_speed=0.4):
     """
-    Perform batch transfers similar to the Media Bot transfer function.
+    Efficiently transfer multiple volumes using batch processing.
     
     Args:
         transfers: List of dicts with 'source', 'destination', 'volume' keys
         pipette: The pipette to use
         tip_manager: TipManager instance
-        mix_after: Tuple of (repetitions, volume) for mixing after transfer, or None
-        mix_speed: Rate for mixing (0-1, default 1.0 = 100% speed)
-        dispense_speed: Rate for dispensing (0-1, default 0.4 = 40% speed)
+        mix_after: Optional tuple of (repetitions, volume) for mixing after each transfer
+        mix_speed: Rate for mixing (0-1)
+        dispense_speed: Rate for dispensing (0-1)
     """
     if not transfers:
         return
     
-    # Get maximum volume from pipette specifications
-    MAX_VOLUME = pipette.max_volume  # µl
+    # Get maximum volume from pipette
+    max_volume = pipette.max_volume
     excess_volume = 1.05  # 5% excess for blowout
+    
+    def process_batch(batch):
+        """Process a batch of transfers."""
+        if not batch:
+            return
+        
+        # Calculate total volume needed for batch
+        total_volume = sum(t['volume'] for t in batch) * excess_volume
+        
+        # Pick up tip
+        tip_manager.get_single_tip()
+        
+        # Aspirate total volume from first source
+        first_source = batch[0]['source']
+        pipette.aspirate(total_volume, first_source)
+        
+        # Dispense to each destination
+        for transfer in batch:
+            pipette.dispense(transfer['volume'], transfer['destination'])
+            
+            # Mix after if specified
+            if mix_after:
+                reps, mix_vol = mix_after
+                pipette.mix(reps, mix_vol, transfer['destination'], rate=mix_speed)
+        
+        # Blow out remaining volume
+        pipette.blow_out(first_source)
+        pipette.drop_tip()
     
     # Process transfers in batches
     current_batch = []
     current_volume = 0
     
-    def process_batch(batch):
-        """Helper function to process a batch of transfers."""
-        if not batch:
-            return
-        
-        # Pick up tip for this batch
-        tip_manager.get_single_tip()
-        
-        # Calculate total volume needed for this batch
-        total_volume = sum(t["volume"] for t in batch) * excess_volume
-        
-        # Use the first transfer's source for blowout
-        source_well = batch[0]["source"]
-        
-        # Aspirate the total volume
-        pipette.aspirate(total_volume, source_well)
-        
-        # Dispense to all wells in the batch
-        for t in batch:
-            pipette.dispense(t["volume"], t["destination"].top())
-            pipette.touch_tip()
-        
-        # Blow out remaining volume back to source well
-        remaining_volume = total_volume * (excess_volume - 1)
-        pipette.blow_out(source_well)
-        
-        # Mix after if specified
-        if mix_after:
-            reps, mix_vol = mix_after
-            for t in batch:
-                pipette.mix(reps, mix_vol, t["destination"], rate=mix_speed)
-        
-        # Drop the tip
-        pipette.drop_tip()
-    
-    # Process all transfers in appropriate batch sizes
     for transfer in transfers:
         # Check if adding this transfer would exceed max volume
-        volume_required = (current_volume + transfer["volume"]) * excess_volume
-        if volume_required > MAX_VOLUME:
-            # Process current batch if it exists
+        volume_required = (current_volume + transfer['volume']) * excess_volume
+        if volume_required > max_volume:
+            # Process current batch
             process_batch(current_batch)
             
-            # Start new batch with current transfer
+            # Start new batch
             current_batch = [transfer]
-            current_volume = transfer["volume"]
+            current_volume = transfer['volume']
         else:
             # Add to current batch
             current_batch.append(transfer)
-            current_volume += transfer["volume"]
+            current_volume += transfer['volume']
     
-    # Process the final batch
+    # Process final batch
     process_batch(current_batch)
 
 def run(protocol: protocol_api.ProtocolContext):
-    def final_assembly(final_assembly_dict, tiprack_num, tiprack_type="opentrons_96_tiprack_20ul"):
+    def final_assembly(final_assembly_dict, tiprack_num, tiprack_type="opentrons_flex_96_tiprack_300ul"):
             # Constants, we update all the labware name in version 2
             #Tiprack
             CANDIDATE_TIPRACK_SLOTS = ['3', '6', '9', '2', '5', '8', '11']
@@ -354,12 +318,12 @@ def run(protocol: protocol_api.ProtocolContext):
 
             slots = CANDIDATE_TIPRACK_SLOTS[:tiprack_num]
             tipracks = [protocol.load_labware(tiprack_type, slot) for slot in slots]
-            pipette = protocol.load_instrument('p20_single_gen2', PIPETTE_MOUNT, tip_racks=tipracks)
+            pipette = protocol.load_instrument('flex_1channel_300', PIPETTE_MOUNT, tip_racks=tipracks)
             
             # Initialize tip manager
-            tip_manager = TipManager(protocol, int(slots[0]), pipette, 'p20')
+            tip_manager = TipManager(protocol, slots[0], pipette, 'p300')
             for slot in slots[1:]:
-                tip_manager.add_tip_rack(int(slot))
+                tip_manager.add_tip_rack(slot)
 
             # Define Labware and set temperature
             magbead_plate = protocol.load_labware(MAG_PLATE_TYPE, MAG_PLATE_POSITION)
@@ -425,4 +389,4 @@ def run(protocol: protocol_api.ProtocolContext):
 
             tempdeck.deactivate() #stop increasing the temperature
 
-    final_assembly(final_assembly_dict=final_assembly_dict, tiprack_num=tiprack_num)
+    final_assembly(final_assembly_dict=final_assembly_dict, tiprack_num=tiprack_num) 

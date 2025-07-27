@@ -14,10 +14,41 @@ metadata = {
 
 # Load assembly data from JSON file
 # This will be replaced by the parser with embedded JSON data
-with open('assembly_data.json') as f:
-    assembly_data = json.load(f)
-    final_assembly_dict = assembly_data['final_assembly_dict']
-    tiprack_num = assembly_data['tiprack_num']
+final_assembly_dict = {
+    "A1": [["D1", "B4", "B8"], [2, 2, 2]],
+    "B1": [["D1", "E6", "C8"], [2, 2, 2]],
+    "C1": [["D1", "G6", "H6"], [2, 2, 2]],
+    "D1": [["D1", "H1", "A2"], [2, 2, 2]],
+    "E1": [["E1", "D8", "C2"], [2, 2, 2]],
+    "F1": [["E1", "D2", "E2"], [2, 2, 2]],
+    "G1": [["E1", "H4", "E8"], [2, 2, 2]],
+    "H1": [["E1", "H2", "A3"], [2, 2, 2]],
+    "A2": [["E1", "F8", "G8"], [2, 2, 2]],
+    "B2": [["E1", "H8", "G2"], [2, 2, 2]],
+    "C2": [["E1", "A9", "H6"], [2, 2, 2]],
+    "D2": [["E1", "H1", "A2"], [2, 2, 2]],
+    "E2": [["E1", "B2", "B9"], [2, 2, 2]],
+    "F2": [["E1", "C9", "D9"], [2, 2, 2]],
+    "G2": [["E1", "F7", "G7"], [2, 2, 2]],
+    "H2": [["E1", "F4", "G4"], [2, 2, 2]],
+    "A3": [["E1", "H4", "A5"], [2, 2, 2]],
+    "B3": [["F1", "H7", "A3"], [2, 2, 2]],
+    "C3": [["F1", "B5", "C5"], [2, 2, 2]],
+    "D3": [["F1", "E9", "F9"], [2, 2, 2]],
+    "E3": [["F1", "G9", "A5"], [2, 2, 2]],
+    "F3": [["F1", "A8", "H9"], [2, 2, 2]],
+    "G3": [["F1", "A10", "B10"], [2, 2, 2]],
+    "H3": [["F1", "C7", "C10"], [2, 2, 2]],
+    "A4": [["F1", "D10", "H9"], [2, 2, 2]],
+    "B4": [["F1", "E10", "B10"], [2, 2, 2]],
+    "C4": [["F1", "F10", "G10"], [2, 2, 2]],
+    "D4": [["F1", "H10", "A11"], [2, 2, 2]],
+    "E4": [["F1", "B11", "C11"], [2, 2, 2]],
+    "F4": [["F1", "D11", "E11"], [2, 2, 2]],
+    "G4": [["G1", "D3", "B8"], [2, 2, 2]],
+    "H4": [["G1", "D7", "F11"], [2, 2, 2]]
+}
+tiprack_num = 2
 
 # Thermocycler generation setting
 # This will be replaced by the parser with embedded thermocycler generation
