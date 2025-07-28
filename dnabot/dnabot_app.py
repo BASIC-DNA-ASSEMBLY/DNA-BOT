@@ -70,17 +70,14 @@ class FileConfig:
     
     # Directory structure
     TEMPLATE_DIR_NAME: str = 'template_ot2_scripts'
-    FLEX_TEMPLATE_DIR_NAME: str = 'template_flex_scripts'
     V2_8_PATH: str = "\\APIv2.8\\"
     V2_8_TC_PATH: str = "\\Thermocycler_APIv2.8\\"
     
     # Template files
     TEMPLATE_FILES: Dict[str, Dict[str, str]] = None
-    FLEX_TEMPLATE_FILES: Dict[str, Dict[str, str]] = None
     
     # Output files
     OUTPUT_FILES: Dict[str, Dict[str, str]] = None
-    FLEX_OUTPUT_FILES: Dict[str, Dict[str, str]] = None
     
     def __post_init__(self):
         if self.TEMPLATE_FILES is None:
@@ -104,21 +101,6 @@ class FileConfig:
     }
 }
 
-        if self.FLEX_TEMPLATE_FILES is None:
-            self.FLEX_TEMPLATE_FILES = {
-    'CLIP': {
-        'V2_8': 'clip_template_APIv2.8.py',
-        'V2_8_TC': 'clip_template_TC_APIv2.8.py'
-    },
-    'F_ASSEMBLY': {
-        'V2_8': 'assembly_template_APIv2.8.py',
-        'V2_8_TC': 'assembly_template_TC_APIv2.8.py'
-    },
-    'TRANS_SPOT': {
-        'V2_10_TC': 'transformation_template_TC_APIv2.10.py'
-    }
-}
-
         if self.OUTPUT_FILES is None:
             self.OUTPUT_FILES = {
     'CLIP': {
@@ -137,28 +119,6 @@ class FileConfig:
         'V2_8': 'D_transformation_ot2_APIv2.8.py',
         'V2_8_TC': 'D_transformation_ot2_Thermocycler_APIv2.8.py',
         'V2_10_TC': 'D_transformation_ot2_Thermocycler_APIv2.10.py'
-    },
-    'INFO': {
-        'CLIPS': 'clip_run_info.csv',
-        'FINAL_ASSEMBLIES': 'final_assembly_run_info.csv',
-        'WELL_OUTPUT': 'wells.txt',
-        'NEW_CONSTRUCTS': 'new_construct_list.csv',
-        'ASSEMBLY_TO_CLIP_MAPPING': 'assembly_to_clip_mapping.csv'
-    }
-}
-
-        if self.FLEX_OUTPUT_FILES is None:
-            self.FLEX_OUTPUT_FILES = {
-    'CLIP': {
-        'V2_8': 'A_clip_flex_APIv2.8',
-        'V2_8_TC': 'A_clip_flex_Thermocycler_APIv2.8'
-    },
-    'F_ASSEMBLY': {
-        'V2_8': 'C_assembly_flex_APIv2.8',
-        'V2_8_TC': 'C_assembly_flex_Thermocycler_APIv2.8'
-    },
-    'TRANS_SPOT': {
-        'V2_10_TC': 'D_transformation_flex_Thermocycler_APIv2.10.py'
     },
     'INFO': {
         'CLIPS': 'clip_run_info.csv',
@@ -420,18 +380,13 @@ def main() -> None:
     2. Validates input files and directories
     3. Processes input files to generate intermediate data structures
     4. Generates OT-2 scripts for each protocol stage
-    5. Generates Flex scripts for each protocol stage
-    6. Outputs metadata and summary files
+    5. Outputs metadata and summary files
 
     The workflow follows this sequence:
     - CLIP reactions: Create DNA fragments with compatible ends
-    - Purification: Clean up CLIP reactions using magnetic beads (OT-2 only)
+    - Purification: Clean up CLIP reactions using magnetic beads
     - Final Assembly: Combine purified fragments into final constructs
     - Transformation: Prepare constructs for bacterial transformation (optional)
-
-    Both OT-2 and Flex scripts are generated and placed in separate folders:
-    - OT2_Scripts/: Contains all OT-2 compatible scripts
-    - Flex_Scripts/: Contains all Flex compatible scripts
 
     Raises:
         FileNotFoundError: If required input files or directories are missing
@@ -562,13 +517,6 @@ def _setup_directories(user_config: Dict[str, Union[str, List[str], int]]) -> Di
     
     # Change to timestamped output directory
     _ensure_output_dir(timestamped_output_dir)
-    
-    # Create separate folders for OT2 and Flex scripts
-    ot2_output_dir = os.path.join(timestamped_output_dir, 'OT2_Scripts')
-    flex_output_dir = os.path.join(timestamped_output_dir, 'Flex_Scripts')
-    _ensure_output_dir(ot2_output_dir)
-    _ensure_output_dir(flex_output_dir)
-    
     # Copy input CSVs to output directory
     try:
         shutil.copy(construct_path, timestamped_output_dir)
@@ -577,11 +525,8 @@ def _setup_directories(user_config: Dict[str, Union[str, List[str], int]]) -> Di
         print("✓ Input CSVs copied to output directory.")
     except Exception as e:
         print(f"Warning: Failed to copy input CSVs to output directory: {e}")
-    
     return {
         'output_dir': timestamped_output_dir,
-        'ot2_output_dir': ot2_output_dir,
-        'flex_output_dir': flex_output_dir,
         'base_output_dir': output_dir,
         'template_dir': template_dir_path,
         'construct_base': os.path.splitext(os.path.basename(construct_path))[0]
@@ -609,27 +554,27 @@ def _process_input_files(user_config: Dict[str, Union[str, List[str], int]],
 
     try:
         # Process constructs
-        print("\n" + "=" * 60 + "  \n1. Loading and validating constructs...")
+        print("\n1. Loading and validating constructs...")
         constructs_dict = generate_constructs_list(user_config['construct_path'], user_config.get('keep_layout', True))
         print(f"✓ Generated {len(constructs_dict)} constructs")
         
         # Generate CLIP reactions first
-        print("\n" + "=" * 60 + "  \n2. Generating CLIP reactions...")
+        print("\n2. Generating CLIP reactions...")
         unique_clips_df = generate_unique_clips_df(constructs_dict)
-        print(f"✓ Unique clips required: {len(unique_clips_df)}")
+        print(f"✓ Generated {len(unique_clips_df)} unique clips")
         
         # Validate construct data (now with unique_clips_df for accurate counting)
         validate_construct_data(constructs_dict, unique_clips_df)
         print("✓ Construct data validation passed")
         
-        # Validate Clip data
+        # Validate CLIP data
         validate_clips_data(unique_clips_df)
-        print("✓ Clip data validation passed")
+        print("✓ CLIP data validation passed")
         
         # Process source files
-        print("\n" + "=" * 60 + "  \n3. Loading and validating source data...")
+        print("\n3. Loading and validating source data...")
         sources_dict = generate_sources_dict(user_config['sources_paths'])
-        print(f"✓ Processed {len(sources_dict)} components from {len(user_config['sources_paths'])} source files")
+        print(f"✓ Processed {len(sources_dict)} sources")
 
         # Check if all parts/linkers are at default concentration
         all_default_conc = True
@@ -645,19 +590,19 @@ def _process_input_files(user_config: Dict[str, Union[str, List[str], int]],
         print("✓ Source data validation passed")
         
         # Validate component availability
-        print("\n" + "=" * 60 + "  \n4. Validating component availability...")
+        print("\n4. Validating component availability...")
         validate_components_availability(constructs_dict, sources_dict)
         print("✓ All required components are available")
         
         # Validate tip usage
-        print("\n" + "=" * 60 + "  \n5. Validating tip usage...")
+        print("\n5. Validating tip usage...")
         validate_tip_usage(constructs_dict, unique_clips_df)
         print("✓ Tip usage within limits")
         
         # Log processing summary
         log_processing_summary(constructs_dict, unique_clips_df, sources_dict)
 
-        print('\n' + "=" * 60 + "  \n6. Calculating OT-2 variables...")
+        print('\n6. Calculating OT-2 variables...')
         
         # Generate CLIP dictionaries for OT-2 scripts using optimised assignment
         clips_dict_list, assembly_to_clip_mapping, optimised_clips_df = generate_optimised_clips_dict_list(constructs_dict, sources_dict, all_default_conc)
@@ -674,8 +619,8 @@ def _process_input_files(user_config: Dict[str, Union[str, List[str], int]],
         print(f"✓ Generated {len(final_assembly_dict_list)} assembly plate(s)")
 
         # Validate assembly reconstruction
-        print("\n" + "=" * 60 + "  \n7. Validating assembly reconstruction for 5 random constructs...")
-        validate_final_assembly_reconstruction(
+        print("\n7. Validating assembly reconstruction...")
+        validate_assembly_reconstruction(
             final_assembly_dict_list, 
             clips_dict_list,  # Always use the unified structure
             constructs_dict, 
@@ -724,27 +669,23 @@ def _generate_ot2_scripts(data_structures: Dict[str, Any],
     print('Writing OT-2 scripts...')
     # Use the unified structure for script generation
     # Generate CLIP scripts
-    print("\nGenerating CLIP scripts...")
     for clip_plate, sub_clip_dict in enumerate(data_structures['clips_dict_list']):
-        # print(f"  Clip plate {clip_plate + 1}...")
+        print(f"  Clip plate {clip_plate + 1}...")
         _generate_clip_scripts(sub_clip_dict, clip_plate, paths, data_structures.get('all_default_conc', False), user_config.get('thermocycler_gen', 'gen2'))
 
     # Generate magbead purification scripts
-    print("\nGenerating magbead purification scripts...")
     for i, magbead_sample_number in enumerate(data_structures['magbead_sample_list']):
-        # print(f"  Magbead plate {i + 1}...")
+        print(f"  Magbead sample {i + 1}...")
         _generate_magbead_scripts(magbead_sample_number, i, paths, user_config)
     
     # Generate final assembly scripts
-    print("\nGenerating final assembly scripts...")
     for plate_number, final_assembly_dict in data_structures['final_assembly_dict_list'].items():
-        # print(f"  Assembly plate {plate_number}...")
+        print(f"  Assembly plate {plate_number}...")
         _generate_assembly_scripts(final_assembly_dict, plate_number, paths, user_config.get('thermocycler_gen', 'gen2'))
     
     # Generate transformation scripts
-    print("\nGenerating transformation scripts...")
     for plate_number, final_assembly_dict in data_structures['final_assembly_dict_list'].items():
-        # print(f"  Transformation plate {plate_number}...")
+        print(f"  Transformation plate {plate_number}...")
         transformation_dict = generate_transformation_dict(final_assembly_dict, plate_number)
         _generate_transformation_scripts(transformation_dict, plate_number, paths, user_config.get('thermocycler_gen', 'gen2'))
 
@@ -803,9 +744,8 @@ def _generate_clip_scripts(sub_clip_dict: dict, clip_plate: int, paths: dict, al
         base_name = FILE_CONFIG.OUTPUT_FILES['CLIP']['V2_8']
         stage_letter = base_name[0]
         script_name = f"{stage_letter}{clip_plate+1}{half}{base_name[1:]}.py"
-        script_path = os.path.join(paths['ot2_output_dir'], script_name)
         _generate_clip_script_embedded(
-            script_path,
+            script_name,
             os.path.join(template_dir, FILE_CONFIG.TEMPLATE_FILES['CLIP']['V2_8']),
             half_clip_dict,
             all_default_conc
@@ -813,9 +753,8 @@ def _generate_clip_scripts(sub_clip_dict: dict, clip_plate: int, paths: dict, al
         # Thermocycler version
         tc_base_name = FILE_CONFIG.OUTPUT_FILES['CLIP']['V2_8_TC']
         tc_script_name = f"{tc_base_name[0]}{clip_plate+1}{half}{tc_base_name[1:]}.py"
-        tc_script_path = os.path.join(paths['ot2_output_dir'], tc_script_name)
         _generate_clip_script_embedded(
-            tc_script_path,
+            tc_script_name,
             os.path.join(template_dir, FILE_CONFIG.TEMPLATE_FILES['CLIP']['V2_8_TC']),
             half_clip_dict,
             all_default_conc,
@@ -833,11 +772,10 @@ def _generate_magbead_scripts(magbead_sample_number: int,
     
     # Generate script with new naming convention using v2.10 template
     magbead_script_name = _generate_script_name_with_number(FILE_CONFIG.OUTPUT_FILES['MAGBEAD']['V2_10'], script_index + 1)
-    magbead_script_path = os.path.join(paths['ot2_output_dir'], magbead_script_name)
     
     # Convert NumPy types to native Python types to avoid JSON serialisation issues
     clips_number = int(magbead_sample_number) if hasattr(magbead_sample_number, 'item') else magbead_sample_number
-    # print(f"Clips number: {clips_number}")
+    print(f"Clips number: {clips_number}")
     
     template_path = os.path.join(template_dir, FILE_CONFIG.TEMPLATE_FILES['MAGBEAD']['V2_10'])
     with open(template_path, 'r') as f:
@@ -868,7 +806,7 @@ def _generate_magbead_scripts(magbead_sample_number: int,
     )
     
     # Write the modified template to the output file
-    with open(magbead_script_path, 'w') as f:
+    with open(magbead_script_name, 'w') as f:
         f.write(template_content)
     
     print(f"    ✓ {os.path.basename(magbead_script_name)}")
@@ -884,9 +822,8 @@ def _generate_assembly_scripts(final_assembly_dict: Dict[str, List],
     
     # Generate standard assembly script with new naming convention
     assembly_script_name = _generate_script_name_with_number(FILE_CONFIG.OUTPUT_FILES['F_ASSEMBLY']['V2_8'], plate_number)
-    assembly_script_path = os.path.join(paths['ot2_output_dir'], assembly_script_name)
     _generate_assembly_script_embedded(
-        assembly_script_path,
+        assembly_script_name,
         os.path.join(template_dir, FILE_CONFIG.TEMPLATE_FILES['F_ASSEMBLY']['V2_8']),
         final_assembly_dict,
         final_assembly_tipracks
@@ -894,9 +831,8 @@ def _generate_assembly_scripts(final_assembly_dict: Dict[str, List],
     
     # Generate thermocycler assembly script with new naming convention
     assembly_tc_script_name = _generate_script_name_with_number(FILE_CONFIG.OUTPUT_FILES['F_ASSEMBLY']['V2_8_TC'], plate_number)
-    assembly_tc_script_path = os.path.join(paths['ot2_output_dir'], assembly_tc_script_name)
     _generate_assembly_script_embedded(
-        assembly_tc_script_path,
+        assembly_tc_script_name,
         os.path.join(template_dir, FILE_CONFIG.TEMPLATE_FILES['F_ASSEMBLY']['V2_8_TC']),
         final_assembly_dict,
         final_assembly_tipracks,
@@ -951,9 +887,8 @@ def _generate_transformation_scripts(transformation_dict: Dict[str, Any],
     
     # Generate transformation script with new naming convention
     transformation_script_name = _generate_script_name_with_number(FILE_CONFIG.OUTPUT_FILES['TRANS_SPOT']['V2_10_TC'], script_index)
-    transformation_script_path = os.path.join(paths['ot2_output_dir'], transformation_script_name)
     _generate_transformation_script_embedded(
-        transformation_script_path,
+        transformation_script_name,
         os.path.join(template_dir, FILE_CONFIG.TEMPLATE_FILES['TRANS_SPOT']['V2_10_TC']),
         transformation_dict,
         thermocycler_gen
@@ -1663,7 +1598,7 @@ def calculate_final_assembly_tipracks(final_assembly_dict: Dict[str, List]) -> i
     
     max_allowed_tipracks = PROTOCOL_CONFIG.ASSEMBLY_MAX_FINAL_ASSEMBLY_TIPRACKS
     
-    # print(f"Tipracks calculated: {tipracks_needed}, Maximum allowed: {max_allowed_tipracks}")
+    print(f"Tipracks calculated: {tipracks_needed}, Maximum allowed: {max_allowed_tipracks}")
     
     if tipracks_needed > max_allowed_tipracks:
         raise ValueError(
@@ -2656,10 +2591,9 @@ def generate_optimised_clips_dict_list(constructs_dict: Dict[Tuple[int, int, str
 
     if total_clips < 96 or len(assembly_plates) == 1:
         # Simple case: all fits on one plate or only one assembly plate
-        print(f"No clip optimisation required. All assemblies: {assembly_plates}, Total clips: {total_clips}")
+        print(f"No split needed. All assemblies: {assembly_plates}, Total clips: {total_clips}")
     else:
         # Try to split by assembly plates
-        print(f"Attempting to optimise clip distribution...")
         plates = assembly_plates.copy()
         while True:
             mid = len(plates) // 2
@@ -2673,24 +2607,24 @@ def generate_optimised_clips_dict_list(constructs_dict: Dict[Tuple[int, int, str
             second_half = {k: v for k, v in constructs_dict.items() if k[1] in second_half_plates}
             first_clips = count_clips_for_constructs(first_half)
             second_clips = count_clips_for_constructs(second_half)
-            print(f"Clip plate 1. Associated assembly plates: {first_half_plates}, Constructs: {len(first_half)}, Clips: {first_clips}")
-            print(f"Clip plate 2. Associated assembly plates: {second_half_plates}, Constructs: {len(second_half)}, Clips: {second_clips}")
+            print(f"First half plates: {first_half_plates}, Constructs: {len(first_half)}, Clips: {first_clips}")
+            print(f"Second half plates: {second_half_plates}, Constructs: {len(second_half)}, Clips: {second_clips}")
             if first_clips <= 96 and second_clips <= 96:
                 best_constructs_dicts = [first_half, second_half]
-                print(f"Successful split found for optimised clip distribution.")
+                print(f"Successful split found.")
                 break
             elif first_clips > 96 and second_clips > 96:
-                print(f"Both halves exceed 96 clips. Reverting to non-optimised clip distribution.")
+                print(f"Both halves exceed 96 clips. Falling back to non-optimised clip distribution.")
                 break
             else:
                 # Move the middle plate to the other half and try again
                 if first_clips > 96:
                     move_plate = first_half_plates[-1]
-                    print(f"Redistributing assembly plate {move_plate} from first to second clip plate.")
+                    print(f"Redistributing plate {move_plate} from first to second half.")
                     plates.remove(move_plate)
                 else:
                     move_plate = second_half_plates[0]
-                    print(f"Redistributing assembly plate {move_plate} from second to first clip plate.")
+                    print(f"Redistributing plate {move_plate} from second to first half.")
                     plates.remove(move_plate)
         # If no good split found, best_constructs_dicts remains as [constructs_dict]
 
@@ -2758,149 +2692,351 @@ def validate_clip_assignments(constructs_dict, clips_df, sources_dict, clips_dic
     print("✓ Clip assignment validation passed")
 
 
-def validate_final_assembly_reconstruction(assembly_dict: Dict[int, Dict[str, List]], 
+def validate_assembly_reconstruction(assembly_dict: Dict[int, Dict[str, List]], 
                                    clips_dict_list: List[Dict[str, dict]], 
                                    constructs_dict: Dict[Tuple[int, int, str], pd.DataFrame],
                                    sources_dict: Dict[str, Tuple[str, ...]],
                                    sample_wells: List[Tuple[int, str]] = None) -> None:
     """
-    Validate that final assemblies can correctly reconstruct the original constructs.
-    For each sample well, print only: plate/well, (clip well, plate) pairs, clip details, and sequences with match status.
+    Validate that assemblies can correctly reconstruct the original constructs.
+    
+    This function:
+    1. Takes sample wells from across all assemblies
+    2. Extracts clip information for each sample construct
+    3. Reconstructs the full construct sequence by unifying matching linkers
+    4. Compares the reconstructed sequence with the original construct definition
+    
+    Args:
+        assembly_dict: Dictionary mapping plate numbers to {well: [clip_wells, clip_plates]}
+        clips_dict_list: List of clip dictionaries, each representing a clip plate
+        constructs_dict: Dictionary mapping (order, plate, well) to DataFrame with clip reactions
+        sample_wells: List of (plate, well) tuples to validate. If None, selects 3 random wells.
+        
+    Raises:
+        ValueError: If any construct cannot be correctly reconstructed
     """
     import random
-
-    def collect_clip_components(clip_wells, clip_plates, clips_dict_list, well_to_component):
-        components = []
-        for i, (clip_well, clip_plate) in enumerate(zip(clip_wells, clip_plates)):
-            clip_dict = clips_dict_list[clip_plate - 1]
-            clip_info = clip_dict[clip_well]
-            prefix_linker = find_component_by_well(clip_info['prefix_source_plate'], clip_info['prefix_source_well'], well_to_component)
-            part = find_component_by_well(clip_info['part_source_plate'], clip_info['part_source_well'], well_to_component)
-            suffix_linker = find_component_by_well(clip_info['suffix_source_plate'], clip_info['suffix_source_well'], well_to_component)
-            components.append({
-                'clip_well': clip_well,
-                'clip_plate': clip_plate,
-                'prefix_linker': prefix_linker,
-                'prefix_source': (clip_info['prefix_source_plate'], clip_info['prefix_source_well']),
-                'part': part,
-                'part_source': (clip_info['part_source_plate'], clip_info['part_source_well']),
-                'suffix_linker': suffix_linker,
-                'suffix_source': (clip_info['suffix_source_plate'], clip_info['suffix_source_well'])
-            })
-        return components
-
+    
+    print(f"\n=== VALIDATION DEBUG: Starting assembly reconstruction validation ===")
+    print(f"Assembly dict keys: {list(assembly_dict.keys())}")
+    print(f"Number of clip plates: {len(clips_dict_list)}")
+    print(f"Number of constructs: {len(constructs_dict)}")
+    print(f"Sample wells provided: {sample_wells}")
+    
+    # Build the reverse lookup dict once for efficiency
     well_to_component = build_well_to_component_lookup(sources_dict)
-
+    
     # Select sample wells if not provided
     if sample_wells is None:
-        all_wells = [(plate_num, well) for plate_num, plate_dict in assembly_dict.items() for well in plate_dict.keys()]
-        sample_wells = all_wells if len(all_wells) < 5 else random.sample(all_wells, 5)
-
+        all_wells = []
+        for plate_num, plate_dict in assembly_dict.items():
+            for well in plate_dict.keys():
+                all_wells.append((plate_num, well))
+        
+        print(f"All available wells: {all_wells}")
+        
+        if len(all_wells) < 5:
+            sample_wells = all_wells
+        else:
+            sample_wells = random.sample(all_wells, 5)
+    
+    print(f"\nFinal selected sample wells: {sample_wells}")
+    
     for plate_num, well in sample_wells:
-        print(f"\nPlate {plate_num}, Well {well}:")
-        if plate_num not in assembly_dict or well not in assembly_dict[plate_num]:
+        print(f"\n=== VALIDATION DEBUG: Processing assembly plate {plate_num}, well {well} ===")
+        
+        # Get clip wells and plates for this construct
+        if plate_num not in assembly_dict:
+            print(f"ERROR: Assembly plate {plate_num} not found in assembly_dict")
+            print(f"Available plates: {list(assembly_dict.keys())}")
             raise ValueError(f"Construct at Plate {plate_num}, Well {well} not found in assembly dict")
+            
+        if well not in assembly_dict[plate_num]:
+            print(f"ERROR: Well {well} not found in assembly plate {plate_num}")
+            print(f"Available wells in plate {plate_num}: {list(assembly_dict[plate_num].keys())}")
+            raise ValueError(f"Construct at Plate {plate_num}, Well {well} not found in assembly dict")
+        
         clip_info = assembly_dict[plate_num][well]
+        print(f"Clip info from assembly_dict: {clip_info}")
+        print(f"Clip info type: {type(clip_info)}")
+        print(f"Clip info length: {len(clip_info) if hasattr(clip_info, '__len__') else 'N/A'}")
+        
         if not clip_info or len(clip_info) != 2:
+            print(f"ERROR: Invalid clip info format: {clip_info}")
             raise ValueError(f"Invalid clip info format: {clip_info}")
+            
         clip_wells, clip_plates = clip_info
-        clip_components = collect_clip_components(clip_wells, clip_plates, clips_dict_list, well_to_component)
-        print("  Clips:")
-        for comp in clip_components:
-            print(f"    Well {comp['clip_well']} (Plate {comp['clip_plate']})")
-            print(f"      Prefix: {comp['prefix_linker']} [Plate {comp['prefix_source'][0]}, Well {comp['prefix_source'][1]}]")
-            print(f"      Part:   {comp['part']} [Plate {comp['part_source'][0]}, Well {comp['part_source'][1]}]")
-            print(f"      Suffix: {comp['suffix_linker']} [Plate {comp['suffix_source'][0]}, Well {comp['suffix_source'][1]}]")
-        reconstructed_sequence = reconstruct_construct_sequence([[c['prefix_linker'], c['part'], c['suffix_linker']] for c in clip_components])
+        print(f"Clip wells: {clip_wells}")
+        print(f"Clip plates: {clip_plates}")
+        print(f"Number of clips: {len(clip_wells)}")
+        
+        # Extract clip components from clips_dict_list
+        clip_components = []
+        for i, (clip_well, clip_plate) in enumerate(zip(clip_wells, clip_plates)):
+            print(f"\n  --- VALIDATION DEBUG: Processing clip {i+1}/{len(clip_wells)} ---")
+            print(f"  Clip well: {clip_well}, clip plate: {clip_plate}")
+            
+            # Find the clip in the appropriate clip plate
+            if clip_plate > len(clips_dict_list):
+                print(f"ERROR: Clip plate {clip_plate} exceeds available clip plates ({len(clips_dict_list)})")
+                raise ValueError(f"Clip plate {clip_plate} exceeds available clip plates ({len(clips_dict_list)})")
+            
+            clip_dict = clips_dict_list[clip_plate - 1]  # Convert to 0-based index
+            print(f"  Using clip_dict for plate {clip_plate} (index {clip_plate - 1})")
+            print(f"  Clip dict keys: {list(clip_dict.keys())}")
+            
+            if clip_well not in clip_dict:
+                print(f"ERROR: Clip well {clip_well} not found in clip plate {clip_plate}")
+                print(f"Available wells in clip plate {clip_plate}: {list(clip_dict.keys())}")
+                raise ValueError(f"Clip well {clip_well} not found in clip plate {clip_plate}")
+            
+            clip_info = clip_dict[clip_well]
+            print(f"  Clip data: {clip_info}")
+            print(f"  Clip data type: {type(clip_info)}")
+            
+            # Extract prefix linker, part, and suffix linker from sources_dict
+            # Use the new well_to_component lookup for efficiency
+            print(f"  Extracting components from well_to_component lookup...")
+            print(f"  Prefix plate: {clip_info['prefix_source_plate']}, well: {clip_info['prefix_source_well']}")
+            print(f"  Part plate: {clip_info['part_source_plate']}, well: {clip_info['part_source_well']}")
+            print(f"  Suffix plate: {clip_info['suffix_source_plate']}, well: {clip_info['suffix_source_well']}")
+            
+            try:
+                prefix_linker = find_component_by_well(clip_info['prefix_source_plate'], clip_info['prefix_source_well'], well_to_component)
+                print(f"  Found prefix_linker: {prefix_linker}")
+            except ValueError as e:
+                print(f"  ERROR finding prefix_linker: {e}")
+                raise
+                
+            try:
+                part = find_component_by_well(clip_info['part_source_plate'], clip_info['part_source_well'], well_to_component)
+                print(f"  Found part: {part}")
+            except ValueError as e:
+                print(f"  ERROR finding part: {e}")
+                raise
+                
+            try:
+                suffix_linker = find_component_by_well(clip_info['suffix_source_plate'], clip_info['suffix_source_well'], well_to_component)
+                print(f"  Found suffix_linker: {suffix_linker}")
+            except ValueError as e:
+                print(f"  ERROR finding suffix_linker: {e}")
+                raise
+            
+            clip_components.append([prefix_linker, part, suffix_linker])
+            print(f"  Added clip component: [{prefix_linker}, {part}, {suffix_linker}]")
+        
+        print(f"\nAll clip components collected:")
+        for i, comp in enumerate(clip_components):
+            print(f"  Clip {i+1}: {comp}")
+        
+        # Reconstruct the full construct sequence
+        print(f"\n=== VALIDATION DEBUG: Reconstructing sequence ===")
+        reconstructed_sequence = reconstruct_construct_sequence(clip_components)
+        print(f"Reconstructed sequence: {reconstructed_sequence}")
+        print(f"Reconstructed sequence type: {type(reconstructed_sequence)}")
+        print(f"Reconstructed sequence length: {len(reconstructed_sequence)}")
+        
         # Find the original construct definition
+        print(f"\n=== VALIDATION DEBUG: Finding original construct ===")
         original_construct = None
+        found_key = None
         for (order, orig_plate, orig_well), construct_df in constructs_dict.items():
+            print(f"  Checking construct: order={order}, plate={orig_plate}, well={orig_well}")
             if orig_plate == plate_num and orig_well == well:
                 original_construct = construct_df
+                found_key = (order, orig_plate, orig_well)
+                print(f"  FOUND! Construct key: {found_key}")
                 break
+        
         if original_construct is None:
+            print(f"ERROR: Original construct definition not found for Plate {plate_num}, Well {well}")
+            print(f"Available constructs:")
+            for (order, orig_plate, orig_well), _ in constructs_dict.items():
+                print(f"  order={order}, plate={orig_plate}, well={orig_well}")
             raise ValueError(f"Original construct definition not found for Plate {plate_num}, Well {well}")
+        
+        print(f"Original construct DataFrame:")
+        print(f"  Shape: {original_construct.shape}")
+        print(f"  Columns: {list(original_construct.columns)}")
+        print(f"  Data:\n{original_construct}")
+        
+        # Convert original construct to sequence format
+        print(f"\n=== VALIDATION DEBUG: Converting original construct to sequence ===")
         original_sequence = construct_df_to_sequence(original_construct)
-        print(f"  Reconstructed sequence: {reconstructed_sequence}")
-        print(f"  Original sequence:     {original_sequence}")
-        if reconstructed_sequence == original_sequence:
-            print("  MATCH")
-        else:
-            print("  MISMATCH")
+        print(f"Original sequence: {original_sequence}")
+        print(f"Original sequence type: {type(original_sequence)}")
+        print(f"Original sequence length: {len(original_sequence)}")
+        
+        # Compare sequences
+        print(f"\n=== VALIDATION DEBUG: Comparing sequences ===")
+        print(f"Reconstructed: {reconstructed_sequence}")
+        print(f"Original: {original_sequence}")
+        print(f"Sequences are equal: {reconstructed_sequence == original_sequence}")
+        
+        if reconstructed_sequence != original_sequence:
+            print(f"✗ ERROR: Sequences do not match for plate {plate_num}, well {well}")
+            print(f"  Reconstructed: {reconstructed_sequence}")
+            print(f"  Original: {original_sequence}")
+            print(f"  Difference: {set(reconstructed_sequence) ^ set(original_sequence)}")
+            
+            # Additional debugging
+            print(f"  Reconstructed set: {set(reconstructed_sequence)}")
+            print(f"  Original set: {set(original_sequence)}")
+            print(f"  Reconstructed - Original: {set(reconstructed_sequence) - set(original_sequence)}")
+            print(f"  Original - Reconstructed: {set(original_sequence) - set(reconstructed_sequence)}")
+            
             raise ValueError(
                 f"Sequence mismatch for construct at Plate {plate_num}, Well {well}:\n"
                 f"  Original: {original_sequence}\n"
                 f"  Reconstructed: {reconstructed_sequence}"
             )
-    print(f"\nAll {len(sample_wells)} sample constructs validated successfully!\n")
+        
+        print(f"✓ SUCCESS: Validation passed for Plate {plate_num}, Well {well}")
+    
+    print(f"\n✓ All {len(sample_wells)} sample constructs validated successfully!")
+    print(f"=== VALIDATION DEBUG: Assembly reconstruction validation complete ===")
 
 
 def reconstruct_construct_sequence(clip_components: List[List[str]]) -> List[str]:
     """
     Reconstruct the full construct sequence from clip components.
+    
     Args:
         clip_components: List of [prefix_linker, part, suffix_linker] for each clip
+        
     Returns:
         List representing the unified construct sequence [part1, linker1, part2, linker2, ...]
     """
-    # Removed all debug print statements
+    print(f"  RECONSTRUCTION DEBUG: Starting with {len(clip_components)} clip components")
+    for i, comp in enumerate(clip_components):
+        print(f"    Clip {i+1}: {comp}")
+    
     if not clip_components:
+        print("  RECONSTRUCTION DEBUG: No clip components, returning empty list")
         return []
+    
     sequence = []
+    
+    # Process each clip
     for i, clip in enumerate(clip_components):
-        prefix_linker = clip[0]
-        part = clip[1]
-        suffix_linker = clip[2]
+        prefix_linker = clip[0]  # e.g., "LMS-P"
+        part = clip[1]           # e.g., "SV39"
+        suffix_linker = clip[2]  # e.g., "LMP-S"
+        
+        print(f"  RECONSTRUCTION DEBUG: Processing clip {i+1}: prefix='{prefix_linker}', part='{part}', suffix='{suffix_linker}'")
+        
         if i == 0:
+            # First clip: add part and suffix
+            print(f"  RECONSTRUCTION DEBUG: First clip, adding part and suffix")
             sequence.extend([part, suffix_linker])
         else:
-            previous_suffix = sequence[-1]
+            # Check if current prefix matches previous suffix (ignoring -P/-S suffixes)
+            previous_suffix = sequence[-1]  # Last element is the previous suffix
+            
+            # Strip suffixes for comparison
             previous_suffix_base = previous_suffix.replace('-S', '').replace('-P', '')
             current_prefix_base = prefix_linker.replace('-S', '').replace('-P', '')
+            
+            print(f"  RECONSTRUCTION DEBUG: Comparing previous suffix '{previous_suffix}' (base: '{previous_suffix_base}') with current prefix '{prefix_linker}' (base: '{current_prefix_base}')")
+            
             if previous_suffix_base == current_prefix_base:
-                sequence[-1] = previous_suffix_base
-                sequence.append(part)
-                sequence.append(suffix_linker)
+                # Linkers match, unify them
+                print(f"  RECONSTRUCTION DEBUG: Linkers match, unifying")
+                sequence[-1] = previous_suffix_base  # Replace with unified linker
+                sequence.append(part)                # Add the part
+                sequence.append(suffix_linker)       # Add the suffix
             else:
-                sequence.append(prefix_linker)
-                sequence.append(part)
-                sequence.append(suffix_linker)
+                # Linkers don't match, add as separate elements
+                print(f"  RECONSTRUCTION DEBUG: Linkers don't match, adding separately")
+                sequence.append(prefix_linker)       # Add the prefix
+                sequence.append(part)                # Add the part
+                sequence.append(suffix_linker)       # Add the suffix
+        
+        print(f"  RECONSTRUCTION DEBUG: Sequence after clip {i+1}: {sequence}")
+    
+    # Check for circular construct (last suffix matches first prefix)
     if len(clip_components) > 1:
         first_prefix = clip_components[0][0]
         last_suffix = sequence[-1]
+        
         first_prefix_base = first_prefix.replace('-S', '').replace('-P', '')
         last_suffix_base = last_suffix.replace('-S', '').replace('-P', '')
+        
+        print(f"  RECONSTRUCTION DEBUG: Checking circular link: first prefix '{first_prefix}' (base: '{first_prefix_base}') vs last suffix '{last_suffix}' (base: '{last_suffix_base}')")
+        
         if first_prefix_base == last_suffix_base:
-            sequence[-1] = last_suffix_base
+            # Unify the circular link (only update the last suffix, do not overwrite the first part)
+            print(f"  RECONSTRUCTION DEBUG: Circular link found, unifying last suffix only")
+            # sequence[0] = first_prefix_base  # Do NOT overwrite the first part (part should remain)
+            sequence[-1] = last_suffix_base  # Replace last suffix with unified linker
+        else:
+            print(f"  RECONSTRUCTION DEBUG: No circular link")
+    
+    print(f"  RECONSTRUCTION DEBUG: Final sequence: {sequence}")
     return sequence
+
+
+def find_component_by_well(plate: str, well: str, well_to_component: dict) -> str:
+    """
+    Find a component name by (plate, well) using a precomputed lookup dict.
+    """
+    key = (plate, well)
+    if key in well_to_component:
+        return well_to_component[key]
+    raise ValueError(f"No component found at plate {plate}, well {well}")
 
 
 def construct_df_to_sequence(construct_df: pd.DataFrame) -> List[str]:
     """
     Convert a construct DataFrame to a sequence list.
+    
     Args:
         construct_df: DataFrame with columns ['prefixes', 'parts', 'suffixes']
+        
     Returns:
         List representing the construct sequence [part1, linker1, part2, linker2, ...]
     """
-    # Removed all debug print statements
+    print(f"    CONSTRUCT_DF DEBUG: Converting DataFrame to sequence")
+    print(f"    CONSTRUCT_DF DEBUG: DataFrame shape: {construct_df.shape}")
+    print(f"    CONSTRUCT_DF DEBUG: DataFrame columns: {list(construct_df.columns)}")
+    
     sequence = []
+    
     for i, (_, row) in enumerate(construct_df.iterrows()):
-        prefix = row['prefixes'].replace('-P', '')
+        print(f"    CONSTRUCT_DF DEBUG: Processing row {i+1}")
+        print(f"    CONSTRUCT_DF DEBUG: Row data: {dict(row)}")
+        
+        prefix = row['prefixes'].replace('-P', '')  # Remove -P suffix
         part = row['parts']
-        suffix = row['suffixes'].replace('-S', '')
+        suffix = row['suffixes'].replace('-S', '')  # Remove -S suffix
+        
+        print(f"    CONSTRUCT_DF DEBUG: Extracted - prefix: '{prefix}', part: '{part}', suffix: '{suffix}'")
+        
         if not sequence:
+            # First clip: add part and suffix
+            print(f"    CONSTRUCT_DF DEBUG: First clip, adding part and suffix")
             sequence.extend([part, suffix])
         else:
+            # Check if suffix matches prefix
             current_suffix = sequence[-1]
+            print(f"    CONSTRUCT_DF DEBUG: Current suffix: '{current_suffix}', Next prefix: '{prefix}'")
+            
             if current_suffix == prefix:
-                sequence[-1] = prefix
+                # Linkers match, unify them
+                print(f"    CONSTRUCT_DF DEBUG: Linkers match, unifying")
+                sequence[-1] = prefix  # Replace with unified linker
                 sequence.append(part)
                 sequence.append(suffix)
             else:
+                # Linkers don't match, add as separate elements
+                print(f"    CONSTRUCT_DF DEBUG: Linkers don't match, adding separately")
                 sequence.append(prefix)
                 sequence.append(part)
                 sequence.append(suffix)
+        
+        print(f"    CONSTRUCT_DF DEBUG: Sequence after row {i+1}: {sequence}")
+    
+    print(f"    CONSTRUCT_DF DEBUG: Final sequence: {sequence}")
     return sequence
 
 
@@ -2949,15 +3085,6 @@ def build_well_to_component_lookup(sources_dict):
         plate = normalize_source_data(source_info)[2]
         lookup[(plate, well)] = component_name
     return lookup
-
-def find_component_by_well(plate: str, well: str, well_to_component: dict) -> str:
-    """
-    Find a component name by (plate, well) using a precomputed lookup dict.
-    """
-    key = (plate, well)
-    if key in well_to_component:
-        return well_to_component[key]
-    raise ValueError(f"No component found at plate {plate}, well {well}")
 
 if __name__ == '__main__':
     main()
