@@ -4,15 +4,23 @@ import time
 
 metadata = {
     'apiLevel': '2.10',
-    'protocolName': 'DNABOT: Transformation with Thermocycler v2.10',
+    'protocolName': 'Transformation Protocol v2',
     'description': 'Enhanced transformation protocol using thermocycler module',
     'author': 'Liam Hallett'
 }
 
 # Load transformation data from JSON file
 # This will be replaced by the parser with embedded JSON data
-with open('transformation_data.json') as f:
-    transformation_dict = json.load(f)
+transformation_dict = {
+    "transformation_number": 16,
+    "source_wells": ["A2", "B2", "C2", "D2", "E2", "F2", "G2", "H2", "A3", "B3", "C3", "D3", "E3", "F3", "G3", "H3"],
+    "source_plates": ["1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1"],
+    "destination_wells": ["A2", "B2", "C2", "D2", "E2", "F2", "G2", "H2", "A3", "B3", "C3", "D3", "E3", "F3", "G3", "H3"],
+    "dna_volumes": [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3],
+    "cell_volumes": [30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30],
+    "soc_volumes": [100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100],
+    "plating_volumes": [100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100]
+}
 
 # Thermocycler generation setting
 # This will be replaced by the parser with embedded thermocycler generation

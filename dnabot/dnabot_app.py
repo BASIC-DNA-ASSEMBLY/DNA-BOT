@@ -466,7 +466,7 @@ def main() -> None:
         # -----------------------------
         # 5. Generate Flex scripts for each protocol stage
         # -----------------------------
-        _generate_flex_scripts(data_structures, paths, user_config)
+        # _generate_flex_scripts(data_structures, paths, user_config)  # COMMENTED OUT: Flex script generation disabled
         
         # -----------------------------
         # 6. Output metadata and summary files
@@ -749,36 +749,36 @@ def _generate_ot2_scripts(data_structures: Dict[str, Any],
         _generate_transformation_scripts(transformation_dict, plate_number, paths, user_config.get('thermocycler_gen', 'gen2'))
 
 
-def _generate_flex_scripts(data_structures: Dict[str, Any], 
-                          paths: Dict[str, str],
-                          user_config: Dict[str, Union[str, List[str], int]]) -> None:
-    """
-    Generate Flex scripts for each protocol stage.
-    
-    Args:
-        data_structures: Processed data structures
-        paths: Directory paths
-        user_config: User configuration
-    """
-    print('Writing Flex scripts...')
-    # Generate CLIP scripts
-    print("\nGenerating CLIP scripts...")
-    for clip_plate, sub_clip_dict in enumerate(data_structures['clips_dict_list']):
-        # print(f"  Clip plate {clip_plate + 1}...")
-        _generate_flex_clip_scripts(sub_clip_dict, clip_plate, paths, data_structures.get('all_default_conc', False), user_config.get('thermocycler_gen', 'gen2'))
-    
-    # Generate final assembly scripts
-    print("\nGenerating final assembly scripts...")
-    for plate_number, final_assembly_dict in data_structures['final_assembly_dict_list'].items():
-        # print(f"  Assembly plate {plate_number}...")
-        _generate_flex_assembly_scripts(final_assembly_dict, plate_number, paths, user_config.get('thermocycler_gen', 'gen2'))
-    
-    # Generate transformation scripts
-    print("\nGenerating transformation scripts...")
-    for plate_number, final_assembly_dict in data_structures['final_assembly_dict_list'].items():
-        # print(f"  Transformation plate {plate_number}...")
-        transformation_dict = generate_transformation_dict(final_assembly_dict, plate_number)
-        _generate_flex_transformation_scripts(transformation_dict, plate_number, paths, user_config.get('thermocycler_gen', 'gen2'))
+# def _generate_flex_scripts(data_structures: Dict[str, Any], 
+#                           paths: Dict[str, str],
+#                           user_config: Dict[str, Union[str, List[str], int]]) -> None:
+#     """
+#     Generate Flex scripts for each protocol stage.
+#     
+#     Args:
+#         data_structures: Processed data structures
+#         paths: Directory paths
+#         user_config: User configuration
+#     """
+#     print('Writing Flex scripts...')
+#     # Generate CLIP scripts
+#     print("\nGenerating CLIP scripts...")
+#     for clip_plate, sub_clip_dict in enumerate(data_structures['clips_dict_list']):
+#         # print(f"  Clip plate {clip_plate + 1}...")
+#         _generate_flex_clip_scripts(sub_clip_dict, clip_plate, paths, data_structures.get('all_default_conc', False), user_config.get('thermocycler_gen', 'gen2'))
+#     
+#     # Generate final assembly scripts
+#     print("\nGenerating final assembly scripts...")
+#     for plate_number, final_assembly_dict in data_structures['final_assembly_dict_list'].items():
+#         # print(f"  Assembly plate {plate_number}...")
+#         _generate_flex_assembly_scripts(final_assembly_dict, plate_number, paths, user_config.get('thermocycler_gen', 'gen2'))
+#     
+#     # Generate transformation scripts
+#     print("\nGenerating transformation scripts...")
+#     for plate_number, final_assembly_dict in data_structures['final_assembly_dict_list'].items():
+#         # print(f"  Transformation plate {plate_number}...")
+#         transformation_dict = generate_transformation_dict(final_assembly_dict, plate_number)
+#         _generate_flex_transformation_scripts(transformation_dict, plate_number, paths, user_config.get('thermocycler_gen', 'gen2'))
 
 
 def _generate_clip_scripts(sub_clip_dict: dict, clip_plate: int, paths: dict, all_default_conc: bool = False, thermocycler_gen: str = 'gen2') -> None:
@@ -960,100 +960,100 @@ def _generate_transformation_scripts(transformation_dict: Dict[str, Any],
     )
 
 
-def _generate_flex_clip_scripts(sub_clip_dict: dict, clip_plate: int, paths: dict, all_default_conc: bool = False, thermocycler_gen: str = 'gen2') -> None:
-    """Generate Flex CLIP reaction scripts for a single plate using embedded parameterisation."""
-    template_dir = paths['template_dir']
-    flex_template_dir = os.path.join(os.path.dirname(template_dir), FILE_CONFIG.FLEX_TEMPLATE_DIR_NAME)
-    
-    # Get all destination wells for this plate
-    dest_wells = list(sub_clip_dict.keys())
-    n_clips = len(dest_wells)
-    # Split into halves if needed
-    halves = []
-    if n_clips > 48:
-        halves.append((dest_wells[:48], 'a'))
-        halves.append((dest_wells[48:], 'b'))
-    else:
-        halves.append((dest_wells, 'a'))
-    
-    for wells, half in halves:
-        # Build a sub-dictionary for this half
-        half_clip_dict = {w: sub_clip_dict[w] for w in wells}
-        # Script name: e.g. A1a_clip_flex_APIv2.8.py
-        base_name = FILE_CONFIG.FLEX_OUTPUT_FILES['CLIP']['V2_8']
-        stage_letter = base_name[0]
-        script_name = f"{stage_letter}{clip_plate+1}{half}{base_name[1:]}.py"
-        script_path = os.path.join(paths['flex_output_dir'], script_name)
-        _generate_clip_script_embedded(
-            script_path,
-            os.path.join(flex_template_dir, FILE_CONFIG.FLEX_TEMPLATE_FILES['CLIP']['V2_8']),
-            half_clip_dict,
-            all_default_conc
-        )
-        # Thermocycler version
-        tc_base_name = FILE_CONFIG.FLEX_OUTPUT_FILES['CLIP']['V2_8_TC']
-        tc_script_name = f"{tc_base_name[0]}{clip_plate+1}{half}{tc_base_name[1:]}.py"
-        tc_script_path = os.path.join(paths['flex_output_dir'], tc_script_name)
-        _generate_clip_script_embedded(
-            tc_script_path,
-            os.path.join(flex_template_dir, FILE_CONFIG.FLEX_TEMPLATE_FILES['CLIP']['V2_8_TC']),
-            half_clip_dict,
-            all_default_conc,
-            thermocycler_gen
-        )
+# def _generate_flex_clip_scripts(sub_clip_dict: dict, clip_plate: int, paths: dict, all_default_conc: bool = False, thermocycler_gen: str = 'gen2') -> None:
+#     """Generate Flex CLIP reaction scripts for a single plate using embedded parameterisation."""
+#     template_dir = paths['template_dir']
+#     flex_template_dir = os.path.join(os.path.dirname(template_dir), FILE_CONFIG.FLEX_TEMPLATE_DIR_NAME)
+#     
+#     # Get all destination wells for this plate
+#     dest_wells = list(sub_clip_dict.keys())
+#     n_clips = len(dest_wells)
+#     # Split into halves if needed
+#     halves = []
+#     if n_clips > 48:
+#         halves.append((dest_wells[:48], 'a'))
+#         halves.append((dest_wells[48:], 'b'))
+#     else:
+#         halves.append((dest_wells, 'a'))
+#     
+#     for wells, half in halves:
+#         # Build a sub-dictionary for this half
+#         half_clip_dict = {w: sub_clip_dict[w] for w in wells}
+#         # Script name: e.g. A1a_clip_flex_APIv2.8.py
+#         base_name = FILE_CONFIG.FLEX_OUTPUT_FILES['CLIP']['V2_8']
+#         stage_letter = base_name[0]
+#         script_name = f"{stage_letter}{clip_plate+1}{half}{base_name[1:]}.py"
+#         script_path = os.path.join(paths['flex_output_dir'], script_name)
+#         _generate_clip_script_embedded(
+#             script_path,
+#             os.path.join(flex_template_dir, FILE_CONFIG.FLEX_TEMPLATE_FILES['CLIP']['V2_8']),
+#             half_clip_dict,
+#             all_default_conc
+#         )
+#         # Thermocycler version
+#         tc_base_name = FILE_CONFIG.FLEX_OUTPUT_FILES['CLIP']['V2_8_TC']
+#         tc_script_name = f"{tc_base_name[0]}{clip_plate+1}{half}{tc_base_name[1:]}.py"
+#         tc_script_path = os.path.join(paths['flex_output_dir'], tc_script_name)
+#         _generate_clip_script_embedded(
+#             tc_script_path,
+#             os.path.join(flex_template_dir, FILE_CONFIG.FLEX_TEMPLATE_FILES['CLIP']['V2_8_TC']),
+#             half_clip_dict,
+#             all_default_conc,
+#             thermocycler_gen
+#         )
 
 
-def _generate_flex_assembly_scripts(final_assembly_dict: Dict[str, List], 
-                                   plate_number: int, 
-                                   paths: Dict[str, str],
-                                   thermocycler_gen: str = 'gen2') -> None:
-    """Generate Flex assembly scripts using embedded parameterisation."""
-    template_dir = paths['template_dir']
-    flex_template_dir = os.path.join(os.path.dirname(template_dir), FILE_CONFIG.FLEX_TEMPLATE_DIR_NAME)
-    
-    # Calculate tiprack number
-    tiprack_num = calculate_final_assembly_tipracks(final_assembly_dict)
-    
-    # Generate assembly script with new naming convention
-    assembly_script_name = _generate_script_name_with_number(FILE_CONFIG.FLEX_OUTPUT_FILES['F_ASSEMBLY']['V2_8'], plate_number)
-    assembly_script_path = os.path.join(paths['flex_output_dir'], assembly_script_name)
-    _generate_assembly_script_embedded(
-        assembly_script_path,
-        os.path.join(flex_template_dir, FILE_CONFIG.FLEX_TEMPLATE_FILES['F_ASSEMBLY']['V2_8']),
-        final_assembly_dict,
-        tiprack_num,
-        thermocycler_gen
-    )
-    
-    # Generate thermocycler version
-    tc_assembly_script_name = _generate_script_name_with_number(FILE_CONFIG.FLEX_OUTPUT_FILES['F_ASSEMBLY']['V2_8_TC'], plate_number)
-    tc_assembly_script_path = os.path.join(paths['flex_output_dir'], tc_assembly_script_name)
-    _generate_assembly_script_embedded(
-        tc_assembly_script_path,
-        os.path.join(flex_template_dir, FILE_CONFIG.FLEX_TEMPLATE_FILES['F_ASSEMBLY']['V2_8_TC']),
-        final_assembly_dict,
-        tiprack_num,
-        thermocycler_gen
-    )
+# def _generate_flex_assembly_scripts(final_assembly_dict: Dict[str, List], 
+#                                    plate_number: int, 
+#                                    paths: Dict[str, str],
+#                                    thermocycler_gen: str = 'gen2') -> None:
+#     """Generate Flex assembly scripts using embedded parameterisation."""
+#     template_dir = paths['template_dir']
+#     flex_template_dir = os.path.join(os.path.dirname(template_dir), FILE_CONFIG.FLEX_TEMPLATE_DIR_NAME)
+#     
+#     # Calculate tiprack number
+#     tiprack_num = calculate_final_assembly_tipracks(final_assembly_dict)
+#     
+#     # Generate assembly script with new naming convention
+#     assembly_script_name = _generate_script_name_with_number(FILE_CONFIG.FLEX_OUTPUT_FILES['F_ASSEMBLY']['V2_8'], plate_number)
+#     assembly_script_path = os.path.join(paths['flex_output_dir'], assembly_script_name)
+#     _generate_assembly_script_embedded(
+#         assembly_script_path,
+#         os.path.join(flex_template_dir, FILE_CONFIG.FLEX_TEMPLATE_FILES['F_ASSEMBLY']['V2_8']),
+#         final_assembly_dict,
+#         tiprack_num,
+#         thermocycler_gen
+#     )
+#     
+#     # Generate thermocycler version
+#     tc_assembly_script_name = _generate_script_name_with_number(FILE_CONFIG.FLEX_OUTPUT_FILES['F_ASSEMBLY']['V2_8_TC'], plate_number)
+#     tc_assembly_script_path = os.path.join(paths['flex_output_dir'], tc_assembly_script_name)
+#     _generate_assembly_script_embedded(
+#         tc_assembly_script_path,
+#         os.path.join(flex_template_dir, FILE_CONFIG.FLEX_TEMPLATE_FILES['F_ASSEMBLY']['V2_8_TC']),
+#         final_assembly_dict,
+#         tiprack_num,
+#         thermocycler_gen
+#     )
 
 
-def _generate_flex_transformation_scripts(transformation_dict: Dict[str, Any], 
-                                        script_index: int, 
-                                        paths: Dict[str, str],
-                                        thermocycler_gen: str = 'gen2') -> None:
-    """Generate Flex transformation scripts using embedded parameterisation."""
-    template_dir = paths['template_dir']
-    flex_template_dir = os.path.join(os.path.dirname(template_dir), FILE_CONFIG.FLEX_TEMPLATE_DIR_NAME)
-    
-    # Generate transformation script with new naming convention
-    transformation_script_name = _generate_script_name_with_number(FILE_CONFIG.FLEX_OUTPUT_FILES['TRANS_SPOT']['V2_10_TC'], script_index)
-    transformation_script_path = os.path.join(paths['flex_output_dir'], transformation_script_name)
-    _generate_transformation_script_embedded(
-        transformation_script_path,
-        os.path.join(flex_template_dir, FILE_CONFIG.FLEX_TEMPLATE_FILES['TRANS_SPOT']['V2_10_TC']),
-        transformation_dict,
-        thermocycler_gen
-    )
+# def _generate_flex_transformation_scripts(transformation_dict: Dict[str, Any], 
+#                                         script_index: int, 
+#                                         paths: Dict[str, str],
+#                                         thermocycler_gen: str = 'gen2') -> None:
+#     """Generate Flex transformation scripts using embedded parameterisation."""
+#     template_dir = paths['template_dir']
+#     flex_template_dir = os.path.join(os.path.dirname(template_dir), FILE_CONFIG.FLEX_TEMPLATE_DIR_NAME)
+#     
+#     # Generate transformation script with new naming convention
+#     transformation_script_name = _generate_script_name_with_number(FILE_CONFIG.FLEX_OUTPUT_FILES['TRANS_SPOT']['V2_10_TC'], script_index)
+#     transformation_script_path = os.path.join(paths['flex_output_dir'], transformation_script_name)
+#     _generate_transformation_script_embedded(
+#         transformation_script_path,
+#         os.path.join(flex_template_dir, FILE_CONFIG.FLEX_TEMPLATE_FILES['TRANS_SPOT']['V2_10_TC']),
+#         transformation_dict,
+#         thermocycler_gen
+#     )
 
 
 def _output_metadata_files(data_structures: Dict[str, Any], 

@@ -6,14 +6,194 @@ import json
 
 #metadata
 metadata = {
-     'apiLevel': '2.10',
-     'protocolName': 'DNABOT: CLIP Assembly v2.10',
+     'apiLevel': '2.8',
+     'protocolName': 'CLIP_No_Thermocycler',
      'description': 'Implements linker ligation reactions using an opentrons OT-2. This version does not include the Thermocycler module.'}
 
 # Load CLIP data from JSON file
 # This will be replaced by the parser with embedded JSON data
-with open('clips_data.json') as f:
-    clips_dict = json.load(f)
+clips_dict = {
+    "A7": {
+        "prefix_linker": "LMP-P",
+        "prefix_source_well": "B12",
+        "prefix_source_plate": "1",
+        "part": "sucB_1",
+        "part_source_well": "C3",
+        "part_source_plate": "1",
+        "suffix_linker": "L1-S",
+        "suffix_source_well": "G12",
+        "suffix_source_plate": "1",
+        "Clip_Well": "A7",
+        "plate": 1,
+        "part_vol": 1.0,
+        "water_vol": 0.0
+    },
+    "B7": {
+        "prefix_linker": "L1-P",
+        "prefix_source_well": "F12",
+        "prefix_source_plate": "1",
+        "part": "alaC_1",
+        "part_source_well": "B2",
+        "part_source_plate": "1",
+        "suffix_linker": "LMS-S",
+        "suffix_source_well": "E12",
+        "suffix_source_plate": "1",
+        "Clip_Well": "B7",
+        "plate": 1,
+        "part_vol": 1.0,
+        "water_vol": 0.0
+    },
+    "C7": {
+        "prefix_linker": "LMP-P",
+        "prefix_source_well": "B12",
+        "prefix_source_plate": "1",
+        "part": "thiS_1",
+        "part_source_well": "C5",
+        "part_source_plate": "1",
+        "suffix_linker": "L1-S",
+        "suffix_source_well": "G12",
+        "suffix_source_plate": "1",
+        "Clip_Well": "C7",
+        "plate": 1,
+        "part_vol": 1.0,
+        "water_vol": 0.0
+    },
+    "D7": {
+        "prefix_linker": "L1-P",
+        "prefix_source_well": "F12",
+        "prefix_source_plate": "1",
+        "part": "serC_1",
+        "part_source_well": "E4",
+        "part_source_plate": "1",
+        "suffix_linker": "LMS-S",
+        "suffix_source_well": "E12",
+        "suffix_source_plate": "1",
+        "Clip_Well": "D7",
+        "plate": 1,
+        "part_vol": 1.0,
+        "water_vol": 0.0
+    },
+    "E7": {
+        "prefix_linker": "LMP-P",
+        "prefix_source_well": "B12",
+        "prefix_source_plate": "1",
+        "part": "alr_1",
+        "part_source_well": "C2",
+        "part_source_plate": "1",
+        "suffix_linker": "L1-S",
+        "suffix_source_well": "G12",
+        "suffix_source_plate": "1",
+        "Clip_Well": "E7",
+        "plate": 1,
+        "part_vol": 1.0,
+        "water_vol": 0.0
+    },
+    "F7": {
+        "prefix_linker": "L1-P",
+        "prefix_source_well": "F12",
+        "prefix_source_plate": "1",
+        "part": "dadX_1",
+        "part_source_well": "G3",
+        "part_source_plate": "1",
+        "suffix_linker": "LMS-S",
+        "suffix_source_well": "E12",
+        "suffix_source_plate": "1",
+        "Clip_Well": "F7",
+        "plate": 1,
+        "part_vol": 1.0,
+        "water_vol": 0.0
+    },
+    "G7": {
+        "prefix_linker": "LMP-P",
+        "prefix_source_well": "B12",
+        "prefix_source_plate": "1",
+        "part": "tdcB_2",
+        "part_source_well": "F6",
+        "part_source_plate": "1",
+        "suffix_linker": "L1-S",
+        "suffix_source_well": "G12",
+        "suffix_source_plate": "1",
+        "Clip_Well": "G7",
+        "plate": 1,
+        "part_vol": 1.0,
+        "water_vol": 0.0
+    },
+    "H7": {
+        "prefix_linker": "L1-P",
+        "prefix_source_well": "F12",
+        "prefix_source_plate": "1",
+        "part": "gadB_1",
+        "part_source_well": "G4",
+        "part_source_plate": "1",
+        "suffix_linker": "LMS-S",
+        "suffix_source_well": "E12",
+        "suffix_source_plate": "1",
+        "Clip_Well": "H7",
+        "plate": 1,
+        "part_vol": 1.0,
+        "water_vol": 0.0
+    },
+    "A8": {
+        "prefix_linker": "L1-P",
+        "prefix_source_well": "F12",
+        "prefix_source_plate": "1",
+        "part": "ilvA_1",
+        "part_source_well": "A8",
+        "part_source_plate": "1",
+        "suffix_linker": "LMS-S",
+        "suffix_source_well": "E12",
+        "suffix_source_plate": "1",
+        "Clip_Well": "A8",
+        "plate": 1,
+        "part_vol": 1.0,
+        "water_vol": 0.0
+    },
+    "B8": {
+        "prefix_linker": "LMP-P",
+        "prefix_source_well": "B12",
+        "prefix_source_plate": "1",
+        "part": "ilvH_1",
+        "part_source_well": "A2",
+        "part_source_plate": "1",
+        "suffix_linker": "L1-S",
+        "suffix_source_well": "G12",
+        "suffix_source_plate": "1",
+        "Clip_Well": "B8",
+        "plate": 1,
+        "part_vol": 1.0,
+        "water_vol": 0.0
+    },
+    "C8": {
+        "prefix_linker": "LMP-P",
+        "prefix_source_well": "B12",
+        "prefix_source_plate": "1",
+        "part": "menA_1",
+        "part_source_well": "G8",
+        "part_source_plate": "1",
+        "suffix_linker": "L1-S",
+        "suffix_source_well": "G12",
+        "suffix_source_plate": "1",
+        "Clip_Well": "C8",
+        "plate": 1,
+        "part_vol": 1.0,
+        "water_vol": 0.0
+    },
+    "D8": {
+        "prefix_linker": "L1-P",
+        "prefix_source_well": "F12",
+        "prefix_source_plate": "1",
+        "part": "menA_1",
+        "part_source_well": "G8",
+        "part_source_plate": "1",
+        "suffix_linker": "LMS-S",
+        "suffix_source_well": "E12",
+        "suffix_source_plate": "1",
+        "Clip_Well": "D8",
+        "plate": 1,
+        "part_vol": 1.0,
+        "water_vol": 0.0
+    }
+}
 
 # example dictionary produced by DNA-BOT for a single construct containing 5 parts, un-comment and run to test the template
 #clips_dict={"prefixes_wells": ["A8", "A7", "C5", "C7", "C10"], "prefixes_plates": ["2", "2", "2", "2", "2"], "suffixes_wells": ["B7", "C1", "C2", "C3", "B8"], "suffixes_plates": ["2", "2", "2", "2", "2"], "parts_wells": ["E2", "F2", "C2", "B2", "D2"], "parts_plates": ["5", "5", "5", "5", "5"], "parts_vols": [1, 1, 1, 1, 1], "water_vols": [7.0, 7.0, 7.0, 7.0, 7.0]}

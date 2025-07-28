@@ -5,17 +5,40 @@ import json
 
 # metadata
 metadata = {
-'protocolName': 'DNABOT: Final Assembly with Thermocycler v2.10',
-'description': 'Final assembly protocol for DNA-BOT using Opentrons OT-2 with thermocycler module',
-'apiLevel': '2.10'
+'protocolName': 'DNABOT Assembly Thermocycler',
+'description': 'DNABOT Assembly Step3 with Thermocycler',
+'apiLevel': '2.8'
 }
 
 # Load assembly data from JSON file
 # This will be replaced by the parser with embedded JSON data
-with open('assembly_data.json') as f:
-    assembly_data = json.load(f)
-    final_assembly_dict = assembly_data['final_assembly_dict']
-    tiprack_num = assembly_data['tiprack_num']
+final_assembly_dict = {
+    "A1": [["B1", "E3", "G4"], [1, 1, 1]],
+    "B1": [["B1", "H4", "A5"], [1, 1, 1]],
+    "C1": [["B1", "B5", "C5"], [1, 1, 1]],
+    "D1": [["B1", "D5", "E5"], [1, 1, 1]],
+    "E1": [["B1", "F5", "G5"], [1, 1, 1]],
+    "F1": [["B1", "H5", "A6"], [1, 1, 1]],
+    "G1": [["B1", "B6", "B2"], [1, 1, 1]],
+    "H1": [["B1", "C6", "D6"], [1, 1, 1]],
+    "A2": [["B1", "E6", "F6"], [1, 1, 1]],
+    "B2": [["B1", "G6", "H6"], [1, 1, 1]],
+    "C2": [["C1", "A7", "B7"], [1, 1, 1]],
+    "D2": [["C1", "C7", "D7"], [1, 1, 1]],
+    "E2": [["C1", "E7", "F7"], [1, 1, 1]],
+    "F2": [["C1", "G3", "C5"], [1, 1, 1]],
+    "G2": [["C1", "A4", "B4"], [1, 1, 1]],
+    "H2": [["C1", "A2", "B2"], [1, 1, 1]],
+    "A3": [["C1", "H5", "D2"], [1, 1, 1]],
+    "B3": [["C1", "G7", "H7"], [1, 1, 1]],
+    "C3": [["C1", "E6", "A8"], [1, 1, 1]],
+    "D3": [["C1", "B8", "H7"], [1, 1, 1]],
+    "E3": [["C1", "C8", "D2"], [1, 1, 1]],
+    "F3": [["C1", "C8", "D6"], [1, 1, 1]],
+    "G3": [["C1", "E2", "D8"], [1, 1, 1]],
+    "H3": [["D1", "G2", "H2"], [1, 1, 1]]
+}
+tiprack_num = 1
 
 # Thermocycler generation setting
 # This will be replaced by the parser with embedded thermocycler generation
