@@ -1,6 +1,4 @@
 from opentrons import protocol_api
-import time
-from typing import Dict, List, Optional, Tuple, Union
 
 ''' To Do
      - explicitly code for tip change
@@ -11,199 +9,17 @@ metadata = {
      'protocolName': 'purification_template',
      'description': 'Implements magbead purification reactions for BASIC assembly using an opentrons OT-2'}
 
+
+
+
 # example values produced by DNA-BOT for a single construct containing 5 parts, un-comment and run to test the template:
 sample_number=24
 ethanol_well='A3'
 
 # opentrons_simulate.exe dnabot\template_ot2_scripts\purification_template_APIv2.8.py --custom-labware-path 'labware\Labware definitions'
 
-class WellManager:
-    """Manages well positions and column operations."""
-    
-    def __init__(self, protocol: protocol_api.ProtocolContext, 
-                 sample_number: int):
-        self.protocol = protocol
-        self.sample_number = sample_number
-        self.rows = 8
-        self.cols = 12
-        
-        # Calculate number of columns needed
-        self.src1_col_num = min((sample_number - 1) // 8 + 1, 6)  # Max 6 columns in first plate
-        self.src2_col_num = max(0, (sample_number - 48 - 1) // 8 + 1)  # Remaining columns in second plate
-    
-    def get_columns_with_wells(self) -> List[int]:
-        """Get list of column indices that contain samples."""
-        columns = list(range(self.src1_col_num))
-        if self.src2_col_num > 0:
-            columns.extend(range(self.src1_col_num, self.src1_col_num + self.src2_col_num))
-        return columns
-    
-    def get_source_well(self, col: int, source_plate, source_plate2=None) -> str:
-        """Get the source well for a given column index."""
-        if col < self.src1_col_num:
-            # First plate (columns 0-5)
-            return source_plate.wells_by_name()[f'A{col + 1}']
-        else:
-            # Second plate (columns 6-11)
-            if not source_plate2:
-                raise ValueError("Source plate 2 is required for columns >= 6")
-            return source_plate2.wells_by_name()[f'A{col - self.src1_col_num + 1}']
-    
-    def get_mag_well(self, col: int, mag_plate) -> str:
-        """Get the magnetic plate well for a given column index."""
-        return mag_plate.wells_by_name()[f'A{col + 1}']
-    
-    def get_final_well(self, col: int, final_plate) -> str:
-        """Get the final plate well for a given column index."""
-        return final_plate.wells_by_name()[f'A{col + 1}']
-
-class TipManager:
-    """Manages pipette tips and tracks usage."""
-    
-    def __init__(self, protocol: protocol_api.ProtocolContext, 
-                 slot: int,
-                 pipette: protocol_api.instrument_context.InstrumentContext,
-                 tip_type: str):
-        self.protocol = protocol
-        self.pipette = pipette
-        self.tip_type = tip_type
-        self.rows = 8
-        self.cols = 12
-        
-        # Initialise tip racks array and current rack index
-        self.tipracks = []
-        self.current_rack = 0
-        
-        # Load first tip rack using add_tip_rack
-        self.add_tip_rack(slot)
-        
-        self._initialise_tip_arrays()
-    
-    def add_tip_rack(self, slot: int, tip_type: Optional[str] = None) -> None:
-        """Add an additional tip rack to the manager."""
-        tip_type = tip_type or self.tip_type
-        
-        # Check pipette compatibility
-        pipette_type = 'p300' if self.pipette.max_volume >= 300 else 'p20'
-        if tip_type != pipette_type:
-            raise ValueError(f"Tip type '{tip_type}' is incompatible with pipette type '{pipette_type}'")
-            
-        if tip_type == 'p300':
-            self.tipracks.append(self.protocol.load_labware('opentrons_96_tiprack_300ul', slot))
-        elif tip_type == 'p20':
-            self.tipracks.append(self.protocol.load_labware('opentrons_96_tiprack_20ul', slot))
-        else:
-            raise ValueError(f"Unsupported tip type: {tip_type}")
-    
-    def _initialise_tip_arrays(self) -> None:
-        """Initialise tip tracking arrays for normal and inverse tip selection."""
-        total_tips = len(self.tipracks[self.current_rack].wells())
-        self.normal_tips = list(range(total_tips))  # For normal tip selection
-        self.inverse_tips = []  # For inverse tip selection
-        
-        # Create inverse order array
-        for col in range(self.cols):
-            for row in range(self.rows-1, -1, -1):  # Start from highest row (H) to lowest (A)
-                tip_index = col * self.rows + row
-                self.inverse_tips.append(tip_index)
-    
-    def get_multi_tip(self, start_col: int = 0) -> None:
-        """Pick up multiple tips columnwise for multichannel pipetting."""
-        if not self.pipette.channels > 1:
-            raise ValueError("Multichannel pipetting requires a multichannel pipette")
-            
-        if not self.normal_tips:  # If either array is empty, we need new tips
-            if self.current_rack < len(self.tipracks) - 1:
-                # Switch to next tip rack
-                self.current_rack += 1
-                self._initialise_tip_arrays()
-            else:
-                self._prompt_tip_replacement()
-        
-        # Find a column with enough consecutive tips
-        for col in range(start_col, self.cols):
-            # Get all tips in this column
-            tips_in_col = [t for t in self.normal_tips if t // self.rows == col]
-            
-            # Only use columns that are full
-            if len(tips_in_col) != self.rows:
-                continue
-                
-            # Sort tips in the column
-            tips_in_col.sort()
-            
-            # Check if we have a complete column of consecutive tips
-            expected_tips = [col * self.rows + row for row in range(self.rows)]
-            if tips_in_col == expected_tips:
-                # Remove tips from both arrays
-                for tip in tips_in_col:
-                    self.normal_tips.remove(tip)
-                    self.inverse_tips.remove(tip)
-                
-                self.pipette.pick_up_tip(self.tipracks[self.current_rack].wells()[tips_in_col[0]])
-                return
-        
-        # If we get here, no suitable column was found in the current rack
-        self.normal_tips = []  # Force the next call to switch racks
-        self.get_multi_tip(start_col)
-    
-    def return_tips(self, col: int) -> None:
-        """Return tips to their original wells and update tracking arrays."""
-        if not self.pipette.has_tip:
-            return
-            
-        # Calculate the tip indices for this column
-        tip_indices = [col * self.rows + row for row in range(self.rows)]
-        
-        # Return tips to their original wells
-        self.pipette.return_tip()
-        
-        # Add the tips back to both arrays
-        for tip in tip_indices:
-            if tip not in self.normal_tips:
-                self.normal_tips.append(tip)
-            if tip not in self.inverse_tips:
-                self.inverse_tips.append(tip)
-        
-        # Sort the arrays to maintain order
-        self.normal_tips.sort()
-        self.inverse_tips.sort()
-    
-    def _prompt_tip_replacement(self) -> None:
-        """Prompt user to replace tip rack and flash lights."""
-        # Flash lights 3 times before the prompt
-        for _ in range(3):
-            self.protocol.set_rail_lights(False)
-            time.sleep(0.15)
-            self.protocol.set_rail_lights(True)
-            time.sleep(0.15)
-        
-        self.protocol.pause("Please replace the tip rack")
-        
-        # Reset current rack and reinitialise tip arrays
-        self.current_rack = 0
-        self._initialise_tip_arrays()
-
-def calculate_transfer_time_duration(num_columns: int) -> float:
-    """
-    Calculate transfer time duration based on number of columns.
-    Excludes first column, uses 1/8 minute per additional column.
-    
-    Args:
-        num_columns: Number of columns being processed
-        
-    Returns:
-        Transfer time duration in minutes
-    """
-    if num_columns <= 1:
-        return 0.0
-    
-    # Exclude first column, calculate time for remaining columns
-    additional_columns = num_columns - 1
-    return additional_columns * (1/8)  # 1/8 minute per column
-
 def run(protocol: protocol_api.ProtocolContext):
-    # added run function for API verison 2
+# added run function for API verison 2
 
     def magbead(
             sample_number,
@@ -225,10 +41,12 @@ def run(protocol: protocol_api.ProtocolContext):
             tiprack_type="opentrons_96_tiprack_300ul"):
 
         """
+
         Selected args:
             ethanol_well (str): well in reagent container containing ethanol.
             elution_buffer_well (str): well in reagent container containing elution buffer.
             sample_offset (int): offset the intial sample column by the specified value.
+
         """
 
         ### Load Labware
@@ -249,11 +67,6 @@ def run(protocol: protocol_api.ProtocolContext):
         pipette = protocol.load_instrument(PIPETTE_TYPE, mount="left", tip_racks=tipracks)
         pipette.aspirate_flow_rate = PIPETTE_ASPIRATE_RATE
         pipette.dispense_flow_rate = PIPETTE_DISPENSE_RATE  # for reference: default aspirate/dispense flow rate for p300_multi_gen2 is 94 ul/s
-
-        # Initialize tip manager
-        tip_manager = TipManager(protocol, int(slots[0]), pipette, 'p300')
-        for slot in slots[1:]:
-            tip_manager.add_tip_rack(int(slot))
 
         # Source plate(s)
         SOURCE_PLATE_TYPE = '4ti0960rig_96_wellplate_200ul'
@@ -292,8 +105,6 @@ def run(protocol: protocol_api.ProtocolContext):
         BEAD_CONTAINER_POSITION = '8'
         bead_container = protocol.load_labware(BEAD_CONTAINER_TYPE, BEAD_CONTAINER_POSITION)
 
-        # Initialize well manager
-        well_manager = WellManager(protocol, sample_number)
 
         ### Settings
         LIQUID_WASTE_WELL = 'A5'
@@ -310,6 +121,7 @@ def run(protocol: protocol_api.ProtocolContext):
         ELUTION_MIX_REPS = 20
         ELUTANT_SEP_TIME = 1
         ELUTION_DEAD_VOL = 2
+
 
         ### Protocol set up
         # Total columns across source plates
@@ -345,90 +157,54 @@ def run(protocol: protocol_api.ProtocolContext):
             mix_vol = bead_volume / 2
         total_vol = bead_volume + sample_volume + DEAD_TOTAL_VOL
 
-        # Get columns with wells
-        columns_with_wells = well_manager.get_columns_with_wells()
 
         ### Steps
         # Mix beads and parts
-        protocol.comment("Mixing beads and parts")
-        for col in columns_with_wells:
-            tip_manager.get_multi_tip(start_col=col)
-            source_well = well_manager.get_source_well(col, src1_plate, src2_plate if sample_number > 48 else None)
-            mag_well = well_manager.get_mag_well(col, mag_plate)
-            
-            # Aspirate beads
+        for target in range(int(len(samples))):
+
+            # Aspirate beads from bead container on 8
+            pipette.pick_up_tip()
             pipette.aspirate(bead_volume, beads)
             protocol.max_speeds.update(SLOW_HEAD_SPEEDS)
 
-            # Transfer and mix on mag plate
-            pipette.mix(IMMOBILISE_MIX_REPS, mix_vol, source_well)
-            pipette.transfer(total_vol, source_well, mag_well, new_tip='never', blow_out=True, blowout_location='destination well')
+            # Transfer and mix on mix_plate
+            # pipette.dispense(total_vol, mixing[target][0])
+            pipette.mix(IMMOBILISE_MIX_REPS, mix_vol, samples[target][0])
+            # pipette.blow_out()
+
+            # Aspirate samples from left half of mag plate
+            # pipette.aspirate(sample_volume + DEAD_TOTAL_VOL, samples[target][0])    # samples[target][0] returns top well of column - allows for multichannel operations
+
+            # Transfer beads+samples back to magdeck
+            pipette.transfer(total_vol, samples[target], mag_cols[target], new_tip = 'never', blow_out=True, blowout_location='destination well')
 
             # Dispose of tip
             protocol.max_speeds.update(DEFAULT_HEAD_SPEEDS)
-            tip_manager.return_tips(col)
+            pipette.drop_tip()
 
         # Initial mix and incubation sample
-        protocol.comment("Initial incubation")
-        transfer_time = calculate_transfer_time_duration(len(columns_with_wells))
-        adjusted_delay = max(0, incubation_time - transfer_time)
-        if adjusted_delay > 0:
-            protocol.delay(minutes=adjusted_delay)
+        protocol.delay(minutes=incubation_time)
 
         # Engagae MagDeck and incubate
-        protocol.comment("Engaging magnet")
         MAGDECK.engage(height=MAGDECK_HEIGHT)
-        transfer_time = calculate_transfer_time_duration(len(columns_with_wells))
-        adjusted_delay = max(0, settling_time - transfer_time)
-        if adjusted_delay > 0:
-            protocol.delay(minutes=adjusted_delay)
+        protocol.delay(minutes=settling_time)
 
         # Remove supernatant from magnetic beads
-        protocol.comment("Removing supernatant")
-        for col in columns_with_wells:
-            tip_manager.get_multi_tip(start_col=col)
-            mag_well = well_manager.get_mag_well(col, mag_plate)
-            
-            pipette.aspirate(total_vol, mag_well)
-            pipette.move_to(reagent_container['A1'].top(z=70))
-            pipette.blow_out(protocol.fixed_trash["A1"].top())
-            tip_manager.return_tips(col)
+        for target in mag_cols:
+            pipette.transfer(total_vol, target, liquid_waste)
 
         # Wash beads twice with 70% ethanol
         air_vol = pipette.max_volume * AIR_VOL_COEFF
         for cycle in range(2):
-            protocol.comment(f"Ethanol wash {cycle + 1}")
-            
-            # Add ethanol
-            for col in columns_with_wells:
-                tip_manager.get_multi_tip(start_col=col)
-                mag_well = well_manager.get_mag_well(col, mag_plate)
-                
-                pipette.transfer(ETHANOL_VOL, ethanol, mag_well, trash=False, air_gap=air_vol)
-                tip_manager.return_tips(col)
-            
-            # Calculate dynamic delay based on transfer time
-            transfer_time = calculate_transfer_time_duration(len(columns_with_wells))
-            adjusted_delay = max(0, WASH_TIME - transfer_time)
-            if adjusted_delay > 0:
-                protocol.delay(minutes=adjusted_delay)
-            
-            # Remove ethanol
-            for col in columns_with_wells:
-                tip_manager.get_multi_tip(start_col=col)
-                mag_well = well_manager.get_mag_well(col, mag_plate)
-                
-                pipette.aspirate(ETHANOL_VOL + ETHANOL_DEAD_VOL, mag_well)
-                pipette.move_to(reagent_container['A1'].top(z=70))
-                pipette.blow_out(protocol.fixed_trash["A1"].top())
-                tip_manager.return_tips(col)
-        
+            # help(pipette.transfer)
+            print(pipette._starting_tip, '\n\n')
+            for target in mag_cols:
+                pipette.transfer(ETHANOL_VOL, ethanol, target, trash = False, air_gap=air_vol)      # trash = False command returns tip to rack
+            protocol.delay(minutes=WASH_TIME)
+            for target in mag_cols:
+                pipette.transfer(ETHANOL_VOL + ETHANOL_DEAD_VOL, target, liquid_waste, air_gap=air_vol)
         # Dry at room temperature
-        protocol.comment("Drying time")
-        transfer_time = calculate_transfer_time_duration(len(columns_with_wells))
-        adjusted_delay = max(0, drying_time - transfer_time)
-        if adjusted_delay > 0:
-            protocol.delay(minutes=adjusted_delay)
+        protocol.delay(minutes=drying_time)
 
         # Disengage MagDeck
         MAGDECK.disengage()
@@ -438,41 +214,25 @@ def run(protocol: protocol_api.ProtocolContext):
             mix_vol = pipette.max_volume
         else:
             mix_vol = elution_buffer_volume / 2
+        # return
 
-        protocol.comment("Adding elution buffer")
-        for col in columns_with_wells:
-            tip_manager.get_multi_tip(start_col=col)
-            mag_well = well_manager.get_mag_well(col, mag_plate)
-            
-            pipette.transfer(elution_buffer_volume, elution_buffer, mag_well, mix_after=(ELUTION_MIX_REPS, mix_vol))
-            tip_manager.return_tips(col)
+        for target in mag_cols:
+            pipette.transfer(elution_buffer_volume, elution_buffer, target, mix_after=(ELUTION_MIX_REPS, mix_vol))
 
         # Incubate at room temperature
-        protocol.comment("Elution incubation")
-        transfer_time = calculate_transfer_time_duration(len(columns_with_wells))
-        adjusted_delay = max(0, elution_time - transfer_time)
-        if adjusted_delay > 0:
-            protocol.delay(minutes=adjusted_delay)
+        protocol.delay(minutes=elution_time)
 
         # Engage MagDeck (remains engaged for DNA elution)
-        protocol.comment("Engaging magnet for elution")
         MAGDECK.engage(height=MAGDECK_HEIGHT)
         protocol.delay(minutes=ELUTANT_SEP_TIME)
 
         # Transfer purified parts to a new well
-        protocol.comment("Transferring purified parts")
-        for col in columns_with_wells:
-            tip_manager.get_multi_tip(start_col=col)
-            mag_well = well_manager.get_mag_well(col, mag_plate)
-            final_well = well_manager.get_final_well(col, dest_plate)
-            
-            pipette.transfer(elution_buffer_volume - ELUTION_DEAD_VOL, mag_well, final_well, blow_out=False)
-            tip_manager.return_tips(col)
+        for target, dest in zip(mag_cols, output):
+            pipette.transfer(elution_buffer_volume - ELUTION_DEAD_VOL, target,
+                             dest, blow_out=False)
 
         # Disengage MagDeck
         MAGDECK.disengage()
-        
-        protocol.comment("Protocol complete")
 
     # for i in range(96*2):
     #     print(i)
