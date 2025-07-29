@@ -867,14 +867,6 @@ def _generate_magbead_scripts(magbead_sample_number: int,
         template_content
     )
     
-    # Extract filename identifier and update protocolName
-    filename_id = _extract_filename_identifier(magbead_script_name)
-    template_content = re.sub(
-        r"'protocolName': '[^']*',",
-        f"'protocolName': 'DNABOT: {filename_id} Purification v2.10',",
-        template_content
-    )
-    
     # Write the modified template to the output file
     with open(magbead_script_path, 'w') as f:
         f.write(template_content)
@@ -1784,34 +1776,6 @@ def generate_ot2_script(ot2_script_path, template_path, **kwargs):
         raise
 
 
-def _extract_filename_identifier(script_path: str) -> str:
-    """
-    Extract the file name identifier from a script path.
-    
-    Args:
-        script_path: Path to the script file (e.g., 'A1a_clip_ot2_APIv2.8.py')
-        
-    Returns:
-        File name identifier (e.g., 'A1a' or 'D3')
-    """
-    # Get just the filename without path
-    filename = os.path.basename(script_path)
-    
-    # Remove the .py extension
-    if filename.endswith('.py'):
-        filename = filename[:-3]
-    
-    # Extract the identifier (stage letter + number + optional letter)
-    # Examples: A1a, B2, C3, D1a, etc.
-    import re
-    match = re.match(r'^([A-Z]\d+[a-z]?|[A-Z]\d+)', filename)
-    if match:
-        return match.group(1)
-    else:
-        # Fallback: return the first part before underscore
-        return filename.split('_')[0]
-
-
 def _generate_clip_script_embedded(ot2_script_path: str, template_path: str, clips_dict: dict, all_default_conc: bool = False, thermocycler_gen: str = 'gen2') -> None:
     """Generate CLIP script using embedded parameterisation.
     Embeds the new per-well dictionary structure directly.
@@ -1849,20 +1813,6 @@ def _generate_clip_script_embedded(ot2_script_path: str, template_path: str, cli
             modified_protocol = modified_protocol.replace(
                 "thermocycler_gen = 'gen2'",
                 f"thermocycler_gen = '{thermocycler_gen}'"
-            )
-        
-        # Extract filename identifier and update protocolName
-        filename_id = _extract_filename_identifier(ot2_script_path)
-        # Handle both regular and thermocycler CLIP protocol names
-        if 'TC' in template_path:
-            modified_protocol = modified_protocol.replace(
-                "'protocolName': 'DNABOT: CLIP Assembly with Thermocycler v2.10'",
-                f"'protocolName': 'DNABOT: {filename_id} CLIP Assembly with Thermocycler v2.10'"
-            )
-        else:
-            modified_protocol = modified_protocol.replace(
-                "'protocolName': 'DNABOT: CLIP Assembly v2.10'",
-                f"'protocolName': 'DNABOT: {filename_id} CLIP Assembly v2.10'"
             )
         
         # Write the modified protocol
@@ -1966,20 +1916,6 @@ def _generate_assembly_script_embedded(ot2_script_path: str, template_path: str,
                 f"thermocycler_gen = '{thermocycler_gen}'"
             )
         
-        # Extract filename identifier and update protocolName
-        filename_id = _extract_filename_identifier(ot2_script_path)
-        # Handle both regular and thermocycler assembly protocol names
-        if 'TC' in template_path:
-            modified_protocol = modified_protocol.replace(
-                "'protocolName': 'DNABOT: Final Assembly with Thermocycler v2.10'",
-                f"'protocolName': 'DNABOT: {filename_id} Final Assembly with Thermocycler v2.10'"
-            )
-        else:
-            modified_protocol = modified_protocol.replace(
-                "'protocolName': 'DNABOT: Final Assembly v2.10'",
-                f"'protocolName': 'DNABOT: {filename_id} Final Assembly v2.10'"
-            )
-        
         # Write the modified protocol
         with open(ot2_script_path, 'w') as f:
             f.write(modified_protocol)
@@ -2007,7 +1943,6 @@ def _generate_transformation_script_embedded(ot2_script_path: str, template_path
         ot2_script_path (str): Path where the OT-2 script will be written
         template_path (str): Path to the template file
         transformation_dict (Dict[str, Any]): Transformation data dictionary
-        thermocycler_gen (str): Thermocycler generation ('gen1' or 'gen2')
         
     Raises:
         FileNotFoundError: If template file is not found
@@ -2079,20 +2014,6 @@ def _generate_transformation_script_embedded(ot2_script_path: str, template_path
             modified_protocol = modified_protocol.replace(
                 "thermocycler_gen = 'gen2'",
                 f"thermocycler_gen = '{thermocycler_gen}'"
-            )
-        
-        # Extract filename identifier and update protocolName
-        filename_id = _extract_filename_identifier(ot2_script_path)
-        # Handle both regular and thermocycler transformation protocol names
-        if 'TC' in template_path:
-            modified_protocol = modified_protocol.replace(
-                "'protocolName': 'DNABOT: Transformation with Thermocycler v2.10'",
-                f"'protocolName': 'DNABOT: {filename_id} Transformation with Thermocycler v2.10'"
-            )
-        else:
-            modified_protocol = modified_protocol.replace(
-                "'protocolName': 'DNABOT: Transformation v2.10'",
-                f"'protocolName': 'DNABOT: {filename_id} Transformation v2.10'"
             )
         
         # Write the modified protocol
@@ -2843,22 +2764,8 @@ def validate_final_assembly_reconstruction(assembly_dict: Dict[int, Dict[str, Li
                                    sources_dict: Dict[str, Tuple[str, ...]],
                                    sample_wells: List[Tuple[int, str]] = None) -> None:
     """
-    Validate that assemblies can correctly reconstruct the original constructs.
-    
-    This function:
-    1. Takes sample wells from across all assemblies
-    2. Extracts clip information for each sample construct
-    3. Reconstructs the full construct sequence by unifying matching linkers
-    4. Compares the reconstructed sequence with the original construct definition
-    
-    Args:
-        assembly_dict: Dictionary mapping plate numbers to {well: [clip_wells, clip_plates]}
-        clips_dict_list: List of clip dictionaries, each representing a clip plate
-        constructs_dict: Dictionary mapping (order, plate, well) to DataFrame with clip reactions
-        sample_wells: List of (plate, well) tuples to validate. If None, selects 3 random wells.
-        
-    Raises:
-        ValueError: If any construct cannot be correctly reconstructed
+    Validate that final assemblies can correctly reconstruct the original constructs.
+    For each sample well, print only: plate/well, (clip well, plate) pairs, clip details, and sequences with match status.
     """
     import random
 
@@ -2893,16 +2800,9 @@ def validate_final_assembly_reconstruction(assembly_dict: Dict[int, Dict[str, Li
         print(f"\nPlate {plate_num}, Well {well}:")
         if plate_num not in assembly_dict or well not in assembly_dict[plate_num]:
             raise ValueError(f"Construct at Plate {plate_num}, Well {well} not found in assembly dict")
-            
-        if well not in assembly_dict[plate_num]:
-            print(f"ERROR: Well {well} not found in assembly plate {plate_num}")
-            print(f"Available wells in plate {plate_num}: {list(assembly_dict[plate_num].keys())}")
-            raise ValueError(f"Construct at Plate {plate_num}, Well {well} not found in assembly dict")
-        
         clip_info = assembly_dict[plate_num][well]
         if not clip_info or len(clip_info) != 2:
             raise ValueError(f"Invalid clip info format: {clip_info}")
-            
         clip_wells, clip_plates = clip_info
         clip_components = collect_clip_components(clip_wells, clip_plates, clips_dict_list, well_to_component)
         print("  Clips:")
