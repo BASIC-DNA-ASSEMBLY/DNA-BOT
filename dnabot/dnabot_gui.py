@@ -91,8 +91,8 @@ class DnabotApp:
         soc_w.grid(row=4, column=1, sticky=tk.W)
         soc_w.config(font=DnabotApp.app_font)
         self.thermocycler_gen=tk.StringVar(master)
-        self.thermocycler_gen.set("gen2")
-        tc_w=tk.OptionMenu(master, self.thermocycler_gen, *tuple(['gen1', 'gen2']))
+        self.thermocycler_gen.set("GEN2")
+        tc_w=tk.OptionMenu(master, self.thermocycler_gen, *tuple(['GEN1', 'GEN2']))
         tc_w.grid(row=5, column=1, sticky=tk.W)
         tc_w.config(font=DnabotApp.app_font)
 

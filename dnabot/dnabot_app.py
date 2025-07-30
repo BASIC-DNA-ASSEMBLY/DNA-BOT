@@ -61,7 +61,7 @@ class ProtocolConfig:
     ASSEMBLY_TIPS_PER_BOX: int = 96
     
     # Thermocycler configuration
-    THERMOCYCLER_GENERATION: str = 'gen2'  # Default to Gen2 thermocycler
+    THERMOCYCLER_GENERATION: str = 'GEN2'  # Default to GEN2 thermocycler
 
 
 @dataclass
@@ -266,8 +266,8 @@ def __cli() -> argparse.Namespace:
                               help='Keep original CSV layout including empty rows. Default: True',
                               type=str, default='True', choices=['True', 'False'])
     parser_nogui.add_argument('--thermocycler_gen',
-                              help='Thermocycler generation (gen1 or gen2). Default: gen2',
-                              type=str, default='gen2', choices=['gen1', 'gen2'])
+                                  help='Thermocycler generation (GEN1 or GEN2). Default: GEN2',
+    type=str, default='GEN2', choices=['GEN1', 'GEN2'])
     
     parser.set_defaults(nogui=False)
     parser_nogui.set_defaults(nogui=True)
@@ -285,7 +285,7 @@ def __info_from_gui() -> Dict[str, Union[str, List[str], int, bool]]:
         'sources_paths': None,
         'etoh_well': None,
         'soc_column': None,
-        'thermocycler_gen': 'gen2',  # Default to gen2
+        'thermocycler_gen': 'GEN2',  # Default to GEN2
         'keep_layout': True  # Default to True
     }
 
@@ -727,7 +727,7 @@ def _generate_ot2_scripts(data_structures: Dict[str, Any],
     print("\nGenerating CLIP scripts...")
     for clip_plate, sub_clip_dict in enumerate(data_structures['clips_dict_list']):
         # print(f"  Clip plate {clip_plate + 1}...")
-        _generate_clip_scripts(sub_clip_dict, clip_plate, paths, data_structures.get('all_default_conc', False), user_config.get('thermocycler_gen', 'gen2'))
+        _generate_clip_scripts(sub_clip_dict, clip_plate, paths, data_structures.get('all_default_conc', False), user_config.get('thermocycler_gen', 'GEN2'))
 
     # Generate magbead purification scripts
     print("\nGenerating magbead purification scripts...")
@@ -739,14 +739,14 @@ def _generate_ot2_scripts(data_structures: Dict[str, Any],
     print("\nGenerating final assembly scripts...")
     for plate_number, final_assembly_dict in data_structures['final_assembly_dict_list'].items():
         # print(f"  Assembly plate {plate_number}...")
-        _generate_assembly_scripts(final_assembly_dict, plate_number, paths, user_config.get('thermocycler_gen', 'gen2'))
+        _generate_assembly_scripts(final_assembly_dict, plate_number, paths, user_config.get('thermocycler_gen', 'GEN2'))
     
     # Generate transformation scripts
     print("\nGenerating transformation scripts...")
     for plate_number, final_assembly_dict in data_structures['final_assembly_dict_list'].items():
         # print(f"  Transformation plate {plate_number}...")
         transformation_dict = generate_transformation_dict(final_assembly_dict, plate_number)
-        _generate_transformation_scripts(transformation_dict, plate_number, paths, user_config.get('thermocycler_gen', 'gen2'))
+        _generate_transformation_scripts(transformation_dict, plate_number, paths, user_config.get('thermocycler_gen', 'GEN2'))
 
 
 # def _generate_flex_scripts(data_structures: Dict[str, Any], 
@@ -781,7 +781,7 @@ def _generate_ot2_scripts(data_structures: Dict[str, Any],
 #         _generate_flex_transformation_scripts(transformation_dict, plate_number, paths, user_config.get('thermocycler_gen', 'gen2'))
 
 
-def _generate_clip_scripts(sub_clip_dict: dict, clip_plate: int, paths: dict, all_default_conc: bool = False, thermocycler_gen: str = 'gen2') -> None:
+def _generate_clip_scripts(sub_clip_dict: dict, clip_plate: int, paths: dict, all_default_conc: bool = False, thermocycler_gen: str = 'GEN2') -> None:
     """Generate CLIP reaction scripts for a single plate using embedded parameterisation.
     If there are more than 48 clips, split into two scripts (a and b) for the same plate number.
     """
@@ -885,7 +885,7 @@ def _generate_magbead_scripts(magbead_sample_number: int,
 def _generate_assembly_scripts(final_assembly_dict: Dict[str, List], 
                               plate_number: int, 
                               paths: Dict[str, str],
-                              thermocycler_gen: str = 'gen2') -> None:
+                              thermocycler_gen: str = 'GEN2') -> None:
     """Generate final assembly scripts using embedded parameterisation."""
     template_dir = paths['template_dir']
     final_assembly_tipracks = calculate_final_assembly_tipracks(final_assembly_dict)
@@ -953,7 +953,7 @@ def generate_transformation_dict(final_assembly_dict: Dict[str, List],
 def _generate_transformation_scripts(transformation_dict: Dict[str, Any], 
                                    script_index: int, 
                                    paths: Dict[str, str],
-                                   thermocycler_gen: str = 'gen2') -> None:
+                                   thermocycler_gen: str = 'GEN2') -> None:
     """Generate transformation scripts using embedded parameterisation."""
     template_dir = paths['template_dir']
     
@@ -1151,7 +1151,7 @@ def _write_well_output_info(user_config: Dict[str, Union[str, List[str], int]],
     with open(paths['construct_base'] + '_' + FILE_CONFIG.OUTPUT_FILES['INFO']['WELL_OUTPUT'], 'w') as f:
         f.write(f'Magbead ethanol well: {user_config["etoh_well"]}\n')
         f.write(f'SOC column: {user_config["soc_column"]}\n')
-        f.write(f'Thermocycler generation: {user_config.get("thermocycler_gen", "gen2")}')
+        f.write(f'Thermocycler generation: {user_config.get("thermocycler_gen", "GEN2")}')
 
 
 def _write_assembly_to_clip_mapping(assembly_to_clip_mapping: Dict[int, List[int]], 
@@ -1812,7 +1812,7 @@ def _extract_filename_identifier(script_path: str) -> str:
         return filename.split('_')[0]
 
 
-def _generate_clip_script_embedded(ot2_script_path: str, template_path: str, clips_dict: dict, all_default_conc: bool = False, thermocycler_gen: str = 'gen2') -> None:
+def _generate_clip_script_embedded(ot2_script_path: str, template_path: str, clips_dict: dict, all_default_conc: bool = False, thermocycler_gen: str = 'GEN2') -> None:
     """Generate CLIP script using embedded parameterisation.
     Embeds the new per-well dictionary structure directly.
     """
@@ -1852,7 +1852,7 @@ def _generate_clip_script_embedded(ot2_script_path: str, template_path: str, cli
         # Replace thermocycler generation setting (only for thermocycler templates)
         if 'TC' in template_path:
             modified_protocol = modified_protocol.replace(
-                "thermocycler_gen = 'gen2'",
+                "thermocycler_gen = 'GEN2'",
                 f"thermocycler_gen = '{thermocycler_gen}'"
             )
         
@@ -1885,7 +1885,7 @@ def _generate_clip_script_embedded(ot2_script_path: str, template_path: str, cli
 
 
 def _generate_assembly_script_embedded(ot2_script_path: str, template_path: str, 
-                                             final_assembly_dict: Dict[str, List], tiprack_num: int, thermocycler_gen: str = 'gen2') -> None:
+                                             final_assembly_dict: Dict[str, List], tiprack_num: int, thermocycler_gen: str = 'GEN2') -> None:
     """Generate assembly script using embedded parameterisation.
     
     This function replaces the JSON file loading code in the template with embedded JSON data,
@@ -1967,7 +1967,7 @@ def _generate_assembly_script_embedded(ot2_script_path: str, template_path: str,
         # Replace thermocycler generation setting (only for thermocycler templates)
         if 'TC' in template_path:
             modified_protocol = modified_protocol.replace(
-                "thermocycler_gen = 'gen2'",
+                "thermocycler_gen = 'GEN2'",
                 f"thermocycler_gen = '{thermocycler_gen}'"
             )
         
@@ -2002,7 +2002,7 @@ def _generate_assembly_script_embedded(ot2_script_path: str, template_path: str,
 
 
 def _generate_transformation_script_embedded(ot2_script_path: str, template_path: str, 
-                                           transformation_dict: Dict[str, Any], thermocycler_gen: str = 'gen2') -> None:
+                                           transformation_dict: Dict[str, Any], thermocycler_gen: str = 'GEN2') -> None:
     """Generate transformation script with embedded parameterisation.
     
     This function replaces the JSON file loading code in the template with embedded JSON data,
@@ -2012,7 +2012,7 @@ def _generate_transformation_script_embedded(ot2_script_path: str, template_path
         ot2_script_path (str): Path where the OT-2 script will be written
         template_path (str): Path to the template file
         transformation_dict (Dict[str, Any]): Transformation data dictionary
-        thermocycler_gen (str): Thermocycler generation ('gen1' or 'gen2')
+        thermocycler_gen (str): Thermocycler generation ('GEN1' or 'GEN2')
         
     Raises:
         FileNotFoundError: If template file is not found
@@ -2082,7 +2082,7 @@ def _generate_transformation_script_embedded(ot2_script_path: str, template_path
         # Replace thermocycler generation setting (only for thermocycler templates)
         if 'TC' in template_path:
             modified_protocol = modified_protocol.replace(
-                "thermocycler_gen = 'gen2'",
+                "thermocycler_gen = 'GEN2'",
                 f"thermocycler_gen = '{thermocycler_gen}'"
             )
         

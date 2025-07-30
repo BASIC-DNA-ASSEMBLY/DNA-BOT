@@ -20,7 +20,7 @@ all_default_conc = False  # This will be replaced with the actual value
 
 # Thermocycler generation setting
 # This will be replaced by the parser with embedded thermocycler generation
-thermocycler_gen = 'gen2'
+thermocycler_gen = 'GEN2'
 
 # opentrons_simulate.exe dnabot\template_ot2_scripts\clip_template_TC_APIv2.8.py --custom-labware-path 'labware\Labware definitions'
 
@@ -146,9 +146,9 @@ def run(protocol: protocol_api.ProtocolContext):
         exit()
 
     # Thermocycler Module
-    if thermocycler_gen == 'gen1':
+    if thermocycler_gen == 'GEN1':
         tc_mod = protocol.load_module('Thermocycler Module')
-    else:  # gen2
+    else:  # GEN2
         tc_mod = protocol.load_module('thermocyclerModuleV2')
         
     # Destination Plates

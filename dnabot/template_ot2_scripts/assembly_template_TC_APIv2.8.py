@@ -20,7 +20,7 @@ with open('assembly_data.json') as f:
 
 # Thermocycler generation setting
 # This will be replaced by the parser with embedded thermocycler generation
-thermocycler_gen = 'gen2'
+thermocycler_gen = 'GEN2'
 
 # It is possible to run 88 assemblies with this new module. The heat block module is removed. 
 # Assembly reactions is set up on thermocycler module.
@@ -172,9 +172,9 @@ def run(protocol: protocol_api.ProtocolContext):
             # tiprack_num += 1                    # + 1 for one index ############################### I think(?)
 
             # Thermocycler Module
-            if thermocycler_gen == 'gen1':
+            if thermocycler_gen == 'GEN1':
                 tc_mod = protocol.load_module('Thermocycler Module')
-            else:  # gen2
+            else:  # GEN2
                 tc_mod = protocol.load_module('thermocyclerModuleV2')
 
             destination_plate = tc_mod.load_labware(DESTINATION_PLATE_TYPE)

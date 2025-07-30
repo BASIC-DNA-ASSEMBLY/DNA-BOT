@@ -59,9 +59,9 @@ def run(protocol: protocol_api.ProtocolContext):
     tube_rack = protocol.load_labware('opentrons_24_tuberack_eppendorf_1.5ml_safelock_snapcap', 4)
     
     # Load thermocycler module
-    if thermocycler_gen == 'gen1':
+    if thermocycler_gen == 'GEN1':
         thermocycler = protocol.load_module('thermocycler', 7)
-    else:  # gen2
+    else:  # GEN2
         thermocycler = protocol.load_module('thermocyclerModuleV2', 7)
     TC_plate = thermocycler.load_labware('biorad_96_wellplate_200ul_pcr')
     
