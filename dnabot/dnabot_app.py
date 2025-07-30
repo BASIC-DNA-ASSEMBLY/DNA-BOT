@@ -1835,13 +1835,18 @@ def _generate_clip_script_embedded(ot2_script_path: str, template_path: str, cli
             raise FileNotFoundError(f"Template file not found: {template_path}")
         with open(template_path, 'r') as f:
             template_content = f.read()
+        
         # Convert clips_dict to JSON string
         converted_clips_dict = convert_numpy_types(clips_dict)
         clips_json = json.dumps(converted_clips_dict, indent=4)
-        # Replace the JSON file loading code with embedded JSON data
+        
+        # Create embedded data with clips_dict and all_default_conc
+        embedded_data = f"clips_dict = {clips_json}\nall_default_conc = {str(all_default_conc)}"
+        
+        # Replace the JSON file loading code with embedded data
         modified_protocol = template_content.replace(
-            "with open('clips_data.json') as f:\n    clips_dict = json.load(f)",
-            f"clips_dict = {clips_json}"
+            "with open('clips_data.json') as f:\n    clips_dict = json.load(f)\n\n# all_default_conc variable will be embedded by the parser\nall_default_conc = False  # This will be replaced with the actual value",
+            embedded_data
         )
         
         # Replace thermocycler generation setting (only for thermocycler templates)

@@ -7,16 +7,194 @@ from typing import List
 #metadata
 metadata = {
      'apiLevel': '2.10',
-     'protocolName': 'DNABOT: CLIP Assembly with Thermocycler v2.10',
+     'protocolName': 'DNABOT: A1b CLIP Assembly with Thermocycler v2.10',
      'description': 'Implements linker ligation reactions using an opentrons OT-2, including the thermocycler module.'}
 
 # Load CLIP data from JSON file
 # This will be replaced by the parser with embedded JSON data
-with open('clips_data.json') as f:
-    clips_dict = json.load(f)
-
-# all_default_conc variable will be embedded by the parser
-all_default_conc = False  # This will be replaced with the actual value
+clips_dict = {
+    "A7": {
+        "prefix_linker": "LMP-P",
+        "prefix_source_well": "B12",
+        "prefix_source_plate": "1",
+        "part": "sucB_1",
+        "part_source_well": "C3",
+        "part_source_plate": "1",
+        "suffix_linker": "L1-S",
+        "suffix_source_well": "G12",
+        "suffix_source_plate": "1",
+        "Clip_Well": "A7",
+        "plate": 1,
+        "part_vol": 1.0,
+        "water_vol": 0.0
+    },
+    "B7": {
+        "prefix_linker": "L1-P",
+        "prefix_source_well": "F12",
+        "prefix_source_plate": "1",
+        "part": "alaC_1",
+        "part_source_well": "B2",
+        "part_source_plate": "1",
+        "suffix_linker": "LMS-S",
+        "suffix_source_well": "E12",
+        "suffix_source_plate": "1",
+        "Clip_Well": "B7",
+        "plate": 1,
+        "part_vol": 1.0,
+        "water_vol": 0.0
+    },
+    "C7": {
+        "prefix_linker": "LMP-P",
+        "prefix_source_well": "B12",
+        "prefix_source_plate": "1",
+        "part": "thiS_1",
+        "part_source_well": "C5",
+        "part_source_plate": "1",
+        "suffix_linker": "L1-S",
+        "suffix_source_well": "G12",
+        "suffix_source_plate": "1",
+        "Clip_Well": "C7",
+        "plate": 1,
+        "part_vol": 1.0,
+        "water_vol": 0.0
+    },
+    "D7": {
+        "prefix_linker": "L1-P",
+        "prefix_source_well": "F12",
+        "prefix_source_plate": "1",
+        "part": "serC_1",
+        "part_source_well": "E4",
+        "part_source_plate": "1",
+        "suffix_linker": "LMS-S",
+        "suffix_source_well": "E12",
+        "suffix_source_plate": "1",
+        "Clip_Well": "D7",
+        "plate": 1,
+        "part_vol": 1.0,
+        "water_vol": 0.0
+    },
+    "E7": {
+        "prefix_linker": "LMP-P",
+        "prefix_source_well": "B12",
+        "prefix_source_plate": "1",
+        "part": "alr_1",
+        "part_source_well": "C2",
+        "part_source_plate": "1",
+        "suffix_linker": "L1-S",
+        "suffix_source_well": "G12",
+        "suffix_source_plate": "1",
+        "Clip_Well": "E7",
+        "plate": 1,
+        "part_vol": 1.0,
+        "water_vol": 0.0
+    },
+    "F7": {
+        "prefix_linker": "L1-P",
+        "prefix_source_well": "F12",
+        "prefix_source_plate": "1",
+        "part": "dadX_1",
+        "part_source_well": "G3",
+        "part_source_plate": "1",
+        "suffix_linker": "LMS-S",
+        "suffix_source_well": "E12",
+        "suffix_source_plate": "1",
+        "Clip_Well": "F7",
+        "plate": 1,
+        "part_vol": 1.0,
+        "water_vol": 0.0
+    },
+    "G7": {
+        "prefix_linker": "LMP-P",
+        "prefix_source_well": "B12",
+        "prefix_source_plate": "1",
+        "part": "tdcB_2",
+        "part_source_well": "F6",
+        "part_source_plate": "1",
+        "suffix_linker": "L1-S",
+        "suffix_source_well": "G12",
+        "suffix_source_plate": "1",
+        "Clip_Well": "G7",
+        "plate": 1,
+        "part_vol": 1.0,
+        "water_vol": 0.0
+    },
+    "H7": {
+        "prefix_linker": "L1-P",
+        "prefix_source_well": "F12",
+        "prefix_source_plate": "1",
+        "part": "gadB_1",
+        "part_source_well": "G4",
+        "part_source_plate": "1",
+        "suffix_linker": "LMS-S",
+        "suffix_source_well": "E12",
+        "suffix_source_plate": "1",
+        "Clip_Well": "H7",
+        "plate": 1,
+        "part_vol": 1.0,
+        "water_vol": 0.0
+    },
+    "A8": {
+        "prefix_linker": "L1-P",
+        "prefix_source_well": "F12",
+        "prefix_source_plate": "1",
+        "part": "ilvA_1",
+        "part_source_well": "A8",
+        "part_source_plate": "1",
+        "suffix_linker": "LMS-S",
+        "suffix_source_well": "E12",
+        "suffix_source_plate": "1",
+        "Clip_Well": "A8",
+        "plate": 1,
+        "part_vol": 1.0,
+        "water_vol": 0.0
+    },
+    "B8": {
+        "prefix_linker": "LMP-P",
+        "prefix_source_well": "B12",
+        "prefix_source_plate": "1",
+        "part": "ilvH_1",
+        "part_source_well": "A2",
+        "part_source_plate": "1",
+        "suffix_linker": "L1-S",
+        "suffix_source_well": "G12",
+        "suffix_source_plate": "1",
+        "Clip_Well": "B8",
+        "plate": 1,
+        "part_vol": 1.0,
+        "water_vol": 0.0
+    },
+    "C8": {
+        "prefix_linker": "LMP-P",
+        "prefix_source_well": "B12",
+        "prefix_source_plate": "1",
+        "part": "menA_1",
+        "part_source_well": "G8",
+        "part_source_plate": "1",
+        "suffix_linker": "L1-S",
+        "suffix_source_well": "G12",
+        "suffix_source_plate": "1",
+        "Clip_Well": "C8",
+        "plate": 1,
+        "part_vol": 1.0,
+        "water_vol": 0.0
+    },
+    "D8": {
+        "prefix_linker": "L1-P",
+        "prefix_source_well": "F12",
+        "prefix_source_plate": "1",
+        "part": "menA_1",
+        "part_source_well": "G8",
+        "part_source_plate": "1",
+        "suffix_linker": "LMS-S",
+        "suffix_source_well": "E12",
+        "suffix_source_plate": "1",
+        "Clip_Well": "D8",
+        "plate": 1,
+        "part_vol": 1.0,
+        "water_vol": 0.0
+    }
+}
+all_default_conc = True
 
 # Thermocycler generation setting
 # This will be replaced by the parser with embedded thermocycler generation

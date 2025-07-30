@@ -5,17 +5,40 @@ from typing import List
 
 # metadata
 metadata = {
-'protocolName': 'DNABOT: Final Assembly v2.10',
+'protocolName': 'DNABOT: C3 Final Assembly v2.10',
 'description': 'Final assembly protocol for DNA-BOT using Opentrons OT-2',
 'apiLevel': '2.10'
 }
 
 # Load assembly data from JSON file
 # This will be replaced by the parser with embedded JSON data
-with open('assembly_data.json') as f:
-    assembly_data = json.load(f)
-    final_assembly_dict = assembly_data['final_assembly_dict']
-    tiprack_num = assembly_data['tiprack_num']
+final_assembly_dict = {
+    "A1": [["A1", "H1", "A2"], [2, 2, 2]],
+    "B1": [["A1", "B2", "C2"], [2, 2, 2]],
+    "C1": [["A1", "D2", "E2"], [2, 2, 2]],
+    "D1": [["A1", "F2", "G2"], [2, 2, 2]],
+    "E1": [["A1", "H2", "A3"], [2, 2, 2]],
+    "F1": [["A1", "B3", "C3"], [2, 2, 2]],
+    "G1": [["A1", "D3", "E3"], [2, 2, 2]],
+    "H1": [["A1", "F3", "G3"], [2, 2, 2]],
+    "A2": [["A1", "H3", "A4"], [2, 2, 2]],
+    "B2": [["A1", "B4", "C4"], [2, 2, 2]],
+    "C2": [["A1", "D4", "E4"], [2, 2, 2]],
+    "D2": [["A1", "F4", "G4"], [2, 2, 2]],
+    "E2": [["A1", "H4", "A5"], [2, 2, 2]],
+    "F2": [["B1", "H2", "A3"], [2, 2, 2]],
+    "G2": [["B1", "B5", "C5"], [2, 2, 2]],
+    "H2": [["B1", "D5", "E5"], [2, 2, 2]],
+    "A3": [["B1", "D3", "F5"], [2, 2, 2]],
+    "B3": [["B1", "G5", "H5"], [2, 2, 2]],
+    "C3": [["B1", "A6", "B6"], [2, 2, 2]],
+    "D3": [["B1", "B4", "C6"], [2, 2, 2]],
+    "E3": [["B1", "B4", "D6"], [2, 2, 2]],
+    "F3": [["B1", "E6", "F6"], [2, 2, 2]],
+    "G3": [["B1", "G6", "H6"], [2, 2, 2]],
+    "H3": [["B1", "A7", "A2"], [2, 2, 2]]
+}
+tiprack_num = 1
 
 # protocol run function. the part after the colon lets your editor know
 
