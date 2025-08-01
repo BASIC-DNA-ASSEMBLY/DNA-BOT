@@ -2,8 +2,6 @@
 """
 DNA-BOT: DNA assembly using BASIC on OpenTrons
 
-@author: mh2210, ljh119
-
 TO DO
     - add in new transformation protocol
     - ammend meta information
