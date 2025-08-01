@@ -253,7 +253,8 @@ def __cli() -> argparse.Namespace:
     parser_nogui.add_argument('--construct_path', help='Construct CSV file.', required=True)
     parser_nogui.add_argument('--source_paths', help='Source CSV files.', nargs='+', required=True)
     parser_nogui.add_argument('--etoh_well', help='Well coordinate for Ethanol. Default: A3', default='A3', type=str)
-    parser_nogui.add_argument('--soc_column', help='Column coordinate for SOC. Default: 1', default=1, type=int)
+    parser_nogui.add_argument('--water_well', help='Well coordinate for Water. Default: A12', default='A12', type=str)
+
     parser_nogui.add_argument('--output_dir',
                               help='Output directory. Default: same directory than the one containing the '
                                    '"construct_path" file',
@@ -284,7 +285,8 @@ def __info_from_gui() -> Dict[str, Union[str, List[str], int, bool]]:
         'construct_path': None,
         'sources_paths': None,
         'etoh_well': None,
-        'soc_column': None,
+        'water_well': None,
+
         'thermocycler_gen': 'GEN2',  # Default to GEN2
         'keep_layout': True  # Default to True
     }
@@ -301,7 +303,7 @@ def __info_from_gui() -> Dict[str, Union[str, List[str], int, bool]]:
     
     # Collect all inputs in the same window
     try:
-        # First, get the main configuration (etoh_well, soc_column)
+        # First, get the main configuration (etoh_well)
         dnabotinst = gui.DnabotApp(root)
         root.mainloop()
         
@@ -311,15 +313,17 @@ def __info_from_gui() -> Dict[str, Union[str, List[str], int, bool]]:
         
         # Store the configuration values
         user_inputs['etoh_well'] = dnabotinst.etoh_well
-        user_inputs['soc_column'] = dnabotinst.soc_column
+        user_inputs['water_well'] = dnabotinst.water_well
         user_inputs['thermocycler_gen'] = dnabotinst.thermocycler_gen
         user_inputs['keep_layout'] = dnabotinst.keep_layout
+        user_inputs['construct_path'] = dnabotinst.construct_path
         
-        # Now get the construct file path
-        user_inputs['construct_path'] = gui.UserDefinedPaths(root, 'Construct csv file').output
-        
-        # Finally get the source file paths
-        user_inputs['sources_paths'] = gui.UserDefinedPaths(root, 'Sources csv files', multiple_files=True).output
+        # Parse sources paths from comma-separated string
+        sources_paths_str = dnabotinst.sources_paths
+        if sources_paths_str:
+            user_inputs['sources_paths'] = [path.strip() for path in sources_paths_str.split(',')]
+        else:
+            user_inputs['sources_paths'] = []
         
     finally:
         # Clean up the window
@@ -497,7 +501,7 @@ def _collect_user_input() -> Dict[str, Union[str, List[str], int]]:
         print("Running in CLI mode...")
         return {
             'etoh_well': args.etoh_well,
-            'soc_column': args.soc_column,
+            'water_well': args.water_well,
             'thermocycler_gen': args.thermocycler_gen,
             'construct_path': args.construct_path,
             'sources_paths': args.source_paths,
@@ -810,17 +814,18 @@ def _generate_clip_scripts(sub_clip_dict: dict, clip_plate: int, paths: dict, al
             half_clip_dict,
             all_default_conc
         )
-        # Thermocycler version
-        tc_base_name = FILE_CONFIG.OUTPUT_FILES['CLIP']['V2_8_TC']
-        tc_script_name = f"{tc_base_name[0]}{clip_plate+1}{half}{tc_base_name[1:]}.py"
-        tc_script_path = os.path.join(paths['ot2_output_dir'], tc_script_name)
-        _generate_clip_script_embedded(
-            tc_script_path,
-            os.path.join(template_dir, FILE_CONFIG.TEMPLATE_FILES['CLIP']['V2_8_TC']),
-            half_clip_dict,
-            all_default_conc,
-            thermocycler_gen
-        )
+        # Thermocycler version - only generate if thermocycler_gen is not "None"
+        if thermocycler_gen != "None":
+            tc_base_name = FILE_CONFIG.OUTPUT_FILES['CLIP']['V2_8_TC']
+            tc_script_name = f"{tc_base_name[0]}{clip_plate+1}{half}{tc_base_name[1:]}.py"
+            tc_script_path = os.path.join(paths['ot2_output_dir'], tc_script_name)
+            _generate_clip_script_embedded(
+                tc_script_path,
+                os.path.join(template_dir, FILE_CONFIG.TEMPLATE_FILES['CLIP']['V2_8_TC']),
+                half_clip_dict,
+                all_default_conc,
+                thermocycler_gen
+            )
 
 
 def _generate_magbead_scripts(magbead_sample_number: int, 
@@ -856,6 +861,14 @@ def _generate_magbead_scripts(magbead_sample_number: int,
     template_content = re.sub(
         r"'ethanol_well': '[^']*',",
         f"'ethanol_well': '{ethanol_well}',",
+        template_content
+    )
+    
+    # Replace water_well line
+    water_well = user_config.get('water_well', 'A12')
+    template_content = re.sub(
+        r"'water_well': '[^']*',",
+        f"'water_well': '{water_well}',",
         template_content
     )
     
@@ -900,16 +913,17 @@ def _generate_assembly_scripts(final_assembly_dict: Dict[str, List],
         final_assembly_tipracks
     )
     
-    # Generate thermocycler assembly script with new naming convention
-    assembly_tc_script_name = _generate_script_name_with_number(FILE_CONFIG.OUTPUT_FILES['F_ASSEMBLY']['V2_8_TC'], plate_number)
-    assembly_tc_script_path = os.path.join(paths['ot2_output_dir'], assembly_tc_script_name)
-    _generate_assembly_script_embedded(
-        assembly_tc_script_path,
-        os.path.join(template_dir, FILE_CONFIG.TEMPLATE_FILES['F_ASSEMBLY']['V2_8_TC']),
-        final_assembly_dict,
-        final_assembly_tipracks,
-        thermocycler_gen
-    )
+    # Generate thermocycler assembly script with new naming convention - only if thermocycler_gen is not "None"
+    if thermocycler_gen != "None":
+        assembly_tc_script_name = _generate_script_name_with_number(FILE_CONFIG.OUTPUT_FILES['F_ASSEMBLY']['V2_8_TC'], plate_number)
+        assembly_tc_script_path = os.path.join(paths['ot2_output_dir'], assembly_tc_script_name)
+        _generate_assembly_script_embedded(
+            assembly_tc_script_path,
+            os.path.join(template_dir, FILE_CONFIG.TEMPLATE_FILES['F_ASSEMBLY']['V2_8_TC']),
+            final_assembly_dict,
+            final_assembly_tipracks,
+            thermocycler_gen
+        )
 
 
 def generate_transformation_dict(final_assembly_dict: Dict[str, List], 
@@ -957,15 +971,16 @@ def _generate_transformation_scripts(transformation_dict: Dict[str, Any],
     """Generate transformation scripts using embedded parameterisation."""
     template_dir = paths['template_dir']
     
-    # Generate transformation script with new naming convention
-    transformation_script_name = _generate_script_name_with_number(FILE_CONFIG.OUTPUT_FILES['TRANS_SPOT']['V2_10_TC'], script_index)
-    transformation_script_path = os.path.join(paths['ot2_output_dir'], transformation_script_name)
-    _generate_transformation_script_embedded(
-        transformation_script_path,
-        os.path.join(template_dir, FILE_CONFIG.TEMPLATE_FILES['TRANS_SPOT']['V2_10_TC']),
-        transformation_dict,
-        thermocycler_gen
-    )
+    # Generate transformation script with new naming convention - only if thermocycler_gen is not "None"
+    if thermocycler_gen != "None":
+        transformation_script_name = _generate_script_name_with_number(FILE_CONFIG.OUTPUT_FILES['TRANS_SPOT']['V2_10_TC'], script_index)
+        transformation_script_path = os.path.join(paths['ot2_output_dir'], transformation_script_name)
+        _generate_transformation_script_embedded(
+            transformation_script_path,
+            os.path.join(template_dir, FILE_CONFIG.TEMPLATE_FILES['TRANS_SPOT']['V2_10_TC']),
+            transformation_dict,
+            thermocycler_gen
+        )
 
 
 # def _generate_flex_clip_scripts(sub_clip_dict: dict, clip_plate: int, paths: dict, all_default_conc: bool = False, thermocycler_gen: str = 'gen2') -> None:
@@ -1150,7 +1165,8 @@ def _write_well_output_info(user_config: Dict[str, Union[str, List[str], int]],
     """Write well output information to text file."""
     with open(paths['construct_base'] + '_' + FILE_CONFIG.OUTPUT_FILES['INFO']['WELL_OUTPUT'], 'w') as f:
         f.write(f'Magbead ethanol well: {user_config["etoh_well"]}\n')
-        f.write(f'SOC column: {user_config["soc_column"]}\n')
+        f.write(f'Magbead water well: {user_config.get("water_well", "A12")}\n')
+
         f.write(f'Thermocycler generation: {user_config.get("thermocycler_gen", "GEN2")}')
 
 
