@@ -2,11 +2,11 @@ from __future__ import unicode_literals
 from opentrons import protocol_api
 import numpy as np
 import json
-from typing import List
+from typing import List, Optional
 
 # metadata
 metadata = {
-'protocolName': 'DNABOT: C4 Final Assembly with Thermocycler v2.10',
+'protocolName': 'DNABOT: C2 Final Assembly with Thermocycler v2.10',
 'description': 'Final assembly protocol for DNA-BOT using Opentrons OT-2 with thermocycler module',
 'apiLevel': '2.10'
 }
@@ -14,39 +14,182 @@ metadata = {
 # Load assembly data from JSON file
 # This will be replaced by the parser with embedded JSON data
 final_assembly_dict = {
-    "A1": [["B1", "B2", "C2"], [2, 2, 2]],
-    "B1": [["B1", "D2", "B7"], [2, 2, 2]],
-    "C1": [["C1", "H4", "G2"], [2, 2, 2]],
-    "D1": [["C1", "H2", "A3"], [2, 2, 2]],
-    "E1": [["C1", "C7", "C5"], [2, 2, 2]],
-    "F1": [["C1", "D3", "H5"], [2, 2, 2]],
-    "G1": [["C1", "D7", "H5"], [2, 2, 2]],
-    "H1": [["C1", "H3", "H5"], [2, 2, 2]],
-    "A2": [["C1", "B4", "C4"], [2, 2, 2]],
-    "B2": [["C1", "D4", "E4"], [2, 2, 2]],
-    "C2": [["C1", "F4", "E7"], [2, 2, 2]],
-    "D2": [["C1", "H4", "A5"], [2, 2, 2]],
-    "E2": [["C1", "H2", "A3"], [2, 2, 2]],
-    "F2": [["C1", "B5", "C5"], [2, 2, 2]],
-    "G2": [["C1", "F7", "G7"], [2, 2, 2]],
-    "H2": [["D1", "F4", "G4"], [2, 2, 2]],
-    "A3": [["D1", "H4", "A5"], [2, 2, 2]],
-    "B3": [["D1", "H7", "A3"], [2, 2, 2]],
-    "C3": [["D1", "B5", "C5"], [2, 2, 2]],
-    "D3": [["D1", "A8", "E5"], [2, 2, 2]],
-    "E3": [["D1", "D3", "F5"], [2, 2, 2]],
-    "F3": [["D1", "D7", "H5"], [2, 2, 2]],
-    "G3": [["D1", "H3", "F5"], [2, 2, 2]],
-    "H3": [["D1", "B4", "E5"], [2, 2, 2]]
+    "A1": [["A1", "C1", "D1"], [2, 2, 2]],
+    "B1": [["A1", "E1", "F1"], [2, 2, 2]],
+    "C1": [["A1", "G1", "H1"], [2, 2, 2]],
+    "D1": [["A1", "A2", "B2"], [2, 2, 2]],
+    "E1": [["A1", "C2", "D2"], [2, 2, 2]],
+    "F1": [["A1", "E2", "F2"], [2, 2, 2]],
+    "G1": [["A1", "G2", "H2"], [2, 2, 2]],
+    "H1": [["A1", "A3", "B3"], [2, 2, 2]],
+    "A2": [["A1", "C3", "D3"], [2, 2, 2]],
+    "B2": [["A1", "E3", "F3"], [2, 2, 2]],
+    "C2": [["A1", "G3", "H3"], [2, 2, 2]],
+    "D2": [["A1", "A4", "B4"], [2, 2, 2]],
+    "E2": [["A1", "C4", "D3"], [2, 2, 2]],
+    "F2": [["B1", "D4", "E4"], [2, 2, 2]],
+    "G2": [["B1", "F4", "G4"], [2, 2, 2]],
+    "H2": [["B1", "H4", "A5"], [2, 2, 2]],
+    "A3": [["B1", "B5", "E4"], [2, 2, 2]],
+    "B3": [["B1", "C5", "G4"], [2, 2, 2]],
+    "C3": [["B1", "D5", "E5"], [2, 2, 2]],
+    "D3": [["B1", "F5", "G5"], [2, 2, 2]],
+    "E3": [["B1", "H5", "A6"], [2, 2, 2]],
+    "F3": [["B1", "B6", "C6"], [2, 2, 2]],
+    "G3": [["B1", "D6", "E6"], [2, 2, 2]],
+    "H3": [["B1", "F6", "G6"], [2, 2, 2]]
 }
 tiprack_num = 1
 
 # Thermocycler generation setting
 # This will be replaced by the parser with embedded thermocycler generation
-thermocycler_gen = 'gen2'
+thermocycler_gen = 'GEN2'
 
 # It is possible to run 88 assemblies with this new module. The heat block module is removed. 
 # Assembly reactions is set up on thermocycler module.
+
+class TipManager:
+    """Manages pipette tips and tracks usage."""
+    
+    def __init__(self, protocol: protocol_api.ProtocolContext, 
+                 slot: int,
+                 pipette: protocol_api.instrument_context.InstrumentContext,
+                 tip_type: str):
+        self.protocol = protocol
+        self.pipette = pipette
+        self.tip_type = tip_type
+        self.rows = 8  # Number of rows in a standard tip rack
+        self.cols = 12  # Number of columns in a standard tip rack
+        
+        # Initialize tip racks array and current rack index
+        self.tipracks = []
+        self.current_rack = 0
+        
+        # Load first tip rack using add_tip_rack
+        self.add_tip_rack(slot)
+        
+        self._initialise_tip_arrays()
+    
+    def add_tip_rack(self, slot: int, tip_type: Optional[str] = None) -> None:
+        """Add an additional tip rack to the manager.
+        
+        Args:
+            slot: The deck slot number for the tip rack
+            tip_type: Optional tip type ('p300' or 'p20'). If None, uses the manager's default tip type.
+            
+        Raises:
+            ValueError: If the tip type is not supported or incompatible with the pipette
+        """
+        tip_type = tip_type or self.tip_type
+        
+        # Check pipette compatibility
+        pipette_type = 'p300' if self.pipette.max_volume >= 300 else 'p20'
+        if tip_type != pipette_type:
+            raise ValueError(f"Tip type '{tip_type}' is incompatible with pipette type '{pipette_type}'")
+            
+        if tip_type == 'p300':
+            self.tipracks.append(self.protocol.load_labware('opentrons_96_tiprack_300ul', slot))
+        elif tip_type == 'p20':
+            self.tipracks.append(self.protocol.load_labware('opentrons_96_tiprack_20ul', slot))
+        else:
+            raise ValueError(f"Unsupported tip type: {tip_type}")
+    
+    def _initialise_tip_arrays(self) -> None:
+        """Initialise tip tracking arrays for normal and inverse tip selection."""
+        total_tips = len(self.tipracks[self.current_rack].wells())
+        self.normal_tips = list(range(total_tips))  # For normal tip selection
+        self.inverse_tips = []  # For inverse tip selection
+        
+        # Create inverse order array
+        for col in range(self.cols):
+            for row in range(self.rows-1, -1, -1):  # Start from highest row (H) to lowest (A)
+                tip_index = col * self.rows + row
+                self.inverse_tips.append(tip_index)
+    
+    def get_single_tip(self, inverse: bool = False) -> None:
+        """Pick up a single tip, optionally using inverse selection to use multichannel pipette for single channel functionality."""
+        if not self.normal_tips:  # If either array is empty, we need new tips
+            if self.current_rack < len(self.tipracks) - 1:
+                # Switch to next tip rack
+                self.current_rack += 1
+                self._initialise_tip_arrays()
+                self.protocol.comment(f"Switched to tip rack {self.current_rack + 1}")
+            else:
+                self._prompt_tip_replacement()
+        
+        if inverse:
+            tip_index = self.inverse_tips[0]  # Get the first tip in inverse order
+        else:
+            tip_index = min(self.normal_tips)  # Will give us the next tip in normal order
+        
+        # Remove the tip from both arrays
+        self.normal_tips.remove(tip_index)
+        self.inverse_tips.remove(tip_index)
+        
+        self.pipette.pick_up_tip(self.tipracks[self.current_rack].wells()[tip_index])
+    
+    def get_multi_tip(self, start_col: int = 0) -> None:
+        """Pick up multiple tips for multichannel pipetting."""
+        self.protocol.comment("Attempting to get multi-channel tips")
+        if not self.pipette.channels > 1:
+            raise ValueError("Multichannel pipetting requires a multichannel pipette")
+            
+        if not self.normal_tips:  # If either array is empty, we need new tips
+            self.protocol.comment(f"No tips available in current rack: {self.current_rack}")
+            if self.current_rack < len(self.tipracks) - 1:
+                # Switch to next tip rack
+                self.current_rack += 1
+                self._initialise_tip_arrays()
+                self.protocol.comment(f"Switched to tip rack {self.current_rack + 1}")
+            else:
+                self._prompt_tip_replacement()
+        
+        # Find a column with enough consecutive tips
+        for col in range(start_col, self.cols):
+            # Get all tips in this column
+            tips_in_col = [t for t in self.normal_tips if t // self.rows == col]
+            self.protocol.comment(f"Tips in column {col + 1}: {tips_in_col}")
+            
+            # Only use columns that are full
+            if len(tips_in_col) != self.rows:
+                self.protocol.comment(f"Column {col + 1} not full, only {len(tips_in_col)} tips available")
+                continue
+                
+            # Sort tips in the column
+            tips_in_col.sort()
+            
+            # Check if we have a complete column of consecutive tips
+            expected_tips = [col * self.rows + row for row in range(self.rows)]
+            if tips_in_col == expected_tips:
+                # Remove tips from both arrays
+                for tip in tips_in_col:
+                    self.normal_tips.remove(tip)
+                    self.inverse_tips.remove(tip)
+                
+                self.protocol.comment(f"Picking up tips from column {col + 1} at {self.tipracks[self.current_rack].wells()[tips_in_col[0]]}")
+                self.pipette.pick_up_tip(self.tipracks[self.current_rack].wells()[tips_in_col[0]])
+                self.protocol.comment("Successfully picked up multi-channel tips")
+                return
+        
+        # If we get here, no suitable column was found in the current rack
+        self.protocol.comment(f"No full columns found in rack {self.current_rack + 1}, switching racks")
+        self.normal_tips = []  # Force the next call to switch racks
+        self.get_multi_tip(start_col)
+    
+    def _prompt_tip_replacement(self) -> None:
+        """Prompt user to replace tip rack and flash lights."""
+        # Flash lights 3 times before the prompt
+        for _ in range(3):
+            self.protocol.set_rail_lights(False)
+            time.sleep(0.15)
+            self.protocol.set_rail_lights(True)
+            time.sleep(0.15)
+        
+        self.protocol.pause("Please replace the tip rack")
+        
+        # Reset current rack and reinitialise tip arrays
+        self.current_rack = 0
+        self._initialise_tip_arrays()
 
 class MasterMixManager:
     """Manages master mix tubes and tracks their volumes.
@@ -111,12 +254,13 @@ class MasterMixManager:
             else:
                 self.protocol.comment("Warning: Not enough master mix to fill all wells!")
     
-    def distribute_to_wells(self, wells: List[protocol_api.labware.Well], pipette: protocol_api.instrument_context.InstrumentContext) -> None:
+    def distribute_to_wells(self, wells: List[protocol_api.labware.Well], pipette: protocol_api.instrument_context.InstrumentContext, tip_manager=None) -> None:
         """Distribute master mix to a list of wells.
         
         Args:
             wells: List of wells to distribute to
             pipette: Pipette to use for distribution (can be single or multi-channel)
+            tip_manager: Optional TipManager for tip management
         """
         wells_to_fill = wells.copy()
         
@@ -145,7 +289,10 @@ class MasterMixManager:
                 break
                 
             # Pick up new tip for each transfer
-            pipette.pick_up_tip()
+            if tip_manager:
+                tip_manager.get_single_tip(inverse=True)  # Use inverse selection for multichannel
+            else:
+                pipette.pick_up_tip()
             
             # Aspirate the maximum possible volume
             pipette.aspirate(max_aspirate, self.get_current_tube())
@@ -162,13 +309,6 @@ class MasterMixManager:
             # Update remaining volume and wells to fill
             self.use_volume(max_aspirate)
             wells_to_fill = wells_to_fill[wells_per_aspirate:]
-
-# test dictionary can be used for simulation 3 or 88 assemblies
-#final_assembly_dict={"A1": [['A7', 'B7', 'C7', 'F7'], [1, 2, 1, 1]], "B1": [['A7', 'B7', 'D7', 'G7'], [1, 2, 1, 1]], "C1": [['A7', 'E7', 'H7'], [1, 2, 1]]}
-#tiprack_num=1
-
-# final_assembly_dict={"A1": [["A1", "C9", "B11"], [1, 2, 1]], "B1": [["A1", "C9", "C11"], [1, 2, 1]], "C1": [["A1", "C9", "D11"], [1, 2, 1]], "D1": [["A1", "C9", "E11"], [1, 2, 1]], "E1": [["A1", "C9", "F11"], [1, 2, 1]], "F1": [["A1", "C9", "G11"], [1, 2, 1]], "G1": [["A1", "C9", "H11"], [1, 2, 1]], "H1": [["A1", "C9", "A12"], [1, 2, 1]], "A2": [["A1", "C9", "B12"], [1, 2, 1]], "B2": [["A1", "D9", "B11"], [1, 2, 1]], "C2": [["A1", "D9", "C11"], [1, 2, 1]], "D2": [["A1", "D9", "D11"], [1, 2, 1]], "E2": [["A1", "D9", "E11"], [1, 2, 1]], "F2": [["A1", "D9", "F11"], [1, 2, 1]], "G2": [["A1", "D9", "G11"], [1, 2, 1]], "H2": [["B1", "D9", "H11"], [1, 2, 1]], "A3": [["B1", "D9", "A12"], [1, 2, 1]], "B3": [["B1", "D9", "B12"], [1, 2, 1]], "C3": [["B1", "E9", "F12"], [1, 2, 1]], "D3": [["B1", "E9", "G12"], [1, 2, 1]], "E3": [["B1", "E9", "H12"], [1, 2, 1]], "F3": [["B1", "E9", "A1"], [1, 2, 2]], "G3": [["B1", "E9", "B1"], [1, 2, 2]], "H3": [["B1", "E9", "C1"], [1, 2, 2]], "A4": [["B1", "E9", "D1"], [1, 2, 2]], "B4": [["B1", "E9", "E1"], [1, 2, 2]], "C4": [["B1", "E9", "F1"], [1, 2, 2]], "D4": [["B1", "F9", "F12"], [1, 2, 1]], "E4": [["B1", "F9", "G12"], [1, 2, 1]], "F4": [["B1", "F9", "H12"], [1, 2, 1]], "G4": [["C1", "F9", "A1"], [1, 2, 2]], "H4": [["C1", "F9", "B1"], [1, 2, 2]], "A5": [["C1", "F9", "C1"], [1, 2, 2]], "B5": [["C1", "F9", "D1"], [1, 2, 2]], "C5": [["C1", "F9", "E1"], [1, 2, 2]], "D5": [["C1", "F9", "F1"], [1, 2, 2]], "E5": [["C1", "G9", "F12"], [1, 2, 1]], "F5": [["C1", "G9", "G12"], [1, 2, 1]], "G5": [["C1", "G9", "H12"], [1, 2, 1]], "H5": [["C1", "G9", "A1"], [1, 2, 2]], "A6": [["C1", "G9", "B1"], [1, 2, 2]], "B6": [["C1", "G9", "C1"], [1, 2, 2]], "C6": [["C1", "G9", "D1"], [1, 2, 2]], "D6": [["C1", "G9", "E1"], [1, 2, 2]], "E6": [["C1", "G9", "F1"], [1, 2, 2]], "F6": [["D1", "H9", "B2"], [1, 2, 2]], "G6": [["D1", "H9", "C2"], [1, 2, 2]], "H6": [["D1", "H9", "D2"], [1, 2, 2]], "A7": [["D1", "H9", "E2"], [1, 2, 2]], "B7": [["D1", "H9", "F2"], [1, 2, 2]], "C7": [["D1", "H9", "G2"], [1, 2, 2]], "D7": [["D1", "H9", "H2"], [1, 2, 2]], "E7": [["D1", "H9", "A3"], [1, 2, 2]], "F7": [["D1", "H9", "B3"], [1, 2, 2]], "G7": [["D1", "A10", "B2"], [1, 2, 2]], "H7": [["D1", "A10", "C2"], [1, 2, 2]], "A8": [["D1", "A10", "D2"], [1, 2, 2]], "B8": [["D1", "A10", "E2"], [1, 2, 2]], "C8": [["D1", "A10", "F2"], [1, 2, 2]], "D8": [["D1", "A10", "G2"], [1, 2, 2]], "E8": [["E1", "A10", "H2"], [1, 2, 2]], "F8": [["E1", "A10", "A3"], [1, 2, 2]], "G8": [["E1", "A10", "B3"], [1, 2, 2]], "H8": [["E1", "B10", "B2"], [1, 2, 2]], "A9": [["E1", "B10", "C2"], [1, 2, 2]], "B9": [["E1", "B10", "D2"], [1, 2, 2]], "C9": [["E1", "B10", "E2"], [1, 2, 2]], "D9": [["E1", "B10", "F2"], [1, 2, 2]], "E9": [["E1", "B10", "G2"], [1, 2, 2]], "F9": [["E1", "B10", "H2"], [1, 2, 2]], "G9": [["E1", "B10", "A3"], [1, 2, 2]], "H9": [["E1", "B10", "B3"], [1, 2, 2]]}
-# tiprack_num=3
 
 # opentrons_simulate.exe dnabot\template_ot2_scripts\assembly_template_TC_APIv2.8.py --custom-labware-path 'labware\Labware definitions'
 
@@ -192,13 +332,12 @@ def run(protocol: protocol_api.ProtocolContext):
             TOTAL_VOL = 15
             PART_VOL = 1.5
             MIX_SETTINGS = (1, 3)
-            # tiprack_num += 1                    # + 1 for one index ############################### I think(?)
 
             # Thermocycler Module
-            if thermocycler_gen == 'gen1':
-                tc_mod = protocol.load_module('Thermocycler Module')
-            else:  # gen2
-                tc_mod = protocol.load_module('thermocyclerModuleV2')
+            if thermocycler_gen == 'GEN1':
+                tc_mod = protocol.load_module('thermocycler', '7')
+            else:  # GEN2
+                tc_mod = protocol.load_module('thermocyclerModuleV2', '7')
 
             destination_plate = tc_mod.load_labware(DESTINATION_PLATE_TYPE)
             tc_mod.open_lid()
@@ -209,25 +348,29 @@ def run(protocol: protocol_api.ProtocolContext):
             if sample_number > 96:
                 raise ValueError('Assembly number cannot exceed 96.')
 
-            # Tiprack(s)
-            CANDIDATE_TIPRACK_SLOTS = ['3', '5', '6', '9']
+            # Tiprack(s) - exclude slots 1, 2 for source plates and slots 7, 8, 10, 11 for thermocycler
+            CANDIDATE_TIPRACK_SLOTS = ['3', '6', '9']
 
-            if 2 not in source_plate_slots:                  # if only one source plate used, deck slot 2 can be used for a tip rack
-                CANDIDATE_TIPRACK_SLOTS.append('2')
-
-            if tiprack_num > len(CANDIDATE_TIPRACK_SLOTS):
-                raise ValueError('Not enough tipracks available on deck to satisfy tip requirements. Consider either splitting into multiple builds each with fewer constructs or iterative rounds of building. ')
+            # if tiprack_num > len(CANDIDATE_TIPRACK_SLOTS):
+            #     raise ValueError('Not enough tipracks available on deck to satisfy tip requirements. Consider either splitting into multiple builds each with fewer constructs or iterative rounds of building. ')
                   
             slots = CANDIDATE_TIPRACK_SLOTS[:tiprack_num]
-            tipracks = [protocol.load_labware(tiprack_type, slot) for slot in slots]
 
-            # Pipette
+            # Load pipettes (without tip_racks argument - TipManager will handle this)
             PIPETTE_MOUNT = 'right'      
-            pipette = protocol.load_instrument('p20_single_gen2', PIPETTE_MOUNT, tip_racks=tipracks)
+            pipette = protocol.load_instrument('p20_single_gen2', PIPETTE_MOUNT)
             
             # Multi-channel pipette for master mix distribution
             MULTI_PIPETTE_MOUNT = 'left'
-            multi_pipette = protocol.load_instrument('p300_multi_gen2', MULTI_PIPETTE_MOUNT, tip_racks=[protocol.load_labware('opentrons_96_tiprack_300ul', '5')])
+            multi_pipette = protocol.load_instrument('p300_multi_gen2', MULTI_PIPETTE_MOUNT)
+            
+            # Initialize TipManager for p20 tips
+            p20_tip_manager = TipManager(protocol, int(slots[0]), pipette, 'p20')
+            for slot in slots[1:]:
+                p20_tip_manager.add_tip_rack(int(slot))
+            
+            # Initialize TipManager for p300 tips (slot 5)
+            p300_tip_manager = TipManager(protocol, 5, multi_pipette, 'p300')
 
             # Master mix transfers
             final_assembly_lens = [len(values[0]) for values in final_assembly_dict.values()]       # list of assembly lengths (number of clips)
@@ -276,9 +419,9 @@ def run(protocol: protocol_api.ProtocolContext):
                 
                 # Distribute master mix to wells for this assembly type using multi-channel pipette
                 # Use new tip for each transfer (handled by MasterMixManager)
-                mm_manager.distribute_to_wells(wells_to_fill, multi_pipette)
+                mm_manager.distribute_to_wells(wells_to_fill, multi_pipette, tip_manager=p300_tip_manager)
 
-            # Part transfers
+            # Part transfers using TipManager
             for key, values in list(final_assembly_dict.items()):
                 for i in range(len(values[0])):                     # find well and plate for every clip in every assembly
                     well  = values[0][i]
@@ -289,10 +432,12 @@ def run(protocol: protocol_api.ProtocolContext):
                     # if i == len(values[0])-1:                       # set to mix if on final clip transfer
                     #     mix = MIX_SETTINGS
 
+                    p20_tip_manager.get_single_tip()
                     pipette.transfer(PART_VOL, source_plates[plate].wells(well),
                                      destination_plate.wells(key), mix_after=mix, 
                                      blow_out=True, blowout_location='destination well',
-                                     new_tip='always')
+                                     new_tip='never')
+                    pipette.drop_tip()
 
             # Thermocycler Module
             tc_mod.close_lid()

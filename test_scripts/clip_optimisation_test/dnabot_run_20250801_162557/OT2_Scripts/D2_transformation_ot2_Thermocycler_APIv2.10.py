@@ -4,7 +4,7 @@ import time
 
 metadata = {
     'apiLevel': '2.10',
-    'protocolName': 'DNABOT: D1 Transformation with Thermocycler v2.10',
+    'protocolName': 'DNABOT: D2 Transformation with Thermocycler v2.10',
     'description': 'Enhanced transformation protocol using thermocycler module',
     'author': 'Liam Hallett'
 }
@@ -12,14 +12,14 @@ metadata = {
 # Load transformation data from JSON file
 # This will be replaced by the parser with embedded JSON data
 transformation_dict = {
-    "transformation_number": 16,
-    "source_wells": ["A2", "B2", "C2", "D2", "E2", "F2", "G2", "H2", "A3", "B3", "C3", "D3", "E3", "F3", "G3", "H3"],
-    "source_plates": ["1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1"],
-    "destination_wells": ["A2", "B2", "C2", "D2", "E2", "F2", "G2", "H2", "A3", "B3", "C3", "D3", "E3", "F3", "G3", "H3"],
-    "dna_volumes": [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3],
-    "cell_volumes": [30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30],
-    "soc_volumes": [100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100],
-    "plating_volumes": [100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100]
+    "transformation_number": 24,
+    "source_wells": ["A1", "B1", "C1", "D1", "E1", "F1", "G1", "H1", "A2", "B2", "C2", "D2", "E2", "F2", "G2", "H2", "A3", "B3", "C3", "D3", "E3", "F3", "G3", "H3"],
+    "source_plates": ["1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1"],
+    "destination_wells": ["A1", "B1", "C1", "D1", "E1", "F1", "G1", "H1", "A2", "B2", "C2", "D2", "E2", "F2", "G2", "H2", "A3", "B3", "C3", "D3", "E3", "F3", "G3", "H3"],
+    "dna_volumes": [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3],
+    "cell_volumes": [30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30],
+    "soc_volumes": [100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100],
+    "plating_volumes": [100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100]
 }
 
 # Thermocycler generation setting
@@ -67,9 +67,9 @@ def run(protocol: protocol_api.ProtocolContext):
     tube_rack = protocol.load_labware('opentrons_24_tuberack_eppendorf_1.5ml_safelock_snapcap', 4)
     
     # Load thermocycler module
-    if thermocycler_gen == 'gen1':
+    if thermocycler_gen == 'GEN1':
         thermocycler = protocol.load_module('thermocycler', 7)
-    else:  # gen2
+    else:  # GEN2
         thermocycler = protocol.load_module('thermocyclerModuleV2', 7)
     TC_plate = thermocycler.load_labware('biorad_96_wellplate_200ul_pcr')
     
