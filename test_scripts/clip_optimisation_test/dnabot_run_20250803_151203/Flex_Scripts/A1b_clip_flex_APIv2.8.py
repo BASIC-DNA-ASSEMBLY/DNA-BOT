@@ -3,259 +3,79 @@ import json
 import time
 from typing import List, Optional
 
-# Rename to 'clip_template' and paste into 'template_ot2_scripts' folder in DNA-BOT to use
+# Rename to 'clip_template' and paste into 'template_flex_scripts' folder in DNA-BOT to use
 # Code has been reordered to better group relevant commands and take the constants out of def clip()
 
 #metadata
 metadata = {
-     'apiLevel': '2.10',
-     'protocolName': 'DNABOT: A2a CLIP Assembly v2.10',
-     'description': 'Implements linker ligation reactions using an opentrons OT-2. This version does not include the Thermocycler module.'}
+     'protocolName': 'DNABOT: CLIP Assembly v2.15 (Flex)',
+     'description': 'Implements linker ligation reactions using an opentrons Flex. This version does not include the Thermocycler module.'}
+requirements = {"robotType": "Flex", "apiLevel": "2.15"}
 
 # Load CLIP data from JSON file
 # This will be replaced by the parser with embedded JSON data
 clips_dict = {
-    "A1": {
-        "prefix_linker": "LMS-P",
-        "prefix_source_well": "D12",
-        "prefix_source_plate": "1",
-        "part": "SV39",
-        "part_source_well": "A12",
-        "part_source_plate": "1",
-        "suffix_linker": "LMP-S",
-        "suffix_source_well": "C12",
-        "suffix_source_plate": "1",
-        "Clip_Well": "A1",
-        "plate": 2,
-        "part_vol": 1.0,
-        "water_vol": 0.0
-    },
-    "B1": {
-        "prefix_linker": "LMS-P",
-        "prefix_source_well": "D12",
-        "prefix_source_plate": "1",
-        "part": "SV39",
-        "part_source_well": "A12",
-        "part_source_plate": "1",
-        "suffix_linker": "LMP-S",
-        "suffix_source_well": "C12",
-        "suffix_source_plate": "1",
-        "Clip_Well": "B1",
-        "plate": 2,
-        "part_vol": 1.0,
-        "water_vol": 0.0
-    },
-    "C1": {
+    "A7": {
         "prefix_linker": "LMP-P",
         "prefix_source_well": "B12",
         "prefix_source_plate": "1",
-        "part": "ilvA_1",
-        "part_source_well": "A8",
+        "part": "sucB_1",
+        "part_source_well": "C3",
         "part_source_plate": "1",
         "suffix_linker": "L1-S",
         "suffix_source_well": "G12",
         "suffix_source_plate": "1",
-        "Clip_Well": "C1",
-        "plate": 2,
+        "Clip_Well": "A7",
+        "plate": 1,
         "part_vol": 1.0,
         "water_vol": 0.0
     },
-    "D1": {
+    "B7": {
         "prefix_linker": "L1-P",
         "prefix_source_well": "F12",
         "prefix_source_plate": "1",
-        "part": "tdcB_2",
-        "part_source_well": "F6",
+        "part": "alaC_1",
+        "part_source_well": "B2",
         "part_source_plate": "1",
         "suffix_linker": "LMS-S",
         "suffix_source_well": "E12",
         "suffix_source_plate": "1",
-        "Clip_Well": "D1",
-        "plate": 2,
+        "Clip_Well": "B7",
+        "plate": 1,
         "part_vol": 1.0,
         "water_vol": 0.0
     },
-    "E1": {
+    "C7": {
         "prefix_linker": "LMP-P",
         "prefix_source_well": "B12",
         "prefix_source_plate": "1",
-        "part": "gltD_1",
-        "part_source_well": "A7",
+        "part": "thiS_1",
+        "part_source_well": "C5",
         "part_source_plate": "1",
         "suffix_linker": "L1-S",
         "suffix_source_well": "G12",
         "suffix_source_plate": "1",
-        "Clip_Well": "E1",
-        "plate": 2,
+        "Clip_Well": "C7",
+        "plate": 1,
         "part_vol": 1.0,
         "water_vol": 0.0
     },
-    "F1": {
+    "D7": {
         "prefix_linker": "L1-P",
         "prefix_source_well": "F12",
         "prefix_source_plate": "1",
-        "part": "gdhA_2",
-        "part_source_well": "B5",
+        "part": "serC_1",
+        "part_source_well": "E4",
         "part_source_plate": "1",
         "suffix_linker": "LMS-S",
         "suffix_source_well": "E12",
         "suffix_source_plate": "1",
-        "Clip_Well": "F1",
-        "plate": 2,
+        "Clip_Well": "D7",
+        "plate": 1,
         "part_vol": 1.0,
         "water_vol": 0.0
     },
-    "G1": {
-        "prefix_linker": "LMP-P",
-        "prefix_source_well": "B12",
-        "prefix_source_plate": "1",
-        "part": "argI_1",
-        "part_source_well": "D2",
-        "part_source_plate": "1",
-        "suffix_linker": "L1-S",
-        "suffix_source_well": "G12",
-        "suffix_source_plate": "1",
-        "Clip_Well": "G1",
-        "plate": 2,
-        "part_vol": 1.0,
-        "water_vol": 0.0
-    },
-    "H1": {
-        "prefix_linker": "L1-P",
-        "prefix_source_well": "F12",
-        "prefix_source_plate": "1",
-        "part": "argF_1",
-        "part_source_well": "E2",
-        "part_source_plate": "1",
-        "suffix_linker": "LMS-S",
-        "suffix_source_well": "E12",
-        "suffix_source_plate": "1",
-        "Clip_Well": "H1",
-        "plate": 2,
-        "part_vol": 1.0,
-        "water_vol": 0.0
-    },
-    "A2": {
-        "prefix_linker": "LMP-P",
-        "prefix_source_well": "B12",
-        "prefix_source_plate": "1",
-        "part": "aroK_1",
-        "part_source_well": "E7",
-        "part_source_plate": "1",
-        "suffix_linker": "L1-S",
-        "suffix_source_well": "G12",
-        "suffix_source_plate": "1",
-        "Clip_Well": "A2",
-        "plate": 2,
-        "part_vol": 1.0,
-        "water_vol": 0.0
-    },
-    "B2": {
-        "prefix_linker": "L1-P",
-        "prefix_source_well": "F12",
-        "prefix_source_plate": "1",
-        "part": "aroL_1",
-        "part_source_well": "G2",
-        "part_source_plate": "1",
-        "suffix_linker": "LMS-S",
-        "suffix_source_well": "E12",
-        "suffix_source_plate": "1",
-        "Clip_Well": "B2",
-        "plate": 2,
-        "part_vol": 1.0,
-        "water_vol": 0.0
-    },
-    "C2": {
-        "prefix_linker": "LMP-P",
-        "prefix_source_well": "B12",
-        "prefix_source_plate": "1",
-        "part": "asnA_1",
-        "part_source_well": "G7",
-        "part_source_plate": "1",
-        "suffix_linker": "L1-S",
-        "suffix_source_well": "G12",
-        "suffix_source_plate": "1",
-        "Clip_Well": "C2",
-        "plate": 2,
-        "part_vol": 1.0,
-        "water_vol": 0.0
-    },
-    "D2": {
-        "prefix_linker": "L1-P",
-        "prefix_source_well": "F12",
-        "prefix_source_plate": "1",
-        "part": "asnB_1",
-        "part_source_well": "A3",
-        "part_source_plate": "1",
-        "suffix_linker": "LMS-S",
-        "suffix_source_well": "E12",
-        "suffix_source_plate": "1",
-        "Clip_Well": "D2",
-        "plate": 2,
-        "part_vol": 1.0,
-        "water_vol": 0.0
-    },
-    "E2": {
-        "prefix_linker": "LMP-P",
-        "prefix_source_well": "B12",
-        "prefix_source_plate": "1",
-        "part": "tyrB_1",
-        "part_source_well": "E9",
-        "part_source_plate": "1",
-        "suffix_linker": "L1-S",
-        "suffix_source_well": "G12",
-        "suffix_source_plate": "1",
-        "Clip_Well": "E2",
-        "plate": 2,
-        "part_vol": 1.0,
-        "water_vol": 0.0
-    },
-    "F2": {
-        "prefix_linker": "L1-P",
-        "prefix_source_well": "F12",
-        "prefix_source_plate": "1",
-        "part": "aspC_1",
-        "part_source_well": "E3",
-        "part_source_plate": "1",
-        "suffix_linker": "LMS-S",
-        "suffix_source_well": "E12",
-        "suffix_source_plate": "1",
-        "Clip_Well": "F2",
-        "plate": 2,
-        "part_vol": 1.0,
-        "water_vol": 0.0
-    },
-    "G2": {
-        "prefix_linker": "LMP-P",
-        "prefix_source_well": "B12",
-        "prefix_source_plate": "1",
-        "part": "ubiC_1",
-        "part_source_well": "C6",
-        "part_source_plate": "1",
-        "suffix_linker": "L1-S",
-        "suffix_source_well": "G12",
-        "suffix_source_plate": "1",
-        "Clip_Well": "G2",
-        "plate": 2,
-        "part_vol": 1.0,
-        "water_vol": 0.0
-    },
-    "H2": {
-        "prefix_linker": "L1-P",
-        "prefix_source_well": "F12",
-        "prefix_source_plate": "1",
-        "part": "pabC_1",
-        "part_source_well": "A4",
-        "part_source_plate": "1",
-        "suffix_linker": "LMS-S",
-        "suffix_source_well": "E12",
-        "suffix_source_plate": "1",
-        "Clip_Well": "H2",
-        "plate": 2,
-        "part_vol": 1.0,
-        "water_vol": 0.0
-    },
-    "A3": {
+    "E7": {
         "prefix_linker": "LMP-P",
         "prefix_source_well": "B12",
         "prefix_source_plate": "1",
@@ -265,458 +85,113 @@ clips_dict = {
         "suffix_linker": "L1-S",
         "suffix_source_well": "G12",
         "suffix_source_plate": "1",
-        "Clip_Well": "A3",
-        "plate": 2,
+        "Clip_Well": "E7",
+        "plate": 1,
         "part_vol": 1.0,
         "water_vol": 0.0
     },
-    "B3": {
+    "F7": {
         "prefix_linker": "L1-P",
         "prefix_source_well": "F12",
         "prefix_source_plate": "1",
-        "part": "ubiC_1",
-        "part_source_well": "C6",
+        "part": "dadX_1",
+        "part_source_well": "G3",
         "part_source_plate": "1",
         "suffix_linker": "LMS-S",
         "suffix_source_well": "E12",
         "suffix_source_plate": "1",
-        "Clip_Well": "B3",
-        "plate": 2,
+        "Clip_Well": "F7",
+        "plate": 1,
         "part_vol": 1.0,
         "water_vol": 0.0
     },
-    "C3": {
+    "G7": {
         "prefix_linker": "LMP-P",
         "prefix_source_well": "B12",
         "prefix_source_plate": "1",
-        "part": "gltB_1",
-        "part_source_well": "G6",
+        "part": "tdcB_2",
+        "part_source_well": "F6",
         "part_source_plate": "1",
         "suffix_linker": "L1-S",
         "suffix_source_well": "G12",
         "suffix_source_plate": "1",
-        "Clip_Well": "C3",
-        "plate": 2,
+        "Clip_Well": "G7",
+        "plate": 1,
         "part_vol": 1.0,
         "water_vol": 0.0
     },
-    "D3": {
+    "H7": {
         "prefix_linker": "L1-P",
         "prefix_source_well": "F12",
-        "prefix_source_plate": "1",
-        "part": "gdhA_1",
-        "part_source_well": "C4",
-        "part_source_plate": "1",
-        "suffix_linker": "LMS-S",
-        "suffix_source_well": "E12",
-        "suffix_source_plate": "1",
-        "Clip_Well": "D3",
-        "plate": 2,
-        "part_vol": 1.0,
-        "water_vol": 0.0
-    },
-    "E3": {
-        "prefix_linker": "LMP-P",
-        "prefix_source_well": "B12",
-        "prefix_source_plate": "1",
-        "part": "leuB_2",
-        "part_source_well": "H1",
-        "part_source_plate": "1",
-        "suffix_linker": "L1-S",
-        "suffix_source_well": "G12",
-        "suffix_source_plate": "1",
-        "Clip_Well": "E3",
-        "plate": 2,
-        "part_vol": 1.0,
-        "water_vol": 0.0
-    },
-    "F3": {
-        "prefix_linker": "L1-P",
-        "prefix_source_well": "F12",
-        "prefix_source_plate": "1",
-        "part": "cysK_1",
-        "part_source_well": "E5",
-        "part_source_plate": "1",
-        "suffix_linker": "LMS-S",
-        "suffix_source_well": "E12",
-        "suffix_source_plate": "1",
-        "Clip_Well": "F3",
-        "plate": 2,
-        "part_vol": 1.0,
-        "water_vol": 0.0
-    },
-    "G3": {
-        "prefix_linker": "LMP-P",
-        "prefix_source_well": "B12",
-        "prefix_source_plate": "1",
-        "part": "trxA_1",
-        "part_source_well": "C8",
-        "part_source_plate": "1",
-        "suffix_linker": "L1-S",
-        "suffix_source_well": "G12",
-        "suffix_source_plate": "1",
-        "Clip_Well": "G3",
-        "plate": 2,
-        "part_vol": 1.0,
-        "water_vol": 0.0
-    },
-    "H3": {
-        "prefix_linker": "L1-P",
-        "prefix_source_well": "F12",
-        "prefix_source_plate": "1",
-        "part": "trxC_1",
-        "part_source_well": "A6",
-        "part_source_plate": "1",
-        "suffix_linker": "LMS-S",
-        "suffix_source_well": "E12",
-        "suffix_source_plate": "1",
-        "Clip_Well": "H3",
-        "plate": 2,
-        "part_vol": 1.0,
-        "water_vol": 0.0
-    },
-    "A4": {
-        "prefix_linker": "LMP-P",
-        "prefix_source_well": "B12",
-        "prefix_source_plate": "1",
-        "part": "trxC_1",
-        "part_source_well": "A6",
-        "part_source_plate": "1",
-        "suffix_linker": "L1-S",
-        "suffix_source_well": "G12",
-        "suffix_source_plate": "1",
-        "Clip_Well": "A4",
-        "plate": 2,
-        "part_vol": 1.0,
-        "water_vol": 0.0
-    },
-    "B4": {
-        "prefix_linker": "L1-P",
-        "prefix_source_well": "F12",
-        "prefix_source_plate": "1",
-        "part": "tdcB_1",
-        "part_source_well": "A5",
-        "part_source_plate": "1",
-        "suffix_linker": "LMS-S",
-        "suffix_source_well": "E12",
-        "suffix_source_plate": "1",
-        "Clip_Well": "B4",
-        "plate": 2,
-        "part_vol": 1.0,
-        "water_vol": 0.0
-    },
-    "C4": {
-        "prefix_linker": "LMP-P",
-        "prefix_source_well": "B12",
-        "prefix_source_plate": "1",
-        "part": "aspC_1",
-        "part_source_well": "E3",
-        "part_source_plate": "1",
-        "suffix_linker": "L1-S",
-        "suffix_source_well": "G12",
-        "suffix_source_plate": "1",
-        "Clip_Well": "C4",
-        "plate": 2,
-        "part_vol": 1.0,
-        "water_vol": 0.0
-    },
-    "D4": {
-        "prefix_linker": "LMP-P",
-        "prefix_source_well": "B12",
-        "prefix_source_plate": "1",
-        "part": "carA_1",
-        "part_source_well": "A1",
-        "part_source_plate": "1",
-        "suffix_linker": "L1-S",
-        "suffix_source_well": "G12",
-        "suffix_source_plate": "1",
-        "Clip_Well": "D4",
-        "plate": 2,
-        "part_vol": 1.0,
-        "water_vol": 0.0
-    },
-    "E4": {
-        "prefix_linker": "L1-P",
-        "prefix_source_well": "F12",
-        "prefix_source_plate": "1",
-        "part": "carA_1",
-        "part_source_well": "A1",
-        "part_source_plate": "1",
-        "suffix_linker": "LMS-S",
-        "suffix_source_well": "E12",
-        "suffix_source_plate": "1",
-        "Clip_Well": "E4",
-        "plate": 2,
-        "part_vol": 1.0,
-        "water_vol": 0.0
-    },
-    "F4": {
-        "prefix_linker": "LMP-P",
-        "prefix_source_well": "B12",
-        "prefix_source_plate": "1",
-        "part": "carB_1",
-        "part_source_well": "C1",
-        "part_source_plate": "1",
-        "suffix_linker": "L1-S",
-        "suffix_source_well": "G12",
-        "suffix_source_plate": "1",
-        "Clip_Well": "F4",
-        "plate": 2,
-        "part_vol": 1.0,
-        "water_vol": 0.0
-    },
-    "G4": {
-        "prefix_linker": "L1-P",
-        "prefix_source_well": "F12",
-        "prefix_source_plate": "1",
-        "part": "carB_1",
-        "part_source_well": "C1",
-        "part_source_plate": "1",
-        "suffix_linker": "LMS-S",
-        "suffix_source_well": "E12",
-        "suffix_source_plate": "1",
-        "Clip_Well": "G4",
-        "plate": 2,
-        "part_vol": 1.0,
-        "water_vol": 0.0
-    },
-    "H4": {
-        "prefix_linker": "LMP-P",
-        "prefix_source_well": "B12",
-        "prefix_source_plate": "1",
-        "part": "serC_1",
-        "part_source_well": "E4",
-        "part_source_plate": "1",
-        "suffix_linker": "L1-S",
-        "suffix_source_well": "G12",
-        "suffix_source_plate": "1",
-        "Clip_Well": "H4",
-        "plate": 2,
-        "part_vol": 1.0,
-        "water_vol": 0.0
-    },
-    "A5": {
-        "prefix_linker": "L1-P",
-        "prefix_source_well": "F12",
-        "prefix_source_plate": "1",
-        "part": "panD_1",
-        "part_source_well": "D4",
-        "part_source_plate": "1",
-        "suffix_linker": "LMS-S",
-        "suffix_source_well": "E12",
-        "suffix_source_plate": "1",
-        "Clip_Well": "A5",
-        "plate": 2,
-        "part_vol": 1.0,
-        "water_vol": 0.0
-    },
-    "B5": {
-        "prefix_linker": "LMP-P",
-        "prefix_source_well": "B12",
-        "prefix_source_plate": "1",
-        "part": "serC_2",
-        "part_source_well": "F3",
-        "part_source_plate": "1",
-        "suffix_linker": "L1-S",
-        "suffix_source_well": "G12",
-        "suffix_source_plate": "1",
-        "Clip_Well": "B5",
-        "plate": 2,
-        "part_vol": 1.0,
-        "water_vol": 0.0
-    },
-    "C5": {
-        "prefix_linker": "LMP-P",
-        "prefix_source_well": "B12",
-        "prefix_source_plate": "1",
-        "part": "aroL_1",
-        "part_source_well": "G2",
-        "part_source_plate": "1",
-        "suffix_linker": "L1-S",
-        "suffix_source_well": "G12",
-        "suffix_source_plate": "1",
-        "Clip_Well": "C5",
-        "plate": 2,
-        "part_vol": 1.0,
-        "water_vol": 0.0
-    },
-    "D5": {
-        "prefix_linker": "LMP-P",
-        "prefix_source_well": "B12",
-        "prefix_source_plate": "1",
-        "part": "folM_1",
-        "part_source_well": "G10",
-        "part_source_plate": "1",
-        "suffix_linker": "L1-S",
-        "suffix_source_well": "G12",
-        "suffix_source_plate": "1",
-        "Clip_Well": "D5",
-        "plate": 2,
-        "part_vol": 1.0,
-        "water_vol": 0.0
-    },
-    "E5": {
-        "prefix_linker": "L1-P",
-        "prefix_source_well": "F12",
-        "prefix_source_plate": "1",
-        "part": "folA_1",
-        "part_source_well": "E1",
-        "part_source_plate": "1",
-        "suffix_linker": "LMS-S",
-        "suffix_source_well": "E12",
-        "suffix_source_plate": "1",
-        "Clip_Well": "E5",
-        "plate": 2,
-        "part_vol": 1.0,
-        "water_vol": 0.0
-    },
-    "F5": {
-        "prefix_linker": "LMP-P",
-        "prefix_source_well": "B12",
-        "prefix_source_plate": "1",
-        "part": "dmlA_1",
-        "part_source_well": "E10",
-        "part_source_plate": "1",
-        "suffix_linker": "L1-S",
-        "suffix_source_well": "G12",
-        "suffix_source_plate": "1",
-        "Clip_Well": "F5",
-        "plate": 2,
-        "part_vol": 1.0,
-        "water_vol": 0.0
-    },
-    "G5": {
-        "prefix_linker": "L1-P",
-        "prefix_source_well": "F12",
-        "prefix_source_plate": "1",
-        "part": "leuB_2",
-        "part_source_well": "H1",
-        "part_source_plate": "1",
-        "suffix_linker": "LMS-S",
-        "suffix_source_well": "E12",
-        "suffix_source_plate": "1",
-        "Clip_Well": "G5",
-        "plate": 2,
-        "part_vol": 1.0,
-        "water_vol": 0.0
-    },
-    "H5": {
-        "prefix_linker": "LMP-P",
-        "prefix_source_well": "B12",
-        "prefix_source_plate": "1",
-        "part": "ilvN_1",
-        "part_source_well": "G11",
-        "part_source_plate": "1",
-        "suffix_linker": "L1-S",
-        "suffix_source_well": "G12",
-        "suffix_source_plate": "1",
-        "Clip_Well": "H5",
-        "plate": 2,
-        "part_vol": 1.0,
-        "water_vol": 0.0
-    },
-    "A6": {
-        "prefix_linker": "L1-P",
-        "prefix_source_well": "F12",
-        "prefix_source_plate": "1",
-        "part": "ilvH_1",
-        "part_source_well": "A2",
-        "part_source_plate": "1",
-        "suffix_linker": "LMS-S",
-        "suffix_source_well": "E12",
-        "suffix_source_plate": "1",
-        "Clip_Well": "A6",
-        "plate": 2,
-        "part_vol": 1.0,
-        "water_vol": 0.0
-    },
-    "B6": {
-        "prefix_linker": "LMP-P",
-        "prefix_source_well": "B12",
-        "prefix_source_plate": "1",
-        "part": "ydiB_1",
-        "part_source_well": "A11",
-        "part_source_plate": "1",
-        "suffix_linker": "L1-S",
-        "suffix_source_well": "G12",
-        "suffix_source_plate": "1",
-        "Clip_Well": "B6",
-        "plate": 2,
-        "part_vol": 1.0,
-        "water_vol": 0.0
-    },
-    "C6": {
-        "prefix_linker": "L1-P",
-        "prefix_source_well": "F12",
-        "prefix_source_plate": "1",
-        "part": "sucB_1",
-        "part_source_well": "C3",
-        "part_source_plate": "1",
-        "suffix_linker": "LMS-S",
-        "suffix_source_well": "E12",
-        "suffix_source_plate": "1",
-        "Clip_Well": "C6",
-        "plate": 2,
-        "part_vol": 1.0,
-        "water_vol": 0.0
-    },
-    "D6": {
-        "prefix_linker": "LMP-P",
-        "prefix_source_well": "B12",
-        "prefix_source_plate": "1",
-        "part": "tynA_1",
-        "part_source_well": "D6",
-        "part_source_plate": "1",
-        "suffix_linker": "L1-S",
-        "suffix_source_well": "G12",
-        "suffix_source_plate": "1",
-        "Clip_Well": "D6",
-        "plate": 2,
-        "part_vol": 1.0,
-        "water_vol": 0.0
-    },
-    "E6": {
-        "prefix_linker": "L1-P",
-        "prefix_source_well": "F12",
-        "prefix_source_plate": "1",
-        "part": "serC_2",
-        "part_source_well": "F3",
-        "part_source_plate": "1",
-        "suffix_linker": "LMS-S",
-        "suffix_source_well": "E12",
-        "suffix_source_plate": "1",
-        "Clip_Well": "E6",
-        "plate": 2,
-        "part_vol": 1.0,
-        "water_vol": 0.0
-    },
-    "F6": {
-        "prefix_linker": "LMP-P",
-        "prefix_source_well": "B12",
         "prefix_source_plate": "1",
         "part": "gadB_1",
         "part_source_well": "G4",
         "part_source_plate": "1",
-        "suffix_linker": "L1-S",
-        "suffix_source_well": "G12",
+        "suffix_linker": "LMS-S",
+        "suffix_source_well": "E12",
         "suffix_source_plate": "1",
-        "Clip_Well": "F6",
-        "plate": 2,
+        "Clip_Well": "H7",
+        "plate": 1,
         "part_vol": 1.0,
         "water_vol": 0.0
     },
-    "G6": {
+    "A8": {
         "prefix_linker": "L1-P",
         "prefix_source_well": "F12",
         "prefix_source_plate": "1",
-        "part": "folM_1",
-        "part_source_well": "G10",
+        "part": "ilvA_1",
+        "part_source_well": "A8",
         "part_source_plate": "1",
         "suffix_linker": "LMS-S",
         "suffix_source_well": "E12",
         "suffix_source_plate": "1",
-        "Clip_Well": "G6",
-        "plate": 2,
+        "Clip_Well": "A8",
+        "plate": 1,
+        "part_vol": 1.0,
+        "water_vol": 0.0
+    },
+    "B8": {
+        "prefix_linker": "LMP-P",
+        "prefix_source_well": "B12",
+        "prefix_source_plate": "1",
+        "part": "ilvH_1",
+        "part_source_well": "A2",
+        "part_source_plate": "1",
+        "suffix_linker": "L1-S",
+        "suffix_source_well": "G12",
+        "suffix_source_plate": "1",
+        "Clip_Well": "B8",
+        "plate": 1,
+        "part_vol": 1.0,
+        "water_vol": 0.0
+    },
+    "C8": {
+        "prefix_linker": "LMP-P",
+        "prefix_source_well": "B12",
+        "prefix_source_plate": "1",
+        "part": "menA_1",
+        "part_source_well": "G8",
+        "part_source_plate": "1",
+        "suffix_linker": "L1-S",
+        "suffix_source_well": "G12",
+        "suffix_source_plate": "1",
+        "Clip_Well": "C8",
+        "plate": 1,
+        "part_vol": 1.0,
+        "water_vol": 0.0
+    },
+    "D8": {
+        "prefix_linker": "L1-P",
+        "prefix_source_well": "F12",
+        "prefix_source_plate": "1",
+        "part": "menA_1",
+        "part_source_well": "G8",
+        "part_source_plate": "1",
+        "suffix_linker": "LMS-S",
+        "suffix_source_well": "E12",
+        "suffix_source_plate": "1",
+        "Clip_Well": "D8",
+        "plate": 1,
         "part_vol": 1.0,
         "water_vol": 0.0
     }
@@ -750,7 +225,7 @@ class TipManager:
         
         Args:
             slot: The deck slot number for the tip rack
-            tip_type: Optional tip type ('p300' or 'p20'). If None, uses the manager's default tip type.
+            tip_type: Optional tip type ('flex_1channel_1000' or 'flex_8channel_1000'). If None, uses the manager's default tip type.
             
         Raises:
             ValueError: If the tip type is not supported or incompatible with the pipette
@@ -758,14 +233,14 @@ class TipManager:
         tip_type = tip_type or self.tip_type
         
         # Check pipette compatibility
-        pipette_type = 'p300' if self.pipette.max_volume >= 300 else 'p20'
+        pipette_type = 'flex_8channel_1000' if self.pipette.channels > 1 else 'flex_1channel_1000'
         if tip_type != pipette_type:
             raise ValueError(f"Tip type '{tip_type}' is incompatible with pipette type '{pipette_type}'")
             
-        if tip_type == 'p300':
-            self.tipracks.append(self.protocol.load_labware('opentrons_96_tiprack_300ul', slot))
-        elif tip_type == 'p20':
-            self.tipracks.append(self.protocol.load_labware('opentrons_96_tiprack_20ul', slot))
+        if tip_type == 'flex_8channel_1000':
+            self.tipracks.append(self.protocol.load_labware('opentrons_96_tiprack_1000ul', slot))
+        elif tip_type == 'flex_1channel_1000':
+            self.tipracks.append(self.protocol.load_labware('opentrons_96_tiprack_1000ul', slot))
         else:
             raise ValueError(f"Unsupported tip type: {tip_type}")
     
@@ -979,22 +454,22 @@ class MasterMixManager:
 #clips_dict={"prefixes_wells": ["A8", "A7", "C5", "C7", "C10"], "prefixes_plates": ["2", "2", "2", "2", "2"], "suffixes_wells": ["B7", "C1", "C2", "C3", "B8"], "suffixes_plates": ["2", "2", "2", "2", "2"], "parts_wells": ["E2", "F2", "C2", "B2", "D2"], "parts_plates": ["5", "5", "5", "5", "5"], "parts_vols": [1, 1, 1, 1, 1], "water_vols": [7.0, 7.0, 7.0, 7.0, 7.0]}
 
 def run(protocol: protocol_api.ProtocolContext):
-# added run function for API 2.8
+# added run function for API 2.15
 
     ### Constants - these have been moved out of the def clip() for clarity
 
     #Tiprack
-    tiprack_type="opentrons_96_tiprack_20ul"
+    tiprack_type="opentrons_96_tiprack_1000ul"
     INITIAL_TIP = 'A1'
     CANDIDATE_TIPRACK_SLOTS = ['3', '6', '9', '8', '11']  # Exclude slots 1, 2 for source plates
 
     # Pipettes - pipette instructions in a single location so redefining pipette type is simpler
-    PIPETTE_TYPE = 'p20_single_gen2'
-             # API 2 supports gen_1 pipettes like the p10_single
+    PIPETTE_TYPE = 'flex_1channel_1000'
+             # API 2.15 supports Flex pipettes
     PIPETTE_MOUNT = 'right'
         ### Load Pipette
-        # checks if it's a P10 Single pipette
-    if PIPETTE_TYPE != 'p20_single_gen2':
+        # checks if it's a Flex Single pipette
+    if PIPETTE_TYPE != 'flex_1channel_1000':
         print('Define labware must be changed to use', PIPETTE_TYPE)
         exit()
 
@@ -1035,19 +510,19 @@ def run(protocol: protocol_api.ProtocolContext):
         pipette = protocol.load_instrument(PIPETTE_TYPE, mount=PIPETTE_MOUNT)
         
         # Multi-channel pipette for master mix distribution
-        multi_pipette = protocol.load_instrument('p300_multi_gen2', 'left')
+        multi_pipette = protocol.load_instrument('flex_8channel_1000', 'left')
         
-        # Initialize TipManager for p20 tips
-        # Use available slots for p20 tip racks (excluding slots 1, 2 for source plates)
-        p20_tip_slots = ['3', '6', '9', '8', '11']  # Available slots for p20 tip racks
-        p20_tip_manager = TipManager(protocol, int(p20_tip_slots[0]), pipette, 'p20')  # Initialize with first slot
+        # Initialize TipManager for flex_1channel_1000 tips
+        # Use available slots for flex_1channel_1000 tip racks (excluding slots 1, 2 for source plates)
+        flex_1channel_tip_slots = ['3', '6', '9', '8', '11']  # Available slots for flex_1channel_1000 tip racks
+        flex_1channel_tip_manager = TipManager(protocol, int(flex_1channel_tip_slots[0]), pipette, 'flex_1channel_1000')  # Initialize with first slot
         
         # Add additional tip racks if needed
-        for i in range(1, min(tiprack_num, len(p20_tip_slots))):
-            p20_tip_manager.add_tip_rack(int(p20_tip_slots[i]), 'p20')
+        for i in range(1, min(tiprack_num, len(flex_1channel_tip_slots))):
+            flex_1channel_tip_manager.add_tip_rack(int(flex_1channel_tip_slots[i]), 'flex_1channel_1000')
         
-        # Initialize TipManager for p300 tips (slot 5)
-        p300_tip_manager = TipManager(protocol, 5, multi_pipette, 'p300')
+        # Initialize TipManager for flex_8channel_1000 tips (slot 5)
+        flex_8channel_tip_manager = TipManager(protocol, 5, multi_pipette, 'flex_8channel_1000')
         
         destination_plate = protocol.load_labware(DESTINATION_PLATE_TYPE, DESTINATION_PLATE_POSITION)
         tube_rack = protocol.load_labware(TUBE_RACK_TYPE, TUBE_RACK_POSITION)
@@ -1085,13 +560,13 @@ def run(protocol: protocol_api.ProtocolContext):
         )
         
         # Distribute master mix to all destination wells using multi-channel pipette
-        mm_manager.distribute_to_wells(destination_wells, multi_pipette, tip_manager=p300_tip_manager)
+        mm_manager.distribute_to_wells(destination_wells, multi_pipette, tip_manager=flex_8channel_tip_manager)
         
         # Water transfer (only if needed and not all_default_conc)
         if not all_default_conc:
             water_vols = [clips_dict[w]['water_vol'] for w in dest_wells]
             if any([wv > 0 for wv in water_vols]):
-                p20_tip_manager.get_single_tip()
+                flex_1channel_tip_manager.get_single_tip()
                 pipette.transfer(water_vols, water, destination_wells, blow_out=True, blowout_location='destination well', new_tip='never')
                 pipette.drop_tip()
         
@@ -1100,18 +575,18 @@ def run(protocol: protocol_api.ProtocolContext):
             info = clips_dict[well]
             
             # Prefix transfer
-            p20_tip_manager.get_single_tip()
+            flex_1channel_tip_manager.get_single_tip()
             pipette.transfer(1, source_plates[info['prefix_source_plate']].wells_by_name()[info['prefix_source_well']], destination_wells[i], blow_out=True, blowout_location='destination well', new_tip='never', mix_after=LINKER_MIX_SETTINGS)
             pipette.drop_tip()
             
             # Suffix transfer
-            p20_tip_manager.get_single_tip()
+            flex_1channel_tip_manager.get_single_tip()
             pipette.transfer(1, source_plates[info['suffix_source_plate']].wells_by_name()[info['suffix_source_well']], destination_wells[i], blow_out=True, blowout_location='destination well', new_tip='never', mix_after=LINKER_MIX_SETTINGS)
             pipette.drop_tip()
             
             # Part transfer
-            p20_tip_manager.get_single_tip()
+            flex_1channel_tip_manager.get_single_tip()
             pipette.transfer(info['part_vol'], source_plates[info['part_source_plate']].wells_by_name()[info['part_source_well']], destination_wells[i], blow_out=True, blowout_location='destination well', new_tip='never', mix_after=PART_MIX_SETTINGS)
             pipette.drop_tip()
     # the run function will first define the CLIP function, and then run the CLIP function with the dictionary produced by DNA-BOT
-    clip(clips_dict)
+    clip(clips_dict) 
