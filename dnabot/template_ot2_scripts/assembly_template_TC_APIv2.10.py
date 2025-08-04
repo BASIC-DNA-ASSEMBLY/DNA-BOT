@@ -2,44 +2,22 @@ from __future__ import unicode_literals
 from opentrons import protocol_api
 import numpy as np
 import json
+import time
 from typing import List, Optional
 
 # metadata
 metadata = {
-'protocolName': 'DNABOT: C4 Final Assembly with Thermocycler v2.10',
+'protocolName': 'DNABOT: Final Assembly with Thermocycler v2.10',
 'description': 'Final assembly protocol for DNA-BOT using Opentrons OT-2 with thermocycler module',
 'apiLevel': '2.10'
 }
 
 # Load assembly data from JSON file
 # This will be replaced by the parser with embedded JSON data
-final_assembly_dict = {
-    "A1": [["B1", "B2", "C2"], [2, 2, 2]],
-    "B1": [["B1", "D2", "B7"], [2, 2, 2]],
-    "C1": [["C1", "H4", "G2"], [2, 2, 2]],
-    "D1": [["C1", "H2", "A3"], [2, 2, 2]],
-    "E1": [["C1", "C7", "C5"], [2, 2, 2]],
-    "F1": [["C1", "D3", "H5"], [2, 2, 2]],
-    "G1": [["C1", "D7", "H5"], [2, 2, 2]],
-    "H1": [["C1", "H3", "H5"], [2, 2, 2]],
-    "A2": [["C1", "B4", "C4"], [2, 2, 2]],
-    "B2": [["C1", "D4", "E4"], [2, 2, 2]],
-    "C2": [["C1", "F4", "E7"], [2, 2, 2]],
-    "D2": [["C1", "H4", "A5"], [2, 2, 2]],
-    "E2": [["C1", "H2", "A3"], [2, 2, 2]],
-    "F2": [["C1", "B5", "C5"], [2, 2, 2]],
-    "G2": [["C1", "F7", "G7"], [2, 2, 2]],
-    "H2": [["D1", "F4", "G4"], [2, 2, 2]],
-    "A3": [["D1", "H4", "A5"], [2, 2, 2]],
-    "B3": [["D1", "H7", "A3"], [2, 2, 2]],
-    "C3": [["D1", "B5", "C5"], [2, 2, 2]],
-    "D3": [["D1", "A8", "E5"], [2, 2, 2]],
-    "E3": [["D1", "D3", "F5"], [2, 2, 2]],
-    "F3": [["D1", "D7", "H5"], [2, 2, 2]],
-    "G3": [["D1", "H3", "F5"], [2, 2, 2]],
-    "H3": [["D1", "B4", "E5"], [2, 2, 2]]
-}
-tiprack_num = 1
+with open('assembly_data.json') as f:
+    assembly_data = json.load(f)
+    final_assembly_dict = assembly_data['final_assembly_dict']
+    tiprack_num = assembly_data['tiprack_num']
 
 # Thermocycler generation setting
 # This will be replaced by the parser with embedded thermocycler generation
@@ -356,13 +334,17 @@ def run(protocol: protocol_api.ProtocolContext):
                   
             slots = CANDIDATE_TIPRACK_SLOTS[:tiprack_num]
 
+            # Pipettes - pipette instructions in a single location so redefining pipette type is simpler
+            PIPETTE_TYPE = 'p20_single_gen2'
+            PIPETTE_MOUNT = 'left'
+            MULTI_PIPETTE_TYPE = 'p300_multi_gen2'
+            MULTI_PIPETTE_MOUNT = 'right'
+
             # Load pipettes (without tip_racks argument - TipManager will handle this)
-            PIPETTE_MOUNT = 'right'      
-            pipette = protocol.load_instrument('p20_single_gen2', PIPETTE_MOUNT)
+            pipette = protocol.load_instrument(PIPETTE_TYPE, PIPETTE_MOUNT)
             
             # Multi-channel pipette for master mix distribution
-            MULTI_PIPETTE_MOUNT = 'left'
-            multi_pipette = protocol.load_instrument('p300_multi_gen2', MULTI_PIPETTE_MOUNT)
+            multi_pipette = protocol.load_instrument(MULTI_PIPETTE_TYPE, MULTI_PIPETTE_MOUNT)
             
             # Initialize TipManager for p20 tips
             p20_tip_manager = TipManager(protocol, int(slots[0]), pipette, 'p20')
@@ -442,8 +424,8 @@ def run(protocol: protocol_api.ProtocolContext):
             # Thermocycler Module
             tc_mod.close_lid()
             tc_mod.set_lid_temperature(105)
-            tc_mod.set_block_temperature(50, hold_time_minutes=45, block_max_volume=15)
-            tc_mod.set_block_temperature(8, block_max_volume=30)
+            tc_mod.set_block_temperature(50, hold_time_minutes=45)
+            tc_mod.set_block_temperature(8)
             tc_mod.set_lid_temperature(37)
             # tc_mod.open_lid()                                     # leave lid shut to prevent evaporation
         

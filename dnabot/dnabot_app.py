@@ -69,8 +69,8 @@ class FileConfig:
     # Directory structure
     TEMPLATE_DIR_NAME: str = 'template_ot2_scripts'
     FLEX_TEMPLATE_DIR_NAME: str = 'template_flex_scripts'
-    V2_8_PATH: str = "\\APIv2.8\\"
-    V2_8_TC_PATH: str = "\\Thermocycler_APIv2.8\\"
+    V2_10_PATH: str = "\\APIv2.10\\"
+    V2_10_TC_PATH: str = "\\Thermocycler_APIv2.10\\"
     
     # Template files
     TEMPLATE_FILES: Dict[str, Dict[str, str]] = None
@@ -84,20 +84,17 @@ class FileConfig:
         if self.TEMPLATE_FILES is None:
             self.TEMPLATE_FILES = {
     'CLIP': {
-        'V2_8': 'clip_template_APIv2.8.py',
-        'V2_8_TC': 'clip_template_TC_APIv2.8.py'
+        'V2_10': 'clip_template_APIv2.10.py',
+        'V2_10_TC': 'clip_template_TC_APIv2.10.py'
     },
     'MAGBEAD': {
-        'V2_8': 'purification_template_APIv2.8.py',
         'V2_10': 'purification_template_APIv2.10.py'
     },
     'F_ASSEMBLY': {
-        'V2_8': 'assembly_template_APIv2.8.py',
-        'V2_8_TC': 'assembly_template_TC_APIv2.8.py'
+        'V2_10': 'assembly_template_APIv2.10.py',
+        'V2_10_TC': 'assembly_template_TC_APIv2.10.py'
     },
     'TRANS_SPOT': {
-        'V2_8': 'transformation_template_APIv2.8.py',
-        'V2_8_TC': 'transformation_template_TC_APIv2.8.py',
         'V2_10_TC': 'transformation_template_TC_APIv2.10.py'
     }
 }
@@ -105,35 +102,32 @@ class FileConfig:
         if self.FLEX_TEMPLATE_FILES is None:
             self.FLEX_TEMPLATE_FILES = {
     'CLIP': {
-        'V2_8': 'clip_template_APIv2.8.py',
-        'V2_8_TC': 'clip_template_TC_APIv2.8.py'
+        'V2_15': 'clip_template_APIv2.15.py',
+        'V2_15_TC': 'clip_template_TC_APIv2.15.py'
     },
     'F_ASSEMBLY': {
-        'V2_8': 'assembly_template_APIv2.8.py',
-        'V2_8_TC': 'assembly_template_TC_APIv2.8.py'
+        'V2_15': 'assembly_template_APIv2.15.py',
+        'V2_15_TC': 'assembly_template_TC_APIv2.15.py'
     },
     'TRANS_SPOT': {
-        'V2_10_TC': 'transformation_template_TC_APIv2.10.py'
+        'V2_15_TC': 'transformation_template_TC_APIv2.15.py'
     }
 }
 
         if self.OUTPUT_FILES is None:
             self.OUTPUT_FILES = {
     'CLIP': {
-        'V2_8': 'A_clip_ot2_APIv2.8',
-        'V2_8_TC': 'A_clip_ot2_Thermocycler_APIv2.8'
+        'V2_10': 'A_clip_ot2_APIv2.10',
+        'V2_10_TC': 'A_clip_ot2_Thermocycler_APIv2.10'
     },
     'MAGBEAD': {
-        'V2_8': 'B_purification_ot2_APIv2.8',
         'V2_10': 'B_purification_ot2_APIv2.10'
     },
     'F_ASSEMBLY': {
-        'V2_8': 'C_assembly_ot2_APIv2.8',
-        'V2_8_TC': 'C_assembly_ot2_Thermocycler_APIv2.8'
+        'V2_10': 'C_assembly_ot2_APIv2.10',
+        'V2_10_TC': 'C_assembly_ot2_Thermocycler_APIv2.10'
     },
     'TRANS_SPOT': {
-        'V2_8': 'D_transformation_ot2_APIv2.8.py',
-        'V2_8_TC': 'D_transformation_ot2_Thermocycler_APIv2.8.py',
         'V2_10_TC': 'D_transformation_ot2_Thermocycler_APIv2.10.py'
     },
     'INFO': {
@@ -148,15 +142,15 @@ class FileConfig:
         if self.FLEX_OUTPUT_FILES is None:
             self.FLEX_OUTPUT_FILES = {
     'CLIP': {
-        'V2_8': 'A_clip_flex_APIv2.8',
-        'V2_8_TC': 'A_clip_flex_Thermocycler_APIv2.8'
+        'V2_15': 'A_clip_flex_APIv2.15',
+        'V2_15_TC': 'A_clip_flex_Thermocycler_APIv2.15'
     },
     'F_ASSEMBLY': {
-        'V2_8': 'C_assembly_flex_APIv2.8',
-        'V2_8_TC': 'C_assembly_flex_Thermocycler_APIv2.8'
+        'V2_15': 'C_assembly_flex_APIv2.15',
+        'V2_15_TC': 'C_assembly_flex_Thermocycler_APIv2.15'
     },
     'TRANS_SPOT': {
-        'V2_10_TC': 'D_transformation_flex_Thermocycler_APIv2.10.py'
+        'V2_15_TC': 'D_transformation_flex_Thermocycler_APIv2.15.py'
     },
     'INFO': {
         'CLIPS': 'clip_run_info.csv',
@@ -801,25 +795,25 @@ def _generate_clip_scripts(sub_clip_dict: dict, clip_plate: int, paths: dict, al
     for wells, half in halves:
         # Build a sub-dictionary for this half
         half_clip_dict = {w: sub_clip_dict[w] for w in wells}
-        # Script name: e.g. A1a_clip_ot2_APIv2.8.py
-        base_name = FILE_CONFIG.OUTPUT_FILES['CLIP']['V2_8']
+        # Script name: e.g. A1a_clip_ot2_APIv2.10.py
+        base_name = FILE_CONFIG.OUTPUT_FILES['CLIP']['V2_10']
         stage_letter = base_name[0]
         script_name = f"{stage_letter}{clip_plate+1}{half}{base_name[1:]}.py"
         script_path = os.path.join(paths['ot2_output_dir'], script_name)
         _generate_clip_script_embedded(
             script_path,
-            os.path.join(template_dir, FILE_CONFIG.TEMPLATE_FILES['CLIP']['V2_8']),
+            os.path.join(template_dir, FILE_CONFIG.TEMPLATE_FILES['CLIP']['V2_10']),
             half_clip_dict,
             all_default_conc
         )
         # Thermocycler version - only generate if thermocycler_gen is not "None"
         if thermocycler_gen != "None":
-            tc_base_name = FILE_CONFIG.OUTPUT_FILES['CLIP']['V2_8_TC']
+            tc_base_name = FILE_CONFIG.OUTPUT_FILES['CLIP']['V2_10_TC']
             tc_script_name = f"{tc_base_name[0]}{clip_plate+1}{half}{tc_base_name[1:]}.py"
             tc_script_path = os.path.join(paths['ot2_output_dir'], tc_script_name)
             _generate_clip_script_embedded(
                 tc_script_path,
-                os.path.join(template_dir, FILE_CONFIG.TEMPLATE_FILES['CLIP']['V2_8_TC']),
+                os.path.join(template_dir, FILE_CONFIG.TEMPLATE_FILES['CLIP']['V2_10_TC']),
                 half_clip_dict,
                 all_default_conc,
                 thermocycler_gen
@@ -902,22 +896,22 @@ def _generate_assembly_scripts(final_assembly_dict: Dict[str, List],
     final_assembly_tipracks = calculate_final_assembly_tipracks(final_assembly_dict)
     
     # Generate standard assembly script with new naming convention
-    assembly_script_name = _generate_script_name_with_number(FILE_CONFIG.OUTPUT_FILES['F_ASSEMBLY']['V2_8'], plate_number)
+    assembly_script_name = _generate_script_name_with_number(FILE_CONFIG.OUTPUT_FILES['F_ASSEMBLY']['V2_10'], plate_number)
     assembly_script_path = os.path.join(paths['ot2_output_dir'], assembly_script_name)
     _generate_assembly_script_embedded(
         assembly_script_path,
-        os.path.join(template_dir, FILE_CONFIG.TEMPLATE_FILES['F_ASSEMBLY']['V2_8']),
+        os.path.join(template_dir, FILE_CONFIG.TEMPLATE_FILES['F_ASSEMBLY']['V2_10']),
         final_assembly_dict,
         final_assembly_tipracks
     )
     
     # Generate thermocycler assembly script with new naming convention - only if thermocycler_gen is not "None"
     if thermocycler_gen != "None":
-        assembly_tc_script_name = _generate_script_name_with_number(FILE_CONFIG.OUTPUT_FILES['F_ASSEMBLY']['V2_8_TC'], plate_number)
+        assembly_tc_script_name = _generate_script_name_with_number(FILE_CONFIG.OUTPUT_FILES['F_ASSEMBLY']['V2_10_TC'], plate_number)
         assembly_tc_script_path = os.path.join(paths['ot2_output_dir'], assembly_tc_script_name)
         _generate_assembly_script_embedded(
             assembly_tc_script_path,
-            os.path.join(template_dir, FILE_CONFIG.TEMPLATE_FILES['F_ASSEMBLY']['V2_8_TC']),
+            os.path.join(template_dir, FILE_CONFIG.TEMPLATE_FILES['F_ASSEMBLY']['V2_10_TC']),
             final_assembly_dict,
             final_assembly_tipracks,
             thermocycler_gen
@@ -1000,24 +994,24 @@ def _generate_flex_clip_scripts(sub_clip_dict: dict, clip_plate: int, paths: dic
     for wells, half in halves:
         # Build a sub-dictionary for this half
         half_clip_dict = {w: sub_clip_dict[w] for w in wells}
-        # Script name: e.g. A1a_clip_flex_APIv2.8.py
-        base_name = FILE_CONFIG.FLEX_OUTPUT_FILES['CLIP']['V2_8']
+        # Script name: e.g. A1a_clip_flex_APIv2.15.py
+        base_name = FILE_CONFIG.FLEX_OUTPUT_FILES['CLIP']['V2_15']
         stage_letter = base_name[0]
         script_name = f"{stage_letter}{clip_plate+1}{half}{base_name[1:]}.py"
         script_path = os.path.join(paths['flex_output_dir'], script_name)
         _generate_clip_script_embedded(
             script_path,
-            os.path.join(flex_template_dir, FILE_CONFIG.FLEX_TEMPLATE_FILES['CLIP']['V2_8']),
+            os.path.join(flex_template_dir, FILE_CONFIG.FLEX_TEMPLATE_FILES['CLIP']['V2_15']),
             half_clip_dict,
             all_default_conc
         )
         # Thermocycler version
-        tc_base_name = FILE_CONFIG.FLEX_OUTPUT_FILES['CLIP']['V2_8_TC']
+        tc_base_name = FILE_CONFIG.FLEX_OUTPUT_FILES['CLIP']['V2_15_TC']
         tc_script_name = f"{tc_base_name[0]}{clip_plate+1}{half}{tc_base_name[1:]}.py"
         tc_script_path = os.path.join(paths['flex_output_dir'], tc_script_name)
         _generate_clip_script_embedded(
             tc_script_path,
-            os.path.join(flex_template_dir, FILE_CONFIG.FLEX_TEMPLATE_FILES['CLIP']['V2_8_TC']),
+            os.path.join(flex_template_dir, FILE_CONFIG.FLEX_TEMPLATE_FILES['CLIP']['V2_15_TC']),
             half_clip_dict,
             all_default_conc,
             thermocycler_gen
@@ -1036,22 +1030,22 @@ def _generate_flex_assembly_scripts(final_assembly_dict: Dict[str, List],
     tiprack_num = calculate_final_assembly_tipracks(final_assembly_dict)
     
     # Generate assembly script with new naming convention
-    assembly_script_name = _generate_script_name_with_number(FILE_CONFIG.FLEX_OUTPUT_FILES['F_ASSEMBLY']['V2_8'], plate_number)
+    assembly_script_name = _generate_script_name_with_number(FILE_CONFIG.FLEX_OUTPUT_FILES['F_ASSEMBLY']['V2_15'], plate_number)
     assembly_script_path = os.path.join(paths['flex_output_dir'], assembly_script_name)
     _generate_assembly_script_embedded(
         assembly_script_path,
-        os.path.join(flex_template_dir, FILE_CONFIG.FLEX_TEMPLATE_FILES['F_ASSEMBLY']['V2_8']),
+        os.path.join(flex_template_dir, FILE_CONFIG.FLEX_TEMPLATE_FILES['F_ASSEMBLY']['V2_15']),
         final_assembly_dict,
         tiprack_num,
         thermocycler_gen
     )
     
     # Generate thermocycler version
-    tc_assembly_script_name = _generate_script_name_with_number(FILE_CONFIG.FLEX_OUTPUT_FILES['F_ASSEMBLY']['V2_8_TC'], plate_number)
+    tc_assembly_script_name = _generate_script_name_with_number(FILE_CONFIG.FLEX_OUTPUT_FILES['F_ASSEMBLY']['V2_15_TC'], plate_number)
     tc_assembly_script_path = os.path.join(paths['flex_output_dir'], tc_assembly_script_name)
     _generate_assembly_script_embedded(
         tc_assembly_script_path,
-        os.path.join(flex_template_dir, FILE_CONFIG.FLEX_TEMPLATE_FILES['F_ASSEMBLY']['V2_8_TC']),
+        os.path.join(flex_template_dir, FILE_CONFIG.FLEX_TEMPLATE_FILES['F_ASSEMBLY']['V2_15_TC']),
         final_assembly_dict,
         tiprack_num,
         thermocycler_gen
@@ -1067,11 +1061,11 @@ def _generate_flex_transformation_scripts(transformation_dict: Dict[str, Any],
     flex_template_dir = os.path.join(os.path.dirname(template_dir), FILE_CONFIG.FLEX_TEMPLATE_DIR_NAME)
     
     # Generate transformation script with new naming convention
-    transformation_script_name = _generate_script_name_with_number(FILE_CONFIG.FLEX_OUTPUT_FILES['TRANS_SPOT']['V2_10_TC'], script_index)
+    transformation_script_name = _generate_script_name_with_number(FILE_CONFIG.FLEX_OUTPUT_FILES['TRANS_SPOT']['V2_15_TC'], script_index)
     transformation_script_path = os.path.join(paths['flex_output_dir'], transformation_script_name)
     _generate_transformation_script_embedded(
         transformation_script_path,
-        os.path.join(flex_template_dir, FILE_CONFIG.FLEX_TEMPLATE_FILES['TRANS_SPOT']['V2_10_TC']),
+        os.path.join(flex_template_dir, FILE_CONFIG.FLEX_TEMPLATE_FILES['TRANS_SPOT']['V2_15_TC']),
         transformation_dict,
         thermocycler_gen
     )

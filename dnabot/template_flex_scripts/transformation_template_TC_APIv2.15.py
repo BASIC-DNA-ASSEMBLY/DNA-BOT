@@ -3,28 +3,19 @@ import json
 import time
 
 metadata = {
-    'apiLevel': '2.10',
-    'protocolName': 'DNABOT: D5 Transformation with Thermocycler v2.10',
-    'description': 'Enhanced transformation protocol using thermocycler module',
-    'author': 'Liam Hallett'
+'protocolName': 'DNABOT: Transformation with Thermocycler v2.15',
+'description': 'Enhanced transformation protocol using thermocycler module',
 }
+requirements = {"robotType": "Flex", "apiLevel": "2.15"}
 
 # Load transformation data from JSON file
 # This will be replaced by the parser with embedded JSON data
-transformation_dict = {
-    "transformation_number": 32,
-    "source_wells": ["A1", "B1", "C1", "D1", "E1", "F1", "G1", "H1", "A2", "B2", "C2", "D2", "E2", "F2", "G2", "H2", "A3", "B3", "C3", "D3", "E3", "F3", "G3", "H3", "A4", "B4", "C4", "D4", "E4", "F4", "G4", "H4"],
-    "source_plates": ["1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1"],
-    "destination_wells": ["A1", "B1", "C1", "D1", "E1", "F1", "G1", "H1", "A2", "B2", "C2", "D2", "E2", "F2", "G2", "H2", "A3", "B3", "C3", "D3", "E3", "F3", "G3", "H3", "A4", "B4", "C4", "D4", "E4", "F4", "G4", "H4"],
-    "dna_volumes": [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3],
-    "cell_volumes": [30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30],
-    "soc_volumes": [100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100],
-    "plating_volumes": [100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100]
-}
+with open('transformation_data.json') as f:
+    transformation_dict = json.load(f)
 
 # Thermocycler generation setting
 # This will be replaced by the parser with embedded thermocycler generation
-thermocycler_gen = 'gen2'
+thermocycler_gen = 'GEN2'
 
 # opentrons_simulate.exe dnabot\template_ot2_scripts\transformation_template_TC_APIv2.10.py --custom-labware-path 'labware\Labware definitions'
 
@@ -52,14 +43,14 @@ def run(protocol: protocol_api.ProtocolContext):
     plating_volumes = transformation_dict['plating_volumes']
     
     # Load hardware
-    left_pipette = protocol.load_instrument('p300_multi_gen2', 'left')
-    right_pipette = protocol.load_instrument('p20_single_gen2', 'right')
+    left_pipette = protocol.load_instrument('flex_1channel_50', 'left')
+    right_pipette = protocol.load_instrument('flex_8channel_1000', 'right')
     
     # Load tipracks
-    tiprack300_1 = protocol.load_labware('opentrons_96_tiprack_300ul', 6)
-    tiprack300_1_count = 0
-    tiprack20_1 = protocol.load_labware('opentrons_96_tiprack_20ul', 9)
-    tiprack20_1_count = 0
+    tiprack1000_1 = protocol.load_labware('opentrons_flex_96_tiprack_1000ul', 6)
+    tiprack1000_1_count = 0
+    tiprack50_1 = protocol.load_labware('opentrons_flex_96_tiprack_50ul', 9)
+    tiprack50_1_count = 0
     
     # Load plates and vessels
     source_plate = protocol.load_labware('biorad_96_wellplate_200ul_pcr', 1)
@@ -72,6 +63,7 @@ def run(protocol: protocol_api.ProtocolContext):
     else:  # GEN2
         thermocycler = protocol.load_module('thermocyclerModuleV2', 7)
     TC_plate = thermocycler.load_labware('biorad_96_wellplate_200ul_pcr')
+    thermocycler.open_lid()
     
     # Helper functions
     def flash(n):
@@ -164,7 +156,7 @@ def run(protocol: protocol_api.ProtocolContext):
         tip_count = i % cell_tip_capacity  # step of the multiple transfer tip capacity
         
         if tip_count == 0:  # triggers new tip, includes initial tip
-            left_pipette.pick_up_tip(tiprack300_1[multi2single_tip_counter(tiprack300_1_count)])
+            left_pipette.pick_up_tip(tiprack1000_1[multi2single_tip_counter(tiprack1000_1_count)])
         
         cell_tube_count = i // cell_tube_capacity
         left_pipette.aspirate(cell_volumes[i], tube_rack[tube_counter(cell_tube_count)])
@@ -180,26 +172,26 @@ def run(protocol: protocol_api.ProtocolContext):
                                     TC_plate[destination_wells[transfers_completed + transfer]])
             
             left_pipette.touch_tip()
-            tiprack300_1_count = iterate_tip_count(tiprack300_1_count, left_pipette)
+            tiprack1000_1_count = iterate_tip_count(tiprack1000_1_count, left_pipette)
     
     # Transfer DNA
     protocol.comment("Transferring DNA")
     for i in range(transformation_number):
-        right_pipette.pick_up_tip(tiprack20_1[tip_counter(tiprack20_1_count)])
+        right_pipette.pick_up_tip(tiprack50_1[tip_counter(tiprack50_1_count)])
         
         right_pipette.aspirate(dna_volumes[i], source_plate[source_wells[i]])
         right_pipette.dispense(dna_volumes[i], TC_plate[destination_wells[i]])
         right_pipette.mix(dna_volumes[i], 10, TC_plate[destination_wells[i]])
         right_pipette.touch_tip()
         
-        tiprack20_1_count = iterate_tip_count(tiprack20_1_count, right_pipette)
+        tiprack50_1_count = iterate_tip_count(tiprack50_1_count, right_pipette)
     
     # Heat shock protocol
     protocol.comment("Starting heat shock protocol")
     thermocycler.close_lid()
-    thermocycler.set_block_temperature(4, hold_time_minutes=30, block_max_volume=55)
-    thermocycler.set_block_temperature(42, hold_time_seconds=30, block_max_volume=55)
-    thermocycler.set_block_temperature(4, hold_time_seconds=90, block_max_volume=55)
+    thermocycler.set_block_temperature(4, hold_time_minutes=30)
+    thermocycler.set_block_temperature(42, hold_time_seconds=30)
+    thermocycler.set_block_temperature(4, hold_time_seconds=90)
     
     # Add SOC
     protocol.comment("Adding SOC")
@@ -210,7 +202,7 @@ def run(protocol: protocol_api.ProtocolContext):
     for i in range(transformation_number):
         step = max(i, 1) % SOC_tube_capacity
         
-        left_pipette.pick_up_tip(tiprack300_1[multi2single_tip_counter(tiprack300_1_count)])
+        left_pipette.pick_up_tip(tiprack1000_1[multi2single_tip_counter(tiprack1000_1_count)])
         
         if step == 0:
             SOC_tube_count += 1  # changes SOC tube when tube has been emptied
@@ -219,12 +211,12 @@ def run(protocol: protocol_api.ProtocolContext):
         left_pipette.dispense(soc_volumes[i], TC_plate[destination_wells[i]])
         left_pipette.mix(2, 50, TC_plate[destination_wells[i]])
         
-        tiprack300_1_count = iterate_tip_count(tiprack300_1_count, left_pipette)
+        tiprack1000_1_count = iterate_tip_count(tiprack1000_1_count, left_pipette)
     
     # Recovery incubation
     protocol.comment("Recovery incubation")
     thermocycler.close_lid()
-    thermocycler.set_block_temperature(37, hold_time_minutes=60, block_max_volume=150)
+    thermocycler.set_block_temperature(37, hold_time_minutes=60)
     
     # Plating
     protocol.comment("Plating transformations")
@@ -240,12 +232,12 @@ def run(protocol: protocol_api.ProtocolContext):
             protocol.pause(comment)
             flash(5)
         
-        left_pipette.pick_up_tip(tiprack300_1[multi2single_tip_counter(tiprack300_1_count)])
+        left_pipette.pick_up_tip(tiprack1000_1[multi2single_tip_counter(tiprack1000_1_count)])
         left_pipette.aspirate(plating_volumes[i], TC_plate[destination_wells[i]])
         left_pipette.blow_out(plate_2[plate_counter_T(step)].top())
         left_pipette.touch_tip()
         
-        tiprack300_1_count = iterate_tip_count(tiprack300_1_count, left_pipette)
+        tiprack1000_1_count = iterate_tip_count(tiprack1000_1_count, left_pipette)
     
     # Finish protocol
     thermocycler.deactivate()

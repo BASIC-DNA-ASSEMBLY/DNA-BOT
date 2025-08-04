@@ -3,10 +3,9 @@ import time
 from typing import Dict, List, Optional, Tuple, Union
 
 metadata = {
-    'apiLevel': '2.10',
-    'protocolName': 'DNABOT: Magnetic Bead Purification v2.10',
-    'description': 'Enhanced magnetic bead purification protocol for BASIC assembly using Opentrons OT-2',
-    'author': 'Liam Hallett, Matthew Haines'
+'apiLevel': '2.10',
+'protocolName': 'DNABOT: Magnetic Bead Purification v2.10',
+'description': 'Enhanced magnetic bead purification protocol for BASIC assembly using Opentrons OT-2',
 }
 
 # Protocol Configuration

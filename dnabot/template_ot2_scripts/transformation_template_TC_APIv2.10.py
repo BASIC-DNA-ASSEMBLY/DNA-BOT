@@ -3,10 +3,9 @@ import json
 import time
 
 metadata = {
-    'apiLevel': '2.10',
-    'protocolName': 'DNABOT: Transformation with Thermocycler v2.10',
-    'description': 'Enhanced transformation protocol using thermocycler module',
-    'author': 'Liam Hallett'
+'apiLevel': '2.10',
+'protocolName': 'DNABOT: Transformation with Thermocycler v2.10',
+'description': 'Enhanced transformation protocol using thermocycler module',
 }
 
 # Load transformation data from JSON file
@@ -16,7 +15,7 @@ with open('transformation_data.json') as f:
 
 # Thermocycler generation setting
 # This will be replaced by the parser with embedded thermocycler generation
-thermocycler_gen = 'gen2'
+thermocycler_gen = 'GEN2'
 
 # opentrons_simulate.exe dnabot\template_ot2_scripts\transformation_template_TC_APIv2.10.py --custom-labware-path 'labware\Labware definitions'
 
@@ -44,8 +43,8 @@ def run(protocol: protocol_api.ProtocolContext):
     plating_volumes = transformation_dict['plating_volumes']
     
     # Load hardware
-    left_pipette = protocol.load_instrument('p300_multi_gen2', 'left')
-    right_pipette = protocol.load_instrument('p20_single_gen2', 'right')
+    left_pipette = protocol.load_instrument('p20_single_gen2', 'left')
+    right_pipette = protocol.load_instrument('p300_multi_gen2', 'right')
     
     # Load tipracks
     tiprack300_1 = protocol.load_labware('opentrons_96_tiprack_300ul', 6)
@@ -64,6 +63,7 @@ def run(protocol: protocol_api.ProtocolContext):
     else:  # GEN2
         thermocycler = protocol.load_module('thermocyclerModuleV2', 7)
     TC_plate = thermocycler.load_labware('biorad_96_wellplate_200ul_pcr')
+    thermocycler.open_lid()
     
     # Helper functions
     def flash(n):
@@ -189,9 +189,9 @@ def run(protocol: protocol_api.ProtocolContext):
     # Heat shock protocol
     protocol.comment("Starting heat shock protocol")
     thermocycler.close_lid()
-    thermocycler.set_block_temperature(4, hold_time_minutes=30, block_max_volume=55)
-    thermocycler.set_block_temperature(42, hold_time_seconds=30, block_max_volume=55)
-    thermocycler.set_block_temperature(4, hold_time_seconds=90, block_max_volume=55)
+    thermocycler.set_block_temperature(4, hold_time_minutes=30)
+    thermocycler.set_block_temperature(42, hold_time_seconds=30)
+    thermocycler.set_block_temperature(4, hold_time_seconds=90)
     
     # Add SOC
     protocol.comment("Adding SOC")
@@ -216,7 +216,7 @@ def run(protocol: protocol_api.ProtocolContext):
     # Recovery incubation
     protocol.comment("Recovery incubation")
     thermocycler.close_lid()
-    thermocycler.set_block_temperature(37, hold_time_minutes=60, block_max_volume=150)
+    thermocycler.set_block_temperature(37, hold_time_minutes=60)
     
     # Plating
     protocol.comment("Plating transformations")

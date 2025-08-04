@@ -112,7 +112,7 @@ class DnabotApp:
         etoh_well_label.grid(row=0, column=0, sticky=tk.E, padx=(0, 10), pady=5)
         
         self.etoh_well = tk.StringVar()
-        self.etoh_well.set(DnabotApp.trough_wells[10])
+        self.etoh_well.set(DnabotApp.trough_wells[1])
         etoh_w = ttk.Combobox(settings_frame, textvariable=self.etoh_well, 
                               values=DnabotApp.trough_wells[1:11],
                               font=DnabotApp.app_font, state="readonly", width=15)
@@ -126,7 +126,7 @@ class DnabotApp:
         water_well_label.grid(row=0, column=2, sticky=tk.E, padx=(20, 10), pady=5)
         
         self.water_well = tk.StringVar()
-        self.water_well.set(DnabotApp.trough_wells[11])
+        self.water_well.set(DnabotApp.trough_wells[10])
         water_w = ttk.Combobox(settings_frame, textvariable=self.water_well, 
                                values=DnabotApp.trough_wells[1:11],
                                font=DnabotApp.app_font, state="readonly", width=15)
