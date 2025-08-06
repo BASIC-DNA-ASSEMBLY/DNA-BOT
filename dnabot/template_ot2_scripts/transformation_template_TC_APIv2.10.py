@@ -33,6 +33,10 @@ thermocycler_gen = 'GEN2'
 def run(protocol: protocol_api.ProtocolContext):
     """Main transformation protocol function."""
     
+    # ============================================================================
+    # HARDWARE INITIALIZATION
+    # ============================================================================
+    
     # Extract data from embedded dictionary
     transformation_number = transformation_dict['transformation_number']
     source_wells = transformation_dict['source_wells']
@@ -42,9 +46,9 @@ def run(protocol: protocol_api.ProtocolContext):
     soc_volumes = transformation_dict['soc_volumes']
     plating_volumes = transformation_dict['plating_volumes']
     
-    # Load hardware
-    left_pipette = protocol.load_instrument('p20_single_gen2', 'left')
-    right_pipette = protocol.load_instrument('p300_multi_gen2', 'right')
+    # Load pipettes
+    single_pipette = protocol.load_instrument('p20_single_gen2', 'left')
+    multi_pipette = protocol.load_instrument('p300_multi_gen2', 'right')
     
     # Load tipracks
     tiprack300_1 = protocol.load_labware('opentrons_96_tiprack_300ul', 6)
@@ -156,10 +160,10 @@ def run(protocol: protocol_api.ProtocolContext):
         tip_count = i % cell_tip_capacity  # step of the multiple transfer tip capacity
         
         if tip_count == 0:  # triggers new tip, includes initial tip
-            left_pipette.pick_up_tip(tiprack300_1[multi2single_tip_counter(tiprack300_1_count)])
+            multi_pipette.pick_up_tip(tiprack300_1[multi2single_tip_counter(tiprack300_1_count)])
         
         cell_tube_count = i // cell_tube_capacity
-        left_pipette.aspirate(cell_volumes[i], tube_rack[tube_counter(cell_tube_count)])
+        multi_pipette.aspirate(cell_volumes[i], tube_rack[tube_counter(cell_tube_count)])
         
         dispense_count = max(i, 1) % cell_tip_capacity  # finds the nth transformant, not including the first, triggers dispensing when == 0
         
@@ -168,23 +172,23 @@ def run(protocol: protocol_api.ProtocolContext):
             req_transfers = i - transfers_completed + 1  # transfers required for this tip step (+1 to account for 0 indexing)
             
             for transfer in range(req_transfers):
-                left_pipette.dispense(cell_volumes[transfers_completed + transfer], 
+                multi_pipette.dispense(cell_volumes[transfers_completed + transfer], 
                                     TC_plate[destination_wells[transfers_completed + transfer]])
             
-            left_pipette.touch_tip()
-            tiprack300_1_count = iterate_tip_count(tiprack300_1_count, left_pipette)
+            multi_pipette.touch_tip()
+            tiprack300_1_count = iterate_tip_count(tiprack300_1_count, multi_pipette)
     
     # Transfer DNA
     protocol.comment("Transferring DNA")
     for i in range(transformation_number):
-        right_pipette.pick_up_tip(tiprack20_1[tip_counter(tiprack20_1_count)])
+        single_pipette.pick_up_tip(tiprack20_1[tip_counter(tiprack20_1_count)])
         
-        right_pipette.aspirate(dna_volumes[i], source_plate[source_wells[i]])
-        right_pipette.dispense(dna_volumes[i], TC_plate[destination_wells[i]])
-        right_pipette.mix(dna_volumes[i], 10, TC_plate[destination_wells[i]])
-        right_pipette.touch_tip()
+        single_pipette.aspirate(dna_volumes[i], source_plate[source_wells[i]])
+        single_pipette.dispense(dna_volumes[i], TC_plate[destination_wells[i]])
+        single_pipette.mix(dna_volumes[i], 10, TC_plate[destination_wells[i]])
+        single_pipette.touch_tip()
         
-        tiprack20_1_count = iterate_tip_count(tiprack20_1_count, right_pipette)
+        tiprack20_1_count = iterate_tip_count(tiprack20_1_count, single_pipette)
     
     # Heat shock protocol
     protocol.comment("Starting heat shock protocol")
@@ -202,16 +206,16 @@ def run(protocol: protocol_api.ProtocolContext):
     for i in range(transformation_number):
         step = max(i, 1) % SOC_tube_capacity
         
-        left_pipette.pick_up_tip(tiprack300_1[multi2single_tip_counter(tiprack300_1_count)])
+        multi_pipette.pick_up_tip(tiprack300_1[multi2single_tip_counter(tiprack300_1_count)])
         
         if step == 0:
             SOC_tube_count += 1  # changes SOC tube when tube has been emptied
         
-        left_pipette.aspirate(soc_volumes[i], tube_rack[tube_counter(SOC_tube_count)])
-        left_pipette.dispense(soc_volumes[i], TC_plate[destination_wells[i]])
-        left_pipette.mix(2, 50, TC_plate[destination_wells[i]])
+        multi_pipette.aspirate(soc_volumes[i], tube_rack[tube_counter(SOC_tube_count)])
+        multi_pipette.dispense(soc_volumes[i], TC_plate[destination_wells[i]])
+        multi_pipette.mix(2, 50, TC_plate[destination_wells[i]])
         
-        tiprack300_1_count = iterate_tip_count(tiprack300_1_count, left_pipette)
+        tiprack300_1_count = iterate_tip_count(tiprack300_1_count, multi_pipette)
     
     # Recovery incubation
     protocol.comment("Recovery incubation")
@@ -232,12 +236,12 @@ def run(protocol: protocol_api.ProtocolContext):
             protocol.pause(comment)
             flash(5)
         
-        left_pipette.pick_up_tip(tiprack300_1[multi2single_tip_counter(tiprack300_1_count)])
-        left_pipette.aspirate(plating_volumes[i], TC_plate[destination_wells[i]])
-        left_pipette.blow_out(plate_2[plate_counter_T(step)].top())
-        left_pipette.touch_tip()
+        multi_pipette.pick_up_tip(tiprack300_1[multi2single_tip_counter(tiprack300_1_count)])
+        multi_pipette.aspirate(plating_volumes[i], TC_plate[destination_wells[i]])
+        multi_pipette.blow_out(plate_2[plate_counter_T(step)].top())
+        multi_pipette.touch_tip()
         
-        tiprack300_1_count = iterate_tip_count(tiprack300_1_count, left_pipette)
+        tiprack300_1_count = iterate_tip_count(tiprack300_1_count, multi_pipette)
     
     # Finish protocol
     thermocycler.deactivate()

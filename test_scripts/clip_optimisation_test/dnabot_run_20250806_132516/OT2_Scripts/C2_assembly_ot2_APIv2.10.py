@@ -6,17 +6,40 @@ from typing import List, Optional
 
 # metadata
 metadata = {
-'protocolName': 'DNABOT: Final Assembly v2.10',
+'protocolName': 'DNABOT: C2 Final Assembly v2.10',
 'description': 'Final assembly protocol for DNA-BOT using Opentrons OT-2',
 'apiLevel': '2.10'
 }
 
 # Load assembly data from JSON file
 # This will be replaced by the parser with embedded JSON data
-with open('assembly_data.json') as f:
-    assembly_data = json.load(f)
-    final_assembly_dict = assembly_data['final_assembly_dict']
-    tiprack_num = assembly_data['tiprack_num']
+final_assembly_dict = {
+    "A1": [["A1", "C1", "D1"], [2, 2, 2]],
+    "B1": [["A1", "E1", "F1"], [2, 2, 2]],
+    "C1": [["A1", "G1", "H1"], [2, 2, 2]],
+    "D1": [["A1", "A2", "B2"], [2, 2, 2]],
+    "E1": [["A1", "C2", "D2"], [2, 2, 2]],
+    "F1": [["A1", "E2", "F2"], [2, 2, 2]],
+    "G1": [["A1", "G2", "H2"], [2, 2, 2]],
+    "H1": [["A1", "A3", "B3"], [2, 2, 2]],
+    "A2": [["A1", "C3", "D3"], [2, 2, 2]],
+    "B2": [["A1", "E3", "F3"], [2, 2, 2]],
+    "C2": [["A1", "G3", "H3"], [2, 2, 2]],
+    "D2": [["A1", "A4", "B4"], [2, 2, 2]],
+    "E2": [["A1", "C4", "D3"], [2, 2, 2]],
+    "F2": [["B1", "D4", "E4"], [2, 2, 2]],
+    "G2": [["B1", "F4", "G4"], [2, 2, 2]],
+    "H2": [["B1", "H4", "A5"], [2, 2, 2]],
+    "A3": [["B1", "B5", "E4"], [2, 2, 2]],
+    "B3": [["B1", "C5", "G4"], [2, 2, 2]],
+    "C3": [["B1", "D5", "E5"], [2, 2, 2]],
+    "D3": [["B1", "F5", "G5"], [2, 2, 2]],
+    "E3": [["B1", "H5", "A6"], [2, 2, 2]],
+    "F3": [["B1", "B6", "C6"], [2, 2, 2]],
+    "G3": [["B1", "D6", "E6"], [2, 2, 2]],
+    "H3": [["B1", "F6", "G6"], [2, 2, 2]]
+}
+tiprack_num = 1
 
 # protocol run function. the part after the colon lets your editor know
 
@@ -287,6 +310,9 @@ def run(protocol: protocol_api.ProtocolContext):
         # ============================================================================
         # CONSTANTS
         # ============================================================================
+        
+        # Tiprack settings
+        CANDIDATE_TIPRACK_SLOTS = ['3', '6', '9', '8', '11']  # Exclude slots 1, 2 for source plates
         
         # Pipette settings - pipette instructions in a single location so redefining pipette type is simpler
         PIPETTE_TYPE = 'p20_single_gen2'

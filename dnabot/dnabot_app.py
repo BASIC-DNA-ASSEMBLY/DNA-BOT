@@ -1866,17 +1866,31 @@ def _generate_clip_script_embedded(ot2_script_path: str, template_path: str, cli
         
         # Extract filename identifier and update protocolName
         filename_id = _extract_filename_identifier(ot2_script_path)
-        # Handle both regular and thermocycler CLIP protocol names
+        # Handle both regular and thermocycler CLIP protocol names for both OT2 and Flex
         if 'TC' in template_path:
-            modified_protocol = modified_protocol.replace(
-                "'protocolName': 'DNABOT: CLIP Assembly with Thermocycler v2.10'",
-                f"'protocolName': 'DNABOT: {filename_id} CLIP Assembly with Thermocycler v2.10'"
-            )
+            # Handle thermocycler templates
+            if 'Flex' in template_path:
+                modified_protocol = modified_protocol.replace(
+                    "'protocolName': 'DNABOT: CLIP Assembly with Thermocycler v2.15 (Flex)'",
+                    f"'protocolName': 'DNABOT: {filename_id} CLIP Assembly with Thermocycler v2.15 (Flex)'"
+                )
+            else:
+                modified_protocol = modified_protocol.replace(
+                    "'protocolName': 'DNABOT: CLIP Assembly with Thermocycler v2.10'",
+                    f"'protocolName': 'DNABOT: {filename_id} CLIP Assembly with Thermocycler v2.10'"
+                )
         else:
-            modified_protocol = modified_protocol.replace(
-                "'protocolName': 'DNABOT: CLIP Assembly v2.10'",
-                f"'protocolName': 'DNABOT: {filename_id} CLIP Assembly v2.10'"
-            )
+            # Handle regular templates
+            if 'Flex' in template_path:
+                modified_protocol = modified_protocol.replace(
+                    "'protocolName': 'DNABOT: CLIP Assembly v2.15 (Flex)'",
+                    f"'protocolName': 'DNABOT: {filename_id} CLIP Assembly v2.15 (Flex)'"
+                )
+            else:
+                modified_protocol = modified_protocol.replace(
+                    "'protocolName': 'DNABOT: CLIP Assembly v2.10'",
+                    f"'protocolName': 'DNABOT: {filename_id} CLIP Assembly v2.10'"
+                )
         
         # Write the modified protocol
         with open(ot2_script_path, 'w') as f:
@@ -1981,17 +1995,31 @@ def _generate_assembly_script_embedded(ot2_script_path: str, template_path: str,
         
         # Extract filename identifier and update protocolName
         filename_id = _extract_filename_identifier(ot2_script_path)
-        # Handle both regular and thermocycler assembly protocol names
+        # Handle both regular and thermocycler assembly protocol names for both OT2 and Flex
         if 'TC' in template_path:
-            modified_protocol = modified_protocol.replace(
-                "'protocolName': 'DNABOT: Final Assembly with Thermocycler v2.10'",
-                f"'protocolName': 'DNABOT: {filename_id} Final Assembly with Thermocycler v2.10'"
-            )
+            # Handle thermocycler templates
+            if 'Flex' in template_path:
+                modified_protocol = modified_protocol.replace(
+                    "'protocolName': 'DNABOT: Final Assembly with Thermocycler v2.15 (Flex)'",
+                    f"'protocolName': 'DNABOT: {filename_id} Final Assembly with Thermocycler v2.15 (Flex)'"
+                )
+            else:
+                modified_protocol = modified_protocol.replace(
+                    "'protocolName': 'DNABOT: Final Assembly with Thermocycler v2.10'",
+                    f"'protocolName': 'DNABOT: {filename_id} Final Assembly with Thermocycler v2.10'"
+                )
         else:
-            modified_protocol = modified_protocol.replace(
-                "'protocolName': 'DNABOT: Final Assembly v2.10'",
-                f"'protocolName': 'DNABOT: {filename_id} Final Assembly v2.10'"
-            )
+            # Handle regular templates
+            if 'Flex' in template_path:
+                modified_protocol = modified_protocol.replace(
+                    "'protocolName': 'DNABOT: Final Assembly v2.15 (Flex)'",
+                    f"'protocolName': 'DNABOT: {filename_id} Final Assembly v2.15 (Flex)'"
+                )
+            else:
+                modified_protocol = modified_protocol.replace(
+                    "'protocolName': 'DNABOT: Final Assembly v2.10'",
+                    f"'protocolName': 'DNABOT: {filename_id} Final Assembly v2.10'"
+                )
         
         # Write the modified protocol
         with open(ot2_script_path, 'w') as f:
@@ -2096,17 +2124,31 @@ def _generate_transformation_script_embedded(ot2_script_path: str, template_path
         
         # Extract filename identifier and update protocolName
         filename_id = _extract_filename_identifier(ot2_script_path)
-        # Handle both regular and thermocycler transformation protocol names
+        # Handle both regular and thermocycler transformation protocol names for both OT2 and Flex
         if 'TC' in template_path:
-            modified_protocol = modified_protocol.replace(
-                "'protocolName': 'DNABOT: Transformation with Thermocycler v2.10'",
-                f"'protocolName': 'DNABOT: {filename_id} Transformation with Thermocycler v2.10'"
-            )
+            # Handle thermocycler templates
+            if 'Flex' in template_path:
+                modified_protocol = modified_protocol.replace(
+                    "'protocolName': 'DNABOT: Transformation with Thermocycler v2.15'",
+                    f"'protocolName': 'DNABOT: {filename_id} Transformation with Thermocycler v2.15'"
+                )
+            else:
+                modified_protocol = modified_protocol.replace(
+                    "'protocolName': 'DNABOT: Transformation with Thermocycler v2.10'",
+                    f"'protocolName': 'DNABOT: {filename_id} Transformation with Thermocycler v2.10'"
+                )
         else:
-            modified_protocol = modified_protocol.replace(
-                "'protocolName': 'DNABOT: Transformation v2.10'",
-                f"'protocolName': 'DNABOT: {filename_id} Transformation v2.10'"
-            )
+            # Handle regular templates (though transformation only has TC version)
+            if 'Flex' in template_path:
+                modified_protocol = modified_protocol.replace(
+                    "'protocolName': 'DNABOT: Transformation v2.15'",
+                    f"'protocolName': 'DNABOT: {filename_id} Transformation v2.15'"
+                )
+            else:
+                modified_protocol = modified_protocol.replace(
+                    "'protocolName': 'DNABOT: Transformation v2.10'",
+                    f"'protocolName': 'DNABOT: {filename_id} Transformation v2.10'"
+                )
         
         # Write the modified protocol
         with open(ot2_script_path, 'w') as f:

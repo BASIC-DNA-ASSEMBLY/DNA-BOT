@@ -6,17 +6,40 @@ from typing import List, Optional
 
 # metadata
 metadata = {
-'protocolName': 'DNABOT: Final Assembly v2.10',
-'description': 'Final assembly protocol for DNA-BOT using Opentrons OT-2',
-'apiLevel': '2.10'
+'protocolName': 'DNABOT: Final Assembly v2.15 (Flex)',
+'description': 'Final assembly protocol for DNA-BOT using Opentrons OT-2'
 }
+requirements = {"robotType": "Flex", "apiLevel": "2.15"}
 
 # Load assembly data from JSON file
 # This will be replaced by the parser with embedded JSON data
-with open('assembly_data.json') as f:
-    assembly_data = json.load(f)
-    final_assembly_dict = assembly_data['final_assembly_dict']
-    tiprack_num = assembly_data['tiprack_num']
+final_assembly_dict = {
+    "A1": [["A1", "C1", "D1"], [2, 2, 2]],
+    "B1": [["A1", "E1", "F1"], [2, 2, 2]],
+    "C1": [["A1", "G1", "H1"], [2, 2, 2]],
+    "D1": [["A1", "A2", "B2"], [2, 2, 2]],
+    "E1": [["A1", "C2", "D2"], [2, 2, 2]],
+    "F1": [["A1", "E2", "F2"], [2, 2, 2]],
+    "G1": [["A1", "G2", "H2"], [2, 2, 2]],
+    "H1": [["A1", "A3", "B3"], [2, 2, 2]],
+    "A2": [["A1", "C3", "D3"], [2, 2, 2]],
+    "B2": [["A1", "E3", "F3"], [2, 2, 2]],
+    "C2": [["A1", "G3", "H3"], [2, 2, 2]],
+    "D2": [["A1", "A4", "B4"], [2, 2, 2]],
+    "E2": [["A1", "C4", "D3"], [2, 2, 2]],
+    "F2": [["B1", "D4", "E4"], [2, 2, 2]],
+    "G2": [["B1", "F4", "G4"], [2, 2, 2]],
+    "H2": [["B1", "H4", "A5"], [2, 2, 2]],
+    "A3": [["B1", "B5", "E4"], [2, 2, 2]],
+    "B3": [["B1", "C5", "G4"], [2, 2, 2]],
+    "C3": [["B1", "D5", "E5"], [2, 2, 2]],
+    "D3": [["B1", "F5", "G5"], [2, 2, 2]],
+    "E3": [["B1", "H5", "A6"], [2, 2, 2]],
+    "F3": [["B1", "B6", "C6"], [2, 2, 2]],
+    "G3": [["B1", "D6", "E6"], [2, 2, 2]],
+    "H3": [["B1", "F6", "G6"], [2, 2, 2]]
+}
+tiprack_num = 1
 
 # protocol run function. the part after the colon lets your editor know
 
@@ -55,14 +78,14 @@ class TipManager:
         tip_type = tip_type or self.tip_type
         
         # Check pipette compatibility
-        pipette_type = 'p300' if self.pipette.max_volume >= 300 else 'p20'
+        pipette_type = 'p1000' if self.pipette.max_volume >= 1000 else 'p50'
         if tip_type != pipette_type:
             raise ValueError(f"Tip type '{tip_type}' is incompatible with pipette type '{pipette_type}'")
             
-        if tip_type == 'p300':
-            self.tipracks.append(self.protocol.load_labware('opentrons_96_tiprack_300ul', slot))
-        elif tip_type == 'p20':
-            self.tipracks.append(self.protocol.load_labware('opentrons_96_tiprack_20ul', slot))
+        if tip_type == 'p1000':
+            self.tipracks.append(self.protocol.load_labware('opentrons_flex_96_tiprack_1000ul', slot))
+        elif tip_type == 'p50':
+            self.tipracks.append(self.protocol.load_labware('opentrons_flex_96_tiprack_50ul', slot))
         else:
             raise ValueError(f"Unsupported tip type: {tip_type}")
     
@@ -283,15 +306,18 @@ class MasterMixManager:
             wells_to_fill = wells_to_fill[wells_per_aspirate:]
 
 def run(protocol: protocol_api.ProtocolContext):
-    def final_assembly(final_assembly_dict, tiprack_num, tiprack_type="opentrons_96_tiprack_20ul"):
+    def final_assembly(final_assembly_dict, tiprack_num, tiprack_type="opentrons_flex_96_tiprack_50ul"):
         # ============================================================================
         # CONSTANTS
         # ============================================================================
         
+        # Tiprack settings
+        CANDIDATE_TIPRACK_SLOTS = ['3', '6', '9', '8', '11']  # Exclude slots 1, 2 for source plates
+        
         # Pipette settings - pipette instructions in a single location so redefining pipette type is simpler
-        PIPETTE_TYPE = 'p20_single_gen2'
+        PIPETTE_TYPE = 'flex_1channel_50'
         PIPETTE_MOUNT = 'left'
-        MULTI_PIPETTE_TYPE = 'p300_multi_gen2'
+        MULTI_PIPETTE_TYPE = 'flex_8channel_1000'
         MULTI_PIPETTE_MOUNT = 'right'
         
         # Source plates (clip plates) - dynamically loaded based on embeddings
@@ -326,16 +352,16 @@ def run(protocol: protocol_api.ProtocolContext):
         multi_pipette = protocol.load_instrument(MULTI_PIPETTE_TYPE, MULTI_PIPETTE_MOUNT)
         
         # Initialise tip managers
-        # Use available slots for p20 tip racks (excluding slots 1, 2 for source plates)
-        p20_tip_slots = ['3', '6', '9', '8', '11']  # Available slots for p20 tip racks
-        p20_tip_manager = TipManager(protocol, int(p20_tip_slots[0]), pipette, 'p20')  # Initialise with first slot
+        # Use available slots for p50 tip racks (excluding slots 1, 2 for source plates)
+        p50_tip_slots = ['3', '6', '9', '8', '11']  # Available slots for p50 tip racks
+        p50_tip_manager = TipManager(protocol, int(p50_tip_slots[0]), pipette, 'p50')  # Initialise with first slot
         
         # Add additional tip racks if needed
-        for i in range(1, min(tiprack_num, len(p20_tip_slots))):
-            p20_tip_manager.add_tip_rack(int(p20_tip_slots[i]), 'p20')
+        for i in range(1, min(tiprack_num, len(p50_tip_slots))):
+            p50_tip_manager.add_tip_rack(int(p50_tip_slots[i]), 'p50')
         
-        # Initialise TipManager for p300 tips (slot 5)
-        p300_tip_manager = TipManager(protocol, 5, multi_pipette, 'p300')
+        # Initialise TipManager for p1000 tips (slot 5)
+        p1000_tip_manager = TipManager(protocol, 5, multi_pipette, 'p1000')
         
         # Load labware
         tube_rack = protocol.load_labware(TUBE_RACK_TYPE, TUBE_RACK_POSITION)
@@ -397,7 +423,7 @@ def run(protocol: protocol_api.ProtocolContext):
                 
                 # Distribute master mix to wells for this assembly type using multi-channel pipette
                 # Use new tip for each transfer (handled by MasterMixManager)
-                mm_manager.distribute_to_wells(wells_to_fill, multi_pipette, tip_manager=p300_tip_manager)
+                mm_manager.distribute_to_wells(wells_to_fill, multi_pipette, tip_manager=p1000_tip_manager)
 
             # Part transfers using TipManager
             for key, values in list(final_assembly_dict.items()):
@@ -405,7 +431,7 @@ def run(protocol: protocol_api.ProtocolContext):
                     well = values[0][i]
                     plate = values[1][i]
                     
-                    p20_tip_manager.get_single_tip()
+                    p50_tip_manager.get_single_tip()
                     pipette.transfer(PART_VOL, source_plates[plate].wells(well),
                                      destination_plate.wells(key), mix_after=MIX_SETTINGS,
                                      new_tip='never')  # transfer parts in one tube

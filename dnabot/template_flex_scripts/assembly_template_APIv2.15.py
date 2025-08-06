@@ -283,61 +283,71 @@ class MasterMixManager:
             wells_to_fill = wells_to_fill[wells_per_aspirate:]
 
 def run(protocol: protocol_api.ProtocolContext):
-    def final_assembly(final_assembly_dict, tiprack_num, tiprack_type="opentrons_96_tiprack_20ul"):
-            # Constants, we update all the labware name in version 2
-            # Tiprack
-            CANDIDATE_TIPRACK_SLOTS = ['3', '6', '9', '8', '11']  # Exclude slots 1, 2 for source plates
-            
-            # Pipettes - pipette instructions in a single location so redefining pipette type is simpler
-            PIPETTE_TYPE = 'flex_1channel_50'
-            PIPETTE_MOUNT = 'left'
-            MULTI_PIPETTE_TYPE = 'flex_8channel_1000'
-            MULTI_PIPETTE_MOUNT = 'right'
-            #Source plates (clip plates) - dynamically loaded based on embeddings
-            SOURCE_PLATE_TYPE = '4ti0960rig_96_wellplate_200ul'
-            #Tuberack for master mix
-            TUBE_RACK_TYPE = 'e14151500starlab_24_tuberack_1500ul'
-            TUBE_RACK_POSITION = '4'
-            #Destination plate
-            DESTINATION_PLATE_TYPE = '4ti0960rig_96_wellplate_200ul'
-            DESTINATION_PLATE_SLOT = '7'
-            TOTAL_VOL = 15
-            PART_VOL = 1.5
-            MIX_SETTINGS = (1, 3)
-            tiprack_num=tiprack_num+1
-            # Errors
-            sample_number = len(final_assembly_dict.keys())
-            if sample_number > 96:
-                raise ValueError('Assembly number cannot exceed 96.')
-
-            # Load pipettes (without tip_racks argument - TipManager will handle this)
-            pipette = protocol.load_instrument(PIPETTE_TYPE, PIPETTE_MOUNT)
-            
-            # Multi-channel pipette for master mix distribution
-            multi_pipette = protocol.load_instrument(MULTI_PIPETTE_TYPE, MULTI_PIPETTE_MOUNT)
-            
-            # Initialise TipManager for p50 tips
-            # Use available slots for p50 tip racks (excluding slots 1, 2 for source plates)
-            p50_tip_slots = ['3', '6', '9', '8', '11']  # Available slots for p50 tip racks
-            p50_tip_manager = TipManager(protocol, int(p50_tip_slots[0]), pipette, 'p50')  # Initialise with first slot
-            
-            # Add additional tip racks if needed
-            for i in range(1, min(tiprack_num, len(p50_tip_slots))):
-                p50_tip_manager.add_tip_rack(int(p50_tip_slots[i]), 'p50')
-            
-            # Initialise TipManager for p1000 tips (slot 5)
-            p1000_tip_manager = TipManager(protocol, 5, multi_pipette, 'p1000')
-
-            # Define Labware
-            tube_rack = protocol.load_labware(TUBE_RACK_TYPE, TUBE_RACK_POSITION)
-            destination_plate = protocol.load_labware(DESTINATION_PLATE_TYPE, DESTINATION_PLATE_SLOT)
-            
-            # Load source plates dynamically based on embeddings
-            source_plates = {}
-            source_plate_list = [plate for value in final_assembly_dict.values() for plate in value[1]]  # list of source plates for all clips 
-            source_plate_slots = list(set(source_plate_list))  # unique source plates
-            for plate in source_plate_slots:
-                source_plates[plate] = protocol.load_labware(SOURCE_PLATE_TYPE, plate)
+    def final_assembly(final_assembly_dict, tiprack_num, tiprack_type="opentrons_flex_96_tiprack_50ul"):
+        # ============================================================================
+        # CONSTANTS
+        # ============================================================================
+        
+        # Tiprack settings
+        # Pipette settings - pipette instructions in a single location so redefining pipette type is simpler
+        PIPETTE_TYPE = 'flex_1channel_50'
+        PIPETTE_MOUNT = 'left'
+        MULTI_PIPETTE_TYPE = 'flex_8channel_1000'
+        MULTI_PIPETTE_MOUNT = 'right'
+        
+        # Source plates (clip plates) - dynamically loaded based on embeddings
+        SOURCE_PLATE_TYPE = '4ti0960rig_96_wellplate_200ul'
+        
+        # Tube rack for master mix
+        TUBE_RACK_TYPE = 'e14151500starlab_24_tuberack_1500ul'
+        TUBE_RACK_POSITION = '4'
+        
+        # Destination plate
+        DESTINATION_PLATE_TYPE = '4ti0960rig_96_wellplate_200ul'
+        DESTINATION_PLATE_SLOT = '7'
+        
+        # Volume settings
+        TOTAL_VOL = 15
+        PART_VOL = 1.5
+        MIX_SETTINGS = (1, 3)
+        
+        tiprack_num = tiprack_num + 1
+        
+        # Error checking
+        sample_number = len(final_assembly_dict.keys())
+        if sample_number > 96:
+            raise ValueError('Assembly number cannot exceed 96.')
+        
+        # ============================================================================
+        # HARDWARE INITIALIZATION
+        # ============================================================================
+        
+        # Load pipettes (without tip_racks argument - TipManager will handle this)
+        pipette = protocol.load_instrument(PIPETTE_TYPE, PIPETTE_MOUNT)
+        multi_pipette = protocol.load_instrument(MULTI_PIPETTE_TYPE, MULTI_PIPETTE_MOUNT)
+        
+        # Initialise tip managers
+        # Use available slots for p50 tip racks
+        p50_tip_slots = ['3', '6', '9', '8', '11']  # Available slots for p50 tip racks
+        p50_tip_manager = TipManager(protocol, int(p50_tip_slots[0]), pipette, 'p50')  # Initialise with first slot
+        
+        # Add additional tip racks if needed
+        for i in range(1, min(tiprack_num, len(p50_tip_slots))):
+            p50_tip_manager.add_tip_rack(int(p50_tip_slots[i]), 'p50')
+        
+        # Initialise TipManager for p1000 tips (slot 5)
+        p1000_tip_manager = TipManager(protocol, 5, multi_pipette, 'p1000')
+        
+        # Load labware
+        tube_rack = protocol.load_labware(TUBE_RACK_TYPE, TUBE_RACK_POSITION)
+        destination_plate = protocol.load_labware(DESTINATION_PLATE_TYPE, DESTINATION_PLATE_SLOT)
+        
+        # Load source plates dynamically based on embeddings
+        source_plates = {}
+        source_plate_list = [plate for value in final_assembly_dict.values() for plate in value[1]]  # list of source plates for all clips 
+        source_plate_slots = list(set(source_plate_list))  # unique source plates
+        for plate in source_plate_slots:
+            source_plates[plate] = protocol.load_labware(SOURCE_PLATE_TYPE, plate)
 
              # Master mix transfers using separate managers for each assembly length
             final_assembly_lens = []

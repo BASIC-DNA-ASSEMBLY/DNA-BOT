@@ -207,7 +207,7 @@ class DnabotApp:
         self.keep_layout_var = tk.BooleanVar()
         self.keep_layout_var.set(True)
         keep_layout_checkbox = tk.Checkbutton(options_frame, 
-                                            text='Keep original CSV layout (preserve empty rows)',
+                                            text='Keep original well layout from CSV (preserve empty rows)',
                                             variable=self.keep_layout_var, 
                                             font=DnabotApp.app_font,
                                             fg=DnabotApp.colors['text'],

@@ -1,0 +1,3 @@
+Magbead ethanol well: A2
+Magbead water well: A11
+Thermocycler generation: GEN2

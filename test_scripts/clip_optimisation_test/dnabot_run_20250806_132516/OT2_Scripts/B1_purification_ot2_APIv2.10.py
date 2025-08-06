@@ -4,20 +4,20 @@ from typing import Dict, List, Optional, Tuple, Union
 
 metadata = {
 'apiLevel': '2.10',
-'protocolName': 'DNABOT: Magnetic Bead Purification v2.10',
+'protocolName': 'DNABOT: B1 Purification v2.10',
 'description': 'Enhanced magnetic bead purification protocol for BASIC assembly using Opentrons OT-2',
 }
 
 # Protocol Configuration
 PROTOCOL_CONFIG = {
     # Sample Configuration
-    'clips_number': 50,    # Number of CLIP reactions to process
+    'clips_number': 88,    # Number of CLIP reactions to process
     'sample_volume': 40,    # Volume of sample in µL
     'bead_ratio': 1.8,      # Ratio of beads to sample volume
     'elution_volume': 40,   # Volume of elution buffer in µL
     
     # Reagent Positions
-    'ethanol_well': 'A3',   # Well position for ethanol in reservoir
+    'ethanol_well': 'A2',   # Well position for ethanol in reservoir
     'elution_well': 'A10',   # Well position for elution buffer in reservoir
     
     # Timing Parameters

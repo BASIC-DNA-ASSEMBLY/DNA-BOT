@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 from opentrons import protocol_api
 import numpy as np
 import json
@@ -6,19 +7,47 @@ from typing import List, Optional
 
 # metadata
 metadata = {
-'protocolName': 'DNABOT: Final Assembly v2.10',
-'description': 'Final assembly protocol for DNA-BOT using Opentrons OT-2',
+'protocolName': 'DNABOT: C2 Final Assembly with Thermocycler v2.10',
+'description': 'Final assembly protocol for DNA-BOT using Opentrons OT-2 with thermocycler module',
 'apiLevel': '2.10'
 }
 
 # Load assembly data from JSON file
 # This will be replaced by the parser with embedded JSON data
-with open('assembly_data.json') as f:
-    assembly_data = json.load(f)
-    final_assembly_dict = assembly_data['final_assembly_dict']
-    tiprack_num = assembly_data['tiprack_num']
+final_assembly_dict = {
+    "A1": [["A1", "C1", "D1"], [2, 2, 2]],
+    "B1": [["A1", "E1", "F1"], [2, 2, 2]],
+    "C1": [["A1", "G1", "H1"], [2, 2, 2]],
+    "D1": [["A1", "A2", "B2"], [2, 2, 2]],
+    "E1": [["A1", "C2", "D2"], [2, 2, 2]],
+    "F1": [["A1", "E2", "F2"], [2, 2, 2]],
+    "G1": [["A1", "G2", "H2"], [2, 2, 2]],
+    "H1": [["A1", "A3", "B3"], [2, 2, 2]],
+    "A2": [["A1", "C3", "D3"], [2, 2, 2]],
+    "B2": [["A1", "E3", "F3"], [2, 2, 2]],
+    "C2": [["A1", "G3", "H3"], [2, 2, 2]],
+    "D2": [["A1", "A4", "B4"], [2, 2, 2]],
+    "E2": [["A1", "C4", "D3"], [2, 2, 2]],
+    "F2": [["B1", "D4", "E4"], [2, 2, 2]],
+    "G2": [["B1", "F4", "G4"], [2, 2, 2]],
+    "H2": [["B1", "H4", "A5"], [2, 2, 2]],
+    "A3": [["B1", "B5", "E4"], [2, 2, 2]],
+    "B3": [["B1", "C5", "G4"], [2, 2, 2]],
+    "C3": [["B1", "D5", "E5"], [2, 2, 2]],
+    "D3": [["B1", "F5", "G5"], [2, 2, 2]],
+    "E3": [["B1", "H5", "A6"], [2, 2, 2]],
+    "F3": [["B1", "B6", "C6"], [2, 2, 2]],
+    "G3": [["B1", "D6", "E6"], [2, 2, 2]],
+    "H3": [["B1", "F6", "G6"], [2, 2, 2]]
+}
+tiprack_num = 1
 
-# protocol run function. the part after the colon lets your editor know
+# Thermocycler generation setting
+# This will be replaced by the parser with embedded thermocycler generation
+thermocycler_gen = 'GEN2'
+
+# It is possible to run 88 assemblies with this new module. The heat block module is removed. 
+# Assembly reactions is set up on thermocycler module.
 
 class TipManager:
     """Manages pipette tips and tracks usage."""
@@ -282,6 +311,8 @@ class MasterMixManager:
             self.use_volume(max_aspirate)
             wells_to_fill = wells_to_fill[wells_per_aspirate:]
 
+# opentrons_simulate.exe dnabot\template_ot2_scripts\assembly_template_TC_APIv2.8.py --custom-labware-path 'labware\Labware definitions'
+
 def run(protocol: protocol_api.ProtocolContext):
     def final_assembly(final_assembly_dict, tiprack_num, tiprack_type="opentrons_96_tiprack_20ul"):
         # ============================================================================
@@ -326,8 +357,8 @@ def run(protocol: protocol_api.ProtocolContext):
         multi_pipette = protocol.load_instrument(MULTI_PIPETTE_TYPE, MULTI_PIPETTE_MOUNT)
         
         # Initialise tip managers
-        # Use available slots for p20 tip racks (excluding slots 1, 2 for source plates)
-        p20_tip_slots = ['3', '6', '9', '8', '11']  # Available slots for p20 tip racks
+        # Use available slots for p20 tip racks (excluding slots 1, 2 for source plates and slots 7, 8, 10, 11 for thermocycler)
+        p20_tip_slots = ['3', '6', '9']  # Available slots for p20 tip racks
         p20_tip_manager = TipManager(protocol, int(p20_tip_slots[0]), pipette, 'p20')  # Initialise with first slot
         
         # Add additional tip racks if needed
@@ -339,7 +370,6 @@ def run(protocol: protocol_api.ProtocolContext):
         
         # Load labware
         tube_rack = protocol.load_labware(TUBE_RACK_TYPE, TUBE_RACK_POSITION)
-        destination_plate = protocol.load_labware(DESTINATION_PLATE_TYPE, DESTINATION_PLATE_SLOT)
         
         # Load source plates dynamically based on embeddings
         source_plates = {}
@@ -348,43 +378,56 @@ def run(protocol: protocol_api.ProtocolContext):
         for plate in source_plate_slots:
             source_plates[plate] = protocol.load_labware(SOURCE_PLATE_TYPE, plate)
 
-             # Master mix transfers using separate managers for each assembly length
-            final_assembly_lens = []
-            for values in final_assembly_dict.values():
-                final_assembly_lens.append(len(values))
-            unique_assemblies_lens = list(set(final_assembly_lens))
+        # Thermocycler Module
+        if thermocycler_gen == 'GEN1':
+            tc_mod = protocol.load_module('thermocycler', '7')
+        else:  # GEN2
+            tc_mod = protocol.load_module('thermocyclerModuleV2', '7')
 
-            destination_wells = np.array([key for key, value in final_assembly_dict.items()])
+        destination_plate = tc_mod.load_labware(DESTINATION_PLATE_TYPE)
+        tc_mod.open_lid()
+        tc_mod.set_block_temperature(20)
+
+        # Error trapping
+        sample_number = len(final_assembly_dict.keys())
+        if sample_number > 96:
+            raise ValueError('Assembly number cannot exceed 96.')
+
+        # Master mix transfers
+        final_assembly_lens = [len(values[0]) for values in final_assembly_dict.values()]       # list of assembly lengths (number of clips)
+        unique_assemblies_lens = list(set(final_assembly_lens))                                 # unique lengths
+
+        destination_wells = np.array([key for key, value in final_assembly_dict.items()])
+        
+        # Create separate MasterMixManager for each unique assembly length
+        mm_managers_dict = {}
+        for assembly_len in unique_assemblies_lens:
+            # Calculate master mix volume for this assembly length
+            master_mix_volume = TOTAL_VOL - assembly_len * PART_VOL
+            # Determine the tube index and well name for this assembly length (A2 = 1, A3 = 2, ...)
+            tube_index = assembly_len - 1  # A2 = 1, A3 = 2, etc.
+            tube_well_name = f"A{assembly_len}"
+            # Create a MasterMixManager for this assembly length, managing only the specific tube
+            mm_managers_dict[assembly_len] = MasterMixManager(
+                protocol,
+                tube_rack,
+                [1500],  # Only one tube per manager
+                master_mix_volume,
+                multi_pipette,  # Use multi-channel pipette for master mix
+                dead_volume=15.0,
+                tube_position=[tube_well_name]
+            )
+            # Always use the first tube (index 0) in this manager
+            mm_managers_dict[assembly_len].current_tube = 0
+            # Store the well index for this manager (for reference/comment)
+            protocol.comment(f"Assembly buffer for {assembly_len} parts: {tube_well_name} (well index {tube_index}) - {master_mix_volume}µL per well")
+            # Patch get_current_tube to always return the correct well
+            def get_current_tube_override(self, idx=tube_index):
+                return self.labware.wells()[idx]
+            from types import MethodType
+            mm_managers_dict[assembly_len].get_current_tube = MethodType(get_current_tube_override, mm_managers_dict[assembly_len])
             
-            # Create separate MasterMixManager for each unique assembly length
-            mm_managers_dict = {}
-            for assembly_len in unique_assemblies_lens:
-                # Calculate master mix volume for this assembly length
-                master_mix_volume = TOTAL_VOL - assembly_len * PART_VOL
-                # Determine the tube index and well name for this assembly length (A2 = 1, A3 = 2, ...)
-                tube_index = assembly_len - 1  # A2 = 1, A3 = 2, etc.
-                tube_well_name = f"A{assembly_len}"
-                # Create a MasterMixManager for this assembly length, managing only the specific tube
-                mm_managers_dict[assembly_len] = MasterMixManager(
-                    protocol,
-                    tube_rack,
-                    [1500],  # Only one tube per manager
-                    master_mix_volume,
-                    multi_pipette,  # Use multi-channel pipette for master mix
-                    dead_volume=15.0,
-                    tube_position=[tube_well_name]
-                )
-                # Always use the first tube (index 0) in this manager
-                mm_managers_dict[assembly_len].current_tube = 0
-                # Store the well index for this manager (for reference/comment)
-                protocol.comment(f"Assembly buffer for {assembly_len} parts: {tube_well_name} (well index {tube_index}) - {master_mix_volume}µL per well")
-                # Patch get_current_tube to always return the correct well
-                def get_current_tube_override(self, idx=tube_index):
-                    return self.labware.wells()[idx]
-                from types import MethodType
-                mm_managers_dict[assembly_len].get_current_tube = MethodType(get_current_tube_override, mm_managers_dict[assembly_len])
-            
-            # Distribute master mix by assembly type using appropriate manager
+        # Distribute master mix by assembly type using appropriate manager
             for assembly_len in unique_assemblies_lens:
                 destination_inds = [i for i, lens in enumerate(final_assembly_lens) if lens == assembly_len]   # find all assemblies of length x
                 destination_wells_for_len = list(destination_wells[destination_inds])
@@ -401,14 +444,46 @@ def run(protocol: protocol_api.ProtocolContext):
 
             # Part transfers using TipManager
             for key, values in list(final_assembly_dict.items()):
-                for i in range(len(values[0])):  # find well and plate for every clip in every assembly
-                    well = values[0][i]
+                for i in range(len(values[0])):                     # find well and plate for every clip in every assembly
+                    well  = values[0][i]
                     plate = values[1][i]
-                    
+
+                    mix = MIX_SETTINGS
+                    # mix = (0,0)
+                    # if i == len(values[0])-1:                       # set to mix if on final clip transfer
+                    #     mix = MIX_SETTINGS
+
                     p20_tip_manager.get_single_tip()
                     pipette.transfer(PART_VOL, source_plates[plate].wells(well),
-                                     destination_plate.wells(key), mix_after=MIX_SETTINGS,
-                                     new_tip='never')  # transfer parts in one tube
+                                     destination_plate.wells(key), mix_after=mix, 
+                                     blow_out=True, blowout_location='destination well',
+                                     new_tip='never')
                     pipette.drop_tip()
+
+            # Thermocycler Module
+            tc_mod.close_lid()
+            tc_mod.set_lid_temperature(105)
+            tc_mod.set_block_temperature(50, hold_time_minutes=45)
+            tc_mod.set_block_temperature(8)
+            tc_mod.set_lid_temperature(37)
+            # tc_mod.open_lid()                                     # leave lid shut to prevent evaporation
+        
+        
+    def counter(rows):
+
+        def inner(n):
+            """ Takes either a value or a well location and converts to other fomat """
+            
+            row_dict = {0: "A", 1: "B", 2: "C", 3: "D", 4: "E", 5: "F", 6: "G", 7: "H"}
+
+            if type(n) == int:
+                row = row_dict[n // rows]
+                col = 1 + n % rows
+                return row + f'{col}'
+                # return row + f'{col:02d}' # for if 2 sf number required (i.e. 'A01' rather than 'A1')
+
+        return inner
+    tube_counter = counter(6)
+
 
     final_assembly(final_assembly_dict=final_assembly_dict, tiprack_num=tiprack_num)
