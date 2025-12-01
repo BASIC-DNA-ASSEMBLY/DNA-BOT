@@ -160,7 +160,6 @@ def run(protocol: protocol_api.ProtocolContext):
         # Columns to dispense output in location 1 (magnetic module)
             # purified parts are dispensed 6 rows to the right of their initial location
             # this is why the number of samples cannot exceed 48
-
         output = [col for col in mag_plate.columns()[6 + sample_offset:col_num + 6 + sample_offset]]
 
         ### Defining Wells for Reagents, Liquid Waste, and Beads
