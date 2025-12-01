@@ -1,0 +1,171 @@
+hardware:
+  # Opentrons low volume Single-Channel Electronic Pipette
+  robot_type:
+    id: Flex
+    #id:OT-2
+  single_pipette:
+    id: p20_single_gen2
+    #id: flex_1channel_50 #FLEX
+  single_pipette_mount:
+    id: right
+    #id: left
+    # Opentrons 8-Channel Electronic Pipette for up to 300 ul
+  multi_pipette:
+    id: p300_multi_gen2
+    #id: flex_8channel_50 #FLEX
+    #id: flex_8channel_1000 #FLEX
+  multi_pipette_mount:
+    id: left
+    #id: right
+
+  # Thermocycler is required for the clip and transformation step
+  thermocycler:
+    id: "thermocyclerModuleV2"
+    #id: "thermocyclerModuleV1"
+
+  # Magnetic module or block is required for the purification step
+  mag_deck:
+    id: magneticModuleV1
+    #id: magneticModuleV2  # BRS
+    #id: 'magneticBlockV1  #FLEX
+
+labwares:
+
+  # Tip racks #############################################
+  # Opentrons 20μL tips rack
+  OT-2_tiprack_20ul:
+    id: opentrons_96_tiprack_20ul
+    # id: tipone_3dprinted_96_tiprack_20ul  # BRS
+    #id: opentrons_flex_96_tiprack_50ul #FLEX
+
+  # Opentrons 300μL tips rack
+  OT-2_tiprack_300ul:
+    id: opentrons_96_tiprack_300ul
+    # id: tipone_yellow_3dprinted_96_tiprack_300ul  # BRS
+    #id: opentrons_flex_96_tiprack_1000ul #FLEX
+    #id: opentrons_flex_96_tiprack_200ul #FLEX
+
+  # Plates ################################################
+  # Opentrons 4-in-1 tubes rack for 1.5 ml eppendorf tubes (steps: clip, assembly, transformation)
+  24_tuberack_1500ul:
+    id: e14151500starlab_24_tuberack_1500ul
+    # id: opentrons_24_tuberack_eppendorf_1.5ml_safelock_snapcap  # BRS
+
+  # Clip reaction source plate (steps: clip)
+  clip_source_plate:
+    #id: 4ti0960rig_96_wellplate_200ul
+    # id: green_96_wellplate_200ul_pcr  # BRS (transparent)
+    id: nest_96_wellplate_100ul_pcr_full_skirt
+
+  # Clip reaction plate (steps: clip, purif, assembly)
+  clip_plate:
+    #id: 4ti0960rig_96_wellplate_200ul
+    # id: black_96_wellplate_200ul_pcr  # BRS (black)
+    id: nest_96_wellplate_100ul_pcr_full_skirt
+
+  # Mix plate (step: purification)
+  mix_plate:
+    #id: 4ti0960rig_96_wellplate_200ul
+    # id: black_96_wellplate_200ul_pcr  # BRS (black)
+    id: nest_96_wellplate_100ul_pcr_full_skirt
+  
+  # Final assembly plate (steps: assembly, transformation)
+  final_assembly_plate:
+    #id: 4ti0960rig_96_wellplate_200ul
+    # id: black_96_wellplate_200ul_pcr  # BRS (black)
+    id: nest_96_wellplate_100ul_pcr_full_skirt
+  
+  # Transformation plate with thermocycler (step: transformation)
+  transform_plate:
+    #id: 4ti0960rig_96_wellplate_200ul
+    # id: black_96_wellplate_200ul_pcr  # BRS (black)
+    id: nest_96_wellplate_100ul_pcr_full_skirt
+  # Transformation plate without thermocycler (step: transformation)
+  # transfo_plate_wo_thermo:
+  #   #id: 4ti0960rig_96_wellplate_200ul
+  #   # id: green_96_wellplate_200ul_pcr  # BRS (transparent)
+  #   id: nest_96_wellplate_100ul_pcr_full_skirt
+
+  # Agar plate (transformation step)
+  agar_plate:
+    #id: 4ti0960rig_96_wellplate_200ul
+    # id: thermoomnitrayfor96spots_96_wellplate_50ul  # BRS
+    id: nest_96_wellplate_100ul_pcr_full_skirt
+
+  # Reservoir plate 21 mL 12 channels (step: purification)
+  12_reservoir_21000ul:
+    #id: 4ti0131_12_reservoir_21000ul
+    # id: citadel_12_wellplate_22000ul  # BRS
+    id: nest_12_reservoir_15ml
+
+  # 96 deep well plate 2 mL wells (steps; purification, transormation)
+  96_deepwellplate_2ml:
+    #id: 4ti0136_96_wellplate_2200ul
+    # id: transparent_96_wellplate_2ml_deep  # BRS
+    id: nest_96_wellplate_2ml_deep
+  
+  # Corning 12 Well Plate 6.9 mL Flat (step: transformation)
+  12_corning_wellplate:
+    id: corning_12_wellplate_6.9ml_flat
+    # id: sarstedtcplatte_12_wellplate_6640ul  # BRS
+
+parameters:
+
+  # Clip reaction step ####################################
+  # Keep the thermocycler lid closed at 4°C at the end of execution?
+  # 1 for yes, 0 for no
+  clip_keep_thermo_lid_closed:
+    value: 'No'
+  premix_linkers:
+    value: 'Yes'
+  premix_parts:
+    value: 'Yes'
+  linkers_volume:
+    value: 20
+  parts_volume:
+    value: 20
+  thermo_temp:
+    value: 4
+  # Purification step #####################################
+  # Magnetic module height (mm) - purification step
+  purif_magdeck_height: 
+    value: 10.8
+    # value: 10.8  # BRS
+
+  # Washing time (min) - purification step
+  purif_wash_time:
+    value: 0.5
+
+  # Bead ratio - purification step
+  purif_bead_ratio:
+    value: 1.8
+
+  # Incubation time (min) - purification step
+  purif_incubation_time:
+    value: 5
+
+  # Settling time (min) - purification step
+  purif_settling_time:
+    value: 2
+    # value: 6  # BRS
+
+  # Drying time (min) - purification step
+  purif_drying_time:
+    value: 5
+    # value: 15  # BRS
+
+  # Elution time (min) - purif step
+  purif_elution_time:
+    value: 2
+    # value: 5  # BRS
+  
+  # Transformation step ###################################
+  # Incubation temperature
+  transform_incubation_temp:
+    value: 4
+    # value: 8  # BRS
+
+  # Incubation time (min)
+  transform_incubation_time:
+    value: 20
+    # value: 30  # BRS
