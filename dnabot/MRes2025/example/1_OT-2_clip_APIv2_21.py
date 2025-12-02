@@ -491,7 +491,7 @@ if __name__ == "__main__":
     robot_type = "Flex"
     from flex_simulate import FlexibleSimulate
     # Use the custom FlexSimulate class
-    protocol = FlexibleSimulate.get_protocol_api("2.20", robot_type=robot_type)  # Ensure the correct API level is used
+    protocol = FlexibleSimulate.get_protocol_api("2.21", robot_type=robot_type)  # Ensure the correct API level is used
 
     # Debugging: inspect protocol setup
     print(f"Simulated robot type: {protocol.robot_type}")
