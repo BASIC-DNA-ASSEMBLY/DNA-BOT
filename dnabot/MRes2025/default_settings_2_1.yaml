@@ -53,33 +53,33 @@ labwares:
 
   # Clip reaction source plate (steps: clip)
   clip_source_plate:
-    #id: 4ti0960rig_96_wellplate_200ul
+    id: 4ti0960rig_96_wellplate_200ul
     # id: green_96_wellplate_200ul_pcr  # BRS (transparent)
-    id: nest_96_wellplate_100ul_pcr_full_skirt
+    #id: nest_96_wellplate_100ul_pcr_full_skirt
 
   # Clip reaction plate (steps: clip, purif, assembly)
   clip_plate:
-    #id: 4ti0960rig_96_wellplate_200ul
+    id: 4ti0960rig_96_wellplate_200ul
     # id: black_96_wellplate_200ul_pcr  # BRS (black)
-    id: nest_96_wellplate_100ul_pcr_full_skirt
+    #id: nest_96_wellplate_100ul_pcr_full_skirt
 
   # Mix plate (step: purification)
   mix_plate:
-    #id: 4ti0960rig_96_wellplate_200ul
+    id: 4ti0960rig_96_wellplate_200ul
     # id: black_96_wellplate_200ul_pcr  # BRS (black)
-    id: nest_96_wellplate_100ul_pcr_full_skirt
+    #id: nest_96_wellplate_100ul_pcr_full_skirt
   
   # Final assembly plate (steps: assembly, transformation)
   final_assembly_plate:
-    #id: 4ti0960rig_96_wellplate_200ul
+    id: 4ti0960rig_96_wellplate_200ul
     # id: black_96_wellplate_200ul_pcr  # BRS (black)
-    id: nest_96_wellplate_100ul_pcr_full_skirt
+    #id: nest_96_wellplate_100ul_pcr_full_skirt
   
   # Transformation plate with thermocycler (step: transformation)
   transform_plate:
-    #id: 4ti0960rig_96_wellplate_200ul
+    id: 4ti0960rig_96_wellplate_200ul
     # id: black_96_wellplate_200ul_pcr  # BRS (black)
-    id: nest_96_wellplate_100ul_pcr_full_skirt
+    #id: nest_96_wellplate_100ul_pcr_full_skirt
   # Transformation plate without thermocycler (step: transformation)
   # transfo_plate_wo_thermo:
   #   #id: 4ti0960rig_96_wellplate_200ul
@@ -89,20 +89,20 @@ labwares:
   # Agar plate (transformation step)
   agar_plate:
     #id: 4ti0960rig_96_wellplate_200ul
-    # id: thermoomnitrayfor96spots_96_wellplate_50ul  # BRS
-    id: nest_96_wellplate_100ul_pcr_full_skirt
+    id: thermoomnitrayfor96spots_96_wellplate_50ul  # BRS
+    #id: nest_96_wellplate_100ul_pcr_full_skirt
 
   # Reservoir plate 21 mL 12 channels (step: purification)
   12_reservoir_21000ul:
-    #id: 4ti0131_12_reservoir_21000ul
+    id: 4ti0131_12_reservoir_21000ul
     # id: citadel_12_wellplate_22000ul  # BRS
-    id: nest_12_reservoir_15ml
+    #id: nest_12_reservoir_15ml
 
   # 96 deep well plate 2 mL wells (steps; purification, transormation)
   96_deepwellplate_2ml:
-    #id: 4ti0136_96_wellplate_2200ul
+    id: 4ti0136_96_wellplate_2200ul
     # id: transparent_96_wellplate_2ml_deep  # BRS
-    id: nest_96_wellplate_2ml_deep
+    #id: nest_96_wellplate_2ml_deep
   
   # Corning 12 Well Plate 6.9 mL Flat (step: transformation)
   12_corning_wellplate:
