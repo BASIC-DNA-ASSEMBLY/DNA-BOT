@@ -10,7 +10,7 @@ import numpy as np
 metadata = {
      'protocolName': 'DNABOT Step 1: Clip Reaction with thermocycler (Flex Protocol)',
      'description': 'Implements linker ligation reactions using an opentrons Flex, including the thermocycler module gen1 or gen2.',
-     'apiLevel': '2.0'                                                                                                                   # removed requitements variable, and defined api in metadata directory
+     'apiLevel': '2.21'                                                                                                                   # removed requitements variable, and defined api in metadata directory
 }
 
 
