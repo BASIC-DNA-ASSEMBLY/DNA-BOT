@@ -9,10 +9,10 @@ import numpy as np
 #metadata
 metadata = {
      'protocolName': 'DNABOT Step 1: Clip Reaction with thermocycler (Flex Protocol)',
-     'description': 'Implements linker ligation reactions using an opentrons Flex, including the thermocycler module gen1 or gen2.'
+     'description': 'Implements linker ligation reactions using an opentrons Flex, including the thermocycler module gen1 or gen2.',
+     'apiLevel': '2.0'                                                                                                                   # removed requitements variable, and defined api in metadata directory
 }
 
-requirements = {"robotType": "OT-2", "apiLevel": "2.21"}
 
 clips_dict={"prefixes_wells": ["A8", "A7", "C5", "C7", "C10", "C12", "C9", "A7", "C10", "C5", "C12", "C6"], "prefixes_plates": ["2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2"], "suffixes_wells": ["B7", "C1", "C2", "C3", "B8", "B8", "C3", "C2", "C1", "B8", "C1", "C2"], "suffixes_plates": ["2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2", "2"], "parts_wells": ["E2", "F2", "C2", "B2", "D2", "D2", "B2", "F2", "D2", "C2", "D2", "C2"], "parts_plates": ["5", "5", "5", "5", "5", "5", "5", "5", "5", "5", "5", "5"], "parts_vols": [2.5, 1.0, 1.0, 1.0, 1.25, 1.25, 1.0, 1.0, 1.25, 1.0, 1.25, 1.0], "water_vols": [7.5, 9.0, 9.0, 9.0, 8.75, 8.75, 9.0, 9.0, 8.75, 9.0, 8.75, 9.0]}
 __HARDWARE={"robot_type": {"id": "OT-2"}, "single_pipette": {"id": "p20_single_gen2"}, "single_pipette_mount": {"id": "right"}, "multi_pipette": {"id": "p300_multi_gen2"}, "multi_pipette_mount": {"id": "left"}, "thermocycler": {"id": "thermocyclerModuleV2"}, "mag_deck": {"id": "magnetic module gen1"}}
