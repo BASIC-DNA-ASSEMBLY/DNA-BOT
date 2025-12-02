@@ -6,11 +6,12 @@ import numpy as np
 # new __HARDWARE configuration defines all of the available hardware setups
 # gripper module for Flex is currently not included - this would only impact script 3 purification.
 
+requirements = {"robotType": "OT-2", "apiLevel": "2.21"}      #added requirements dir back in 
+
 #metadata
 metadata = {
      'protocolName': 'DNABOT Step 1: Clip Reaction with thermocycler (Flex Protocol)',
-     'description': 'Implements linker ligation reactions using an opentrons Flex, including the thermocycler module gen1 or gen2.',
-     'apiLevel': '2.21'                                                                                                                   # removed requitements variable, and defined api in metadata directory
+     'description': 'Implements linker ligation reactions using an opentrons Flex, including the thermocycler module gen1 or gen2.'
 }
 
 
