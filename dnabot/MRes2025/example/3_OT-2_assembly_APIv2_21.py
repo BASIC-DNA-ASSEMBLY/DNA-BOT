@@ -101,7 +101,7 @@ def run(protocol: protocol_api.ProtocolContext):
             CLIP_PLATE_TYPE = __LABWARES['clip_plate']['id']
             CLIP_PLATE_POSITION = 'D1'
         #Tuberack
-            if robot_type=='OT-2':
+        if robot_type=='OT-2':
             TUBE_RACK_TYPE = __LABWARES['24_tuberack_1500ul']['id']
             TUBE_RACK_POSITION = '4'
         elif robot_type=='Flex':
