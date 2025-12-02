@@ -19,7 +19,7 @@ __LABWARES={"OT-2_tiprack_20ul": {"id": "opentrons_96_tiprack_20ul"}, "OT-2_tipr
 __PARAMETERS={"clip_keep_thermo_lid_closed": {"value": "No", "id": "No"}, "premix_linkers": {"value": "Yes", "id": "Yes"}, "premix_parts": {"value": "Yes", "id": "Yes"}, "linkers_volume": {"value": 20}, "parts_volume": {"value": 20}, "thermo_temp": {"value": 4}, "purif_magdeck_height": {"value": 10.8}, "purif_wash_time": {"value": 0.5}, "purif_bead_ratio": {"value": 1.8}, "purif_incubation_time": {"value": 5}, "purif_settling_time": {"value": 2}, "purif_drying_time": {"value": 5}, "purif_elution_time": {"value": 2}, "transform_incubation_temp": {"value": 4}, "transform_incubation_time": {"value": 20}}
 
 # requirements = {"robotType": __HARDWARE['robot_type']['id'], "apiLevel": "2.21"} #CHANGE 0212
-requirements = {"robotType": "OT-2", "apiLevel": "2.21"}
+# requirements = {"robotType": "OT-2", "apiLevel": "2.21"}
 
 def run(protocol: protocol_api.ProtocolContext):
     robot_type=__HARDWARE['robot_type']['id']
