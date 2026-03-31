@@ -1,0 +1,448 @@
+PROTOCOL: "DNABOT Step 4 – Transformation with thermocycler and 12-well agar plate"
+ROBOT: OT-2
+API level: 2.21
+
+ROBOT CONTEXT
+- robot_type := "OT-2"
+- Using:
+  - Single-channel P20 (p20_single_gen2) on right mount → single_pipette
+  - Multi-channel P300 (p300_multi_gen2) on left mount → multi_pipette
+  - Thermocycler Module Gen2 (thermocyclerModuleV2) → tc_mod
+  - Standard OT-2 96-well 20 µL tipracks
+  - Standard OT-2 96-well 300 µL tipracks
+
+TRANSFORMATION INPUT MAP (spotting_tuples & transformation_wells)
+
+- spotting_tuples encodes:
+
+  - (source transformation wells, target agar wells, spotting volumes [µL])
+
+- Current test spotting_tuples:
+
+  - Tuple 1:
+
+    - source_wells := ('A1','B1','C1')
+    - target_wells := ('A1','B1','C1')
+    - spot_vols   := (5, 5, 5)       (µL per transformation reaction)
+  - Tuple 2:
+
+    - source_wells := ('A2',)
+    - target_wells := ('A2',)
+    - spot_vols   := (5,)
+
+- TRANSFORMATION WELLS (generate_transformation_wells):
+
+  1. Flatten all source_wells from each spotting_tuple:
+
+     - wells := ['A1','B1','C1','A2']
+  2. Keep first occurrence of each well:
+
+     - transformation_wells := ['A1','B1','C1','A2']
+  3. These wells are:
+
+     - Final assembly wells on assembly_plate to transfer into competent cells
+     - Matching wells on transformation_plate in thermocycler block
+
+- SOC SOURCE WELL
+
+  - soc_well := "A1" (well on SOC deepwell plate supplying SOC media for outgrowth)
+
+TIPRACK / PIPETTE SETUP
+
+1. DEFINE tiprack types for OT-2:
+
+   - SINGLE_TIPRACK_TYPE := "opentrons_96_tiprack_20ul"
+   - MULTI_TIPRACK_TYPE  := "opentrons_96_tiprack_300ul"
+
+2. DEFINE candidate tiprack slots for OT-2:
+
+   - CANDIDATE_SINGLE_SLOTS := ["2", "9"]    (for P20)
+   - CANDIDATE_MULTI_SLOTS  := ["3", "6"]    (for P300)
+
+3. CALCULATE required tip racks (tiprack_slots):
+
+   3.1 Count transformation reactions:
+   - transformation_reactions := len(transformation_wells)
+   - With current input: transformation_reactions := 4
+
+   3.2 For each spotting_tuple in spotting_tuples:
+   - For each spot_vol in spotting_tuple[2]:
+   - spots := ceil(spot_vol / max_spot_vol) with max_spot_vol := 20 µL
+   - spotting_reactions := Σ spots across all tuples
+
+   
+    Example for current test:
+    - Tuple 1: spot_vols (5,5,5)
+      - each 5/20 → ceil(0.25) = 1 → 3 reactions  
+    - Tuple 2: spot_vols (5)
+      - 5/20 → ceil(0.25) = 1 → 1 reaction  
+    - spotting_reactions := 3 + 1 = 4  
+   
+
+   3.3 Compute tip usage:
+   - p20_tips  := transformation_reactions + spotting_reactions = 4 + 4 = 8
+   - p300_tips := transformation_reactions + spotting_reactions = 4 + 4 = 8
+
+   3.4 Convert to tiprack counts (96 tips/rack):
+   - p20_tiprack_slots  := ceil(p20_tips  / 96) = 1
+   - p300_tiprack_slots := ceil(p300_tips / 96) = 1
+
+4. ASSIGN actual tiprack slots:
+
+   - p20_slots  := first p20_tiprack_slots from CANDIDATE_SINGLE_SLOTS
+     → p20_slots := ["2"]
+   - p300_slots := first p300_tiprack_slots from CANDIDATE_MULTI_SLOTS
+     → p300_slots := ["3"]
+
+5. LOAD tipracks:
+
+   - single_tipracks := load SINGLE_TIPRACK_TYPE in each slot ∈ p20_slots
+
+     - Load "opentrons_96_tiprack_20ul" into slot 2
+   - multi_tipracks := load MULTI_TIPRACK_TYPE in each slot ∈ p300_slots
+
+     - Load "opentrons_96_tiprack_300ul" into slot 3
+
+6. LOAD pipettes:
+
+   - MULTI_PIPETTE_TYPE  := "p300_multi_gen2"
+
+   - MULTI_PIPETTE_MOUNT := "left"
+
+   - SINGLE_PIPETTE_TYPE  := "p20_single_gen2"
+
+   - SINGLE_PIPETTE_MOUNT := "right"
+
+   - LOAD multi_pipette (p300_multi_gen2, left) with multi_tipracks
+
+   - LOAD single_pipette (p20_single_gen2, right) with single_tipracks
+
+7. INITIAL_TIP:
+
+   - INITIAL_TIP := "A1" (pipettes start from A1 of their respective tipracks by default)
+
+LABWARE SETUP
+
+8. THERMOCYCLER MODULE:
+
+   - LOAD tc_mod := thermocyclerModuleV2 (OT-2 default position)
+   - OPEN tc_mod lid
+
+9. ASSEMBLY PLATE (final BASIC assemblies):
+
+   - ASSEMBLY_PLATE_TYPE  := __LABWARES["final_assembly_plate"]["id"] = "4ti0960rig_96_wellplate_200ul"
+   - ASSEMBLY_PLATE_SLOT  := "5"
+   - LOAD assembly_plate := 96-well plate "4ti0960rig_96_wellplate_200ul" in slot 5
+
+10. TRANSFORMATION PLATE (competent cells + assemblies):
+
+    - TRANSFORMATION_PLATE_TYPE := __LABWARES["transform_plate"]["id"] = "4ti0960rig_96_wellplate_200ul"
+    - LOAD transformation_plate := 96-well plate on tc_mod block
+
+11. SOC DEEPWELL PLATE (SOC media):
+
+    - SOC_PLATE_TYPE := "4ti0136_96_wellplate_2200ul" (2 mL deepwell)
+    - SOC_PLATE_SLOT := "4"
+    - LOAD soc_plate := 96-well deepwell plate in slot 4
+    - SOC_MEDIA_SOURCE_WELL := soc_plate.wells("A1")
+
+12. 12-WELL AGAR PLATE:
+
+    - AGAR_PLATE_TYPE := "corning_12_wellplate_6.9ml_flat"
+    - AGAR_PLATE_SLOT := "1"
+    - LOAD agar_plate := 12-well corning plate in slot 1
+
+THERMOCYCLER SETUP (INITIAL)
+
+13. Ensure tc_mod lid is open and block is at ambient (no initial temperature set here).
+14. All temperature programs will be applied later during:
+
+    - transformation_setup()
+    - heat_shock()
+    - outgrowth()
+
+GLOBAL TRANSFORMATION CONSTANTS
+
+15. Transformation incubation:
+
+    - TRANSFORM_TEMP := __PARAMETERS["transform_incubation_temp"]["value"] = 4 °C
+    - ASSEMBLY_VOL := 5 µL (final assembly volume added to competent cells)
+    - TRANSFORM_MIX_SETTINGS := (4, 5) (mix 4 times with 5 µL)
+    - TRANSFORM_INCUBATION_TIME := __PARAMETERS["transform_incubation_time"]["value"] = 20 minutes
+
+16. Heat shock:
+
+    - HEAT_SHOCK_TEMP := 42 °C (30 seconds)
+    - POST_SHOCK_TEMP := 4 °C (2 minutes)
+    - BLOCK_MAX_VOLUME_TRANSFORM := 50 µL
+
+17. SOC outgrowth:
+
+    - SOC_VOL := 100 µL per transformation column
+    - SOC_MIX_SETTINGS := (4, 50) (mix 4 times with 50 µL)
+    - OUTGROWTH_TEMP := 37 °C
+    - OUTGROWTH_TIME := 60 minutes
+    - SOC_ASPIRATION_RATE := 25 (reduced P300 aspiration rate)
+    - P300_DEFAULT_ASPIRATION_RATE := 150
+
+18. Spotting (plating on agar):
+
+    - DEAD_VOL := 0 µL (no deliberate dead volume)
+    - SPOTTING_DISPENSE_RATE := 1 (relative rate for P20 dispense during spotting)
+    - STABBING_DEPTH := 13 mm below agar top (penetration into agar)
+    - MAX_SPOT_VOL := 20 µL per individual aspirate/dispense segment
+    - DISPENSING_HEIGHT := −5 mm from agar well top (just below surface)
+    - SAFE_HEIGHT := +7 mm above agar well top (for lateral movements)
+
+19. Head speed labels (used inside spot routine):
+
+    - DEFAULT_HEAD_SPEED.z := 125
+    - SPOT_HEAD_SPEED.z    := 125 / 4 (used conceptually for more controlled motion near agar surface)
+
+CALIBRATION STEP (AGAR PLATE REGISTRATION)
+
+20. Perform a short internal transfer on agar_plate to register positions:
+
+    20.1 PICK UP fresh P20 tip automatically (single_pipette, slot 2, A1).
+    20.2 ASPIRATE 1 µL from agar_plate["A1"].
+    20.3 MOVE to agar_plate["C4"].
+    20.4 DISPENSE 1 µL into agar_plate["C4"] (trash=False; tip is not discarded to trash by default).
+    20.5 DROP tip according to OT-2 default behaviour (non-trash destination because trash=False).
+
+    (This step is purely for calibration/motion planning; it does not affect biological samples.)
+
+TRANSFORMATION SETUP STEP (FINAL ASSEMBLY → COMPETENT CELLS)
+
+21. PRE-COOL THERMOCYCLER BLOCK FOR TRANSFORMATION:
+
+    21.1 SET tc_mod block temperature:
+    - tc_mod.set_block_temperature(TRANSFORM_TEMP=4 °C, block_max_volume=50 µL).
+    21.2 PAUSE protocol:
+    - Message:
+    "Place the competent cell plate on the thermocycler block when temperature is 4 °C, then resume run."
+    - User action: place transformation_plate containing competent cells on tc_mod, close deck, resume.
+
+22. TRANSFER FINAL ASSEMBLIES FROM assembly_plate → transformation_plate:
+
+    22.1 DEFINE source wells:
+    - src_wells := [assembly_plate[well] for well ∈ transformation_wells]
+    = A1, B1, C1, A2 on assembly_plate
+
+    22.2 DEFINE destination wells:
+    - dst_wells := [transformation_plate[well] for well ∈ transformation_wells]
+    = A1, B1, C1, A2 on transformation_plate
+
+    22.3 FOR each index i over transformation_wells:
+
+    
+     a. PICK UP fresh P20 tip.  
+     b. ASPIRATE ASSEMBLY_VOL (5 µL) from src_wells[i].  
+     c. DISPENSE 5 µL into dst_wells[i].  
+     d. MIX AFTER TRANSFER (to gently mix assembly DNA with cells):  
+        - Perform 4 cycles:
+          • ASPIRATE 5 µL  
+          • DISPENSE 5 µL back into same transformation well  
+     e. DROP tip.  
+    
+
+    (Implementation uses single_pipette.transfer with new_tip="always" and mix_after=(4,5), but logically matches the loop above.)
+
+23. INCUBATE CELLS WITH ASSEMBLIES ON BLOCK:
+
+    23.1 HOLD transformation_plate on tc_mod at 4 °C.
+    23.2 WAIT TRANSFORM_INCUBATION_TIME = 20 minutes (protocol.delay(minutes=20)).
+
+HEAT SHOCK STEP
+
+24. EXECUTE HEAT SHOCK ON THERMOCYCLER BLOCK:
+
+    24.1 SHIFT block to HEAT_SHOCK_TEMP:
+    - tc_mod.set_block_temperature(42 °C, hold_time_seconds=30, block_max_volume=50 µL).
+    - Implied: transformation_plate wells briefly reach 42 °C for 30 s.
+
+    24.2 RETURN block to POST_SHOCK_TEMP:
+    - tc_mod.set_block_temperature(4 °C, hold_time_minutes=2, block_max_volume=50 µL).
+    - Implied: 2-minute recovery at 4 °C prior to SOC addition.
+
+PHASE SWITCH (PREP FOR SOC ADDITION)
+
+25. PAUSE TO ADJUST LABWARE:
+
+    25.1 PAUSE protocol with message:
+    "Remove the final assembly plate from slot 5. Ensure a deepwell plate containing SOC media is in place (slot 4). Resume run."
+    25.2 User actions during pause:
+    - Remove assembly_plate from slot 5 (no longer needed).
+    - Ensure soc_plate in slot 4 contains SOC media in well soc_well = "A1".
+
+OUTGROWTH STEP (ADD SOC, 37 °C INCUBATION)
+
+26. DETERMINE TRANSFORMATION COLUMNS FOR OUTGROWTH:
+
+    26.1 For each spotting_tuple in spotting_tuples:
+    - Extract source_well column indices as strings:
+    source_cols := [source_well[1:] for source_well in spotting_tuple[0]]
+    - unique_cols_this_tuple := first occurrence of each column string in source_cols.
+
+    26.2 Flatten unique columns from all spotting tuples:
+    - spotting_tuples_cols := concatenation of unique_cols_this_tuple across tuples.
+
+    26.3 Overall unique column IDs:
+    - unique_cols := first occurrence of each element in spotting_tuples_cols.
+
+    
+     For current test:
+     - spotting_tuples source wells: A1,B1,C1,A2  
+     - Columns: "1","1","1","2"  
+     - unique_cols := ["1","2"]  
+    
+
+    26.4 transformation_cols := list of transformation_plate columns corresponding to each col ∈ unique_cols:
+    - transformation_cols := [transformation_plate.columns_by_name()[col] for col in unique_cols]
+    - Here, columns "1" and "2" on transformation_plate.
+
+27. PREPARE THERMOCYCLER FOR OUTGROWTH:
+
+    27.1 SET block temperature to ~room/starting temp:
+    - tc_mod.set_block_temperature(20 °C, block_max_volume=100 µL).
+
+28. ADD SOC MEDIA TO TRANSFORMATION COLUMNS (multi_pipette):
+
+    28.1 DEFINE SOC source:
+    - soc := soc_plate.wells(soc_well)  (list containing well A1)
+
+    28.2 REDUCE aspiration rate for gentle handling:
+    - multi_pipette.flow_rate.aspirate := SOC_ASPIRATION_RATE (25).
+
+    28.3 FOR each column in transformation_cols:
+
+    
+     a. PICK UP fresh P300 tip.  
+     b. ASPIRATE SOC_VOL (100 µL) from soc A1.  
+     c. DISPENSE 100 µL into the current transformation column (all 8 wells in that column).  
+     d. MIX AFTER DISPENSE in same column:
+        - Perform 4 cycles of 50 µL mixing (SOC_MIX_SETTINGS = (4, 50)).  
+     e. DROP tip.  
+    
+
+    (In practice implemented as multi_pipette.transfer(SOC_VOL, soc, transformation_cols, new_tip="always", mix_after=(4,50)).)
+
+    28.4 RESTORE default aspiration rate:
+    - multi_pipette.flow_rate.aspirate := P300_DEFAULT_ASPIRATION_RATE (150).
+
+29. OUTGROWTH INCUBATION:
+
+    29.1 SHIFT tc_mod block to OUTGROWTH_TEMP:
+    - tc_mod.set_block_temperature(37 °C, hold_time_minutes=60, block_max_volume=100 µL).
+    29.2 INCUBATE for OUTGROWTH_TIME = 60 minutes (cells recover and express antibiotic resistance).
+
+    29.3 After incubation, PAUSE protocol:
+    - Message: "Introduce the agar plate. Confirm that the agar plate is in slot 1, then resume run."
+
+SPOTTING PRE-MIX AND PLATING STEP (spot_transformations)
+
+30. PRE-MIX TRANSFORMATION COLUMNS PRIOR TO SPOTTING:
+
+    30.1 For each spotting_tuple in spotting_tuples:
+
+    
+     a. Compute source_well columns:
+        - source_wells_cols := [source_well[1:] for source_well in spotting_tuple[0]]  
+     b. unique_cols := first occurrence of each column in source_wells_cols.  
+     c. Convert to integers: int_unique_cols := list(map(int, unique_cols)).  
+     d. If len(unique_cols) > 1 and int_unique_cols[1] mod 3 == 0:
+          - Remove unique_cols[0] to avoid resuspending redundant columns in 12-well layout.
+        Else:
+          - Keep unique_cols as is.  
+
+     e. FOR each col in unique_cols:
+          i.   PICK UP fresh P300 tip.  
+          ii.  MIX TRANSFORMATION_MIX_SETTINGS = [4, 50] in transformation_plate.columns_by_name()[col][0]:
+               - 4 cycles of 50 µL in the top well of that column to resuspend cells.  
+          iii. DROP tip.  
+    
+
+31. DEFINE SPOT ROUTINE (logical behaviour of spot()):
+
+    For each individual spot action:
+
+    31.1 INPUT:
+    - source := transformation_plate.wells(source_well)  (returns [well])
+    - target := agar_plate.wells(target_well)            (returns [well])
+    - spot_vol := volume to spot in this iteration ≤ MAX_SPOT_VOL
+
+    31.2 ACTION:
+
+    
+     a. ASPIRATE (spot_vol + DEAD_VOL) from source[0].  
+     b. MOVE tip above target well:
+        - MOVE to target[0].top(SAFE_HEIGHT = +7 mm).  
+     c. APPROACH agar surface:
+        - MOVE to target[0].top(DISPENSING_HEIGHT = −5 mm).  
+     d. DISPENSE spot_vol at rate = SPOTTING_DISPENSE_RATE (1).  
+     e. SET controlled vertical motion near agar:
+        - MOVE to target[0].top(DISPENSING_HEIGHT) at speed = DEFAULT_HEAD_SPEED.z (125).  
+     f. STAB into agar:
+        - MOVE to target[0].top(−STABBING_DEPTH) = top(−13 mm).  
+     g. RETRACT slightly:
+        - MOVE back to target[0].top(DISPENSING_HEIGHT) at speed = DEFAULT_HEAD_SPEED.z.  
+     h. FURTHER RETRACT to maintain clearance:
+        - MOVE to target[0].top(DISPENSING_HEIGHT) again (ensures consistent height).  
+     i. BLOW OUT at this height to ensure full deposition of cells onto agar.  
+     j. MOVE to SAFE_HEIGHT above well:
+        - MOVE to target[0].top(SAFE_HEIGHT).  
+    
+
+    (Tip is not dropped here; tip lifecycle is managed by surrounding spot_tuple routine.)
+
+32. SPOT EACH GROUP OF WELLS (spot_tuple):
+
+    For each spotting_tuple ∈ spotting_tuples:
+
+    32.1 Extract parameters:
+    - source_wells := spotting_tuple[0]  (e.g. ('A1','B1','C1'))
+    - target_wells := spotting_tuple[1]  (e.g. ('A1','B1','C1'))
+    - spot_vols    := list(spotting_tuple[2]) (e.g. [5,5,5])
+
+    32.2 FOR each index idx over spot_vols:
+
+    
+     a. remaining_vol := spot_vols[idx]  
+     b. IF remaining_vol == 0 → CONTINUE to next idx.  
+     c. PICK UP fresh P20 tip (single_pipette).  
+
+     d. WHILE remaining_vol > 0:
+
+          i.   vol := min(remaining_vol, MAX_SPOT_VOL = 20 µL).  
+          ii.  CALL spot(
+                   source = transformation_plate.wells(source_wells[idx]),
+                   target = agar_plate.wells(target_wells[idx]),
+                   spot_vol = vol
+               ).  
+          iii. remaining_vol := remaining_vol − vol.  
+
+     e. DROP tip after exhausting required volume for this (source,target) pair.  
+
+     f. IF target_wells[idx] == "C4":
+          - PAUSE protocol:
+            "Introduce a new agar plate (12-well plate). Once in place, resume run."  
+        ELSE:
+          - CONTINUE.  
+    
+
+    (For current test values, each A1, B1, C1, A2 well is spotted once with 5 µL total, no plate change triggered.)
+
+33. APPLY SPOT TRANSFORMATIONS TO ALL DEFINED TUPLES:
+
+    33.1 CALL spot_transformations(spotting_tuples):
+
+    
+     - INTERNAL ACTIONS:
+       • For each spotting_tuple:
+         – Pre-mix relevant transformation columns with multi_pipette (Step 30).  
+         – Then call spot_tuple(spotting_tuple) as detailed above (Step 32).  
+    
+
+    33.2 After all tuples processed, transformation reactions are plated onto agar_plate wells:
+    - A1, B1, C1, A2 (and any others defined in spotting_tuples for larger runs).
+
+END RUN

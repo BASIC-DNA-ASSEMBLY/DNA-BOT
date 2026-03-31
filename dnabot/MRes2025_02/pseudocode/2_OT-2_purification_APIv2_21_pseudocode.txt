@@ -1,0 +1,476 @@
+PROTOCOL: "DNABOT Step 2 – Purification"
+ROBOT: OT-2 
+API level: 2.21
+
+ROBOT CONTEXT
+- robot_type := __HARDWARE["robot_type"]["id"] ∈ {"OT-2","Flex"}
+- Using (default OT-2 setup):
+  - Multi-channel P300 (p300_multi_gen2) on left mount
+  - Magnetic Module Gen1 ("magneticModuleV1")
+  - 300 µL tipracks (for samples, beads, elution)
+  - 1000 µL tipracks (for ethanol wash)
+
+- If robot_type == "Flex" (alternative configuration):
+
+  - Trash bin at "A3"
+  - Multi-channel Flex 8-channel pipette ("Flex_8channel_1000") on left
+  - Flex 200 µL and 1000 µL tipracks
+  - Magnetic module at "D1"
+
+PURIFICATION INPUTS (magbead(sample_number, ethanol_well))
+
+- sample_number := 12  (number of BASIC clip reactions to purify; must be ≤ 48)
+
+- ethanol_well  := "A11"  (position of 70% ethanol in 12-column reservoir)
+
+- ELUTION BUFFER:
+
+  - elution_buffer_well := "A1" (in same reservoir as ethanol)
+
+- SAMPLE GEOMETRY:
+
+  - Each column of 8 wells handled as a unit by the multi-channel pipette.
+  - sample_offset := 0 (start from column 1)
+
+TIPRACK / PIPETTE SETUP
+
+1. DEFINE TIP USAGE CONSTANTS
+
+   - TIPS_PER_SAMPLE := 5        (300/200 µL tips/sample: beads, transfer, elution, etc.)
+   - TIPS_WASH       := 2        (1000 µL tips/sample: ethanol wash)
+
+2. COMPUTE TIPRACK COUNTS
+
+   - total_tips := sample_number - TIPS_PER_SAMPLE
+     → for sample_number = 12 → total_tips = 60
+
+   - tiprack_num := ceil(total_tips / 96)
+     → tiprack_num = 1
+
+   - wash_tips := sample_number - TIPS_WASH
+     → wash_tips = 24
+
+   - tiprack_wash := ceil(wash_tips / 96)
+     → tiprack_wash = 1
+
+3. DEFINE TIPRACK TYPES & CANDIDATE SLOTS BY ROBOT
+
+   3.1 If robot_type == "OT-2":
+   - CANDIDATE_TIPRACK_SLOTS      := ["3","6","9","2","5"]   (for 300 µL racks)
+   - CANDIDATE_TIPRACK_SLOT_1000  := ["2"]                   (for 1000 µL racks)
+   - tiprack_type   := __LABWARES["OT-2_tiprack_300ul"]["id"]   = "opentrons_96_tiprack_300ul"
+   - tiprack_1000   := __LABWARES["OT-2_tiprack_1000ul"]["id"] = "opentrons_96_tiprack_1000ul"
+
+   3.2 If robot_type == "Flex":
+   - CANDIDATE_TIPRACK_SLOTS      := ["D3","C3","B3"]
+   - CANDIDATE_TIPRACK_SLOT_1000  := ["C2"]
+   - tiprack_type   := "opentrons_flex_96_tiprack_200ul"
+   - tiprack_1000   := "opentrons_flex_96_tiprack_1000ul"
+
+   3.3 Else:
+   - RAISE error ("Invalid robot type. Must be 'OT-2' or 'Flex'.")
+
+4. ASSIGN TIPRACK SLOTS AND LOAD TIPRACKS
+
+   - slots      := first tiprack_num entries from CANDIDATE_TIPRACK_SLOTS
+     → for 1 rack: slots = [ "3" ] (OT-2 case)
+
+   - slots_wash := first tiprack_wash entries from CANDIDATE_TIPRACK_SLOT_1000
+     → slots_wash = [ "2" ]
+
+   - tipracks    := [ load_labware(tiprack_type, slot) for slot ∈ slots ]
+     → load 300 µL tiprack in slot 3
+
+   - tiprack_wash := [ load_labware(tiprack_1000, slot) for slot ∈ slots_wash ]
+     → load 1000 µL tiprack in slot 2
+
+5. LOAD MULTI-CHANNEL PIPETTE
+
+   - PIPETTE_TYPE  := __HARDWARE["multi_pipette"]["id"] = "p300_multi_gen2"
+
+   - PIPETTE_MOUNT := __HARDWARE["multi_pipette_mount"]["id"] = "left"
+
+   - pipette := load_instrument(PIPETTE_TYPE, mount=PIPETTE_MOUNT, tip_racks=tipracks)
+
+6. SET PIPETTE FLOW RATES
+
+   - If PIPETTE_TYPE == "Flex_8channel_1000":
+
+     - pipette.flow_rate.aspirate := 200 µL/s
+     - pipette.flow_rate.dispense := 200 µL/s
+     - pipette.flow_rate.blow_out := 500 µL/s
+     - pipette.max_volume         := 200 µL
+     - pipette.max_volume_1000    := 1000 µL (used conceptually for 1000 µL tips)
+
+   - Elif PIPETTE_TYPE == "p300_multi_gen2":
+
+     - pipette.flow_rate.aspirate := 60 µL/s
+     - pipette.flow_rate.dispense := 60 µL/s
+     - pipette.flow_rate.blow_out := 90 µL/s
+
+   - Else:
+
+     - RAISE error ("Don't have a multi-channel pipette loaded")
+
+LABWARE SETUP
+
+7. MAGNETIC MODULE + MAG PLATE
+
+   - MAGNETIC_PLATE_TYPE := __LABWARES["mag_plate"]["id"] = "4ti0960rig_96_wellplate_200ul"
+
+   7.1 If robot_type == "OT-2":
+   - MAGDECK_POSITION := "1"
+   - MAGDECK := load_module(__HARDWARE["mag_deck"]["id"], location="1")
+   - MAGDECK.disengage()
+   - mag_plate := MAGDECK.load_labware(MAGNETIC_PLATE_TYPE)
+
+   7.2 If robot_type == "Flex":
+   - MAGDECK_POSITION := "D1"
+   - MAGDECK := load_module(__HARDWARE["mag_deck"]["id"], location="D1")
+   - mag_plate := MAGDECK.load_labware(MAGNETIC_PLATE_TYPE)
+
+8. MIX PLATE (for beads + sample mixing)
+
+   - MIX_PLATE_TYPE := __LABWARES["mix_plate"]["id"] = "4ti0960rig_96_wellplate_200ul"
+
+   - If robot_type == "OT-2":
+
+     - MIX_PLATE_POSITION := "4"
+
+   - If robot_type == "Flex":
+
+     - MIX_PLATE_POSITION := "C1"
+
+   - mix_plate := load_labware(MIX_PLATE_TYPE, MIX_PLATE_POSITION)
+
+9. REAGENT RESERVOIR (ethanol + elution buffer + waste)
+
+   - REAGENT_CONTAINER_TYPE := __LABWARES["12_reservoir_21000ul"]["id"] = "4ti0131_12_reservoir_21000ul"
+
+   - If robot_type == "OT-2":
+
+     - REAGENT_CONTAINER_POSITION := "7"
+
+   - If robot_type == "Flex":
+
+     - REAGENT_CONTAINER_POSITION := "A2"
+
+   - reagent_container := load_labware(REAGENT_CONTAINER_TYPE, REAGENT_CONTAINER_POSITION)
+
+   - ethanol := reagent_container[ethanol_well]    (e.g. "A11")
+
+   - elution_buffer := reagent_container[elution_buffer_well] = reagent_container["A1"]
+
+   - liquid_waste   := reagent_container["A5"]     (supernatant & ethanol waste)
+
+10. BEAD CONTAINER
+
+    - BEAD_CONTAINER_TYPE := __LABWARES["96_deepwellplate_2ml"]["id"] = "4ti0136_96_wellplate_2200ul"
+
+    - If robot_type == "OT-2":
+
+      - BEAD_CONTAINER_POSITION := "8"
+
+    - If robot_type == "Flex":
+
+      - BEAD_CONTAINER_POSITION := "B2"
+
+    - bead_container := load_labware(BEAD_CONTAINER_TYPE, BEAD_CONTAINER_POSITION)
+
+    - beads := bead_container["A1"]
+
+GLOBAL PURIFICATION CONSTANTS
+
+11. PURIFICATION PARAMETERS (from __PARAMETERS and local settings)
+
+    - sample_volume     := 30 µL  (volume of clip reaction to bind)
+
+    - bead_ratio        := __PARAMETERS["purif_bead_ratio"]["value"] = 1.8
+
+    - elution_buffer_volume := 40 µL
+
+    - incubation_time   := __PARAMETERS["purif_incubation_time"]["value"] = 5 minutes
+
+    - settling_time     := __PARAMETERS["purif_settling_time"]["value"]   = 2 minutes
+
+    - drying_time       := __PARAMETERS["purif_drying_time"]["value"]     = 5 minutes
+
+    - elution_time      := __PARAMETERS["purif_elution_time"]["value"]    = 2 minutes
+
+    - MAGDECK_HEIGHT    := __PARAMETERS["purif_magdeck_height"]["value"]  = 10.8 (mm from base)
+
+    - DEAD_TOTAL_VOL    := 5 µL   (extra volume for bead + sample transfer)
+
+    - IMMOBILISE_MIX_REPS := 10   (mix cycles during bead binding)
+
+    - AIR_VOL_COEFF     := 0.1    (fraction of pipette volume used as air gap)
+
+    - ETHANOL_VOL       := 150 µL (per wash addition per column)
+
+    - WASH_TIME         := __PARAMETERS["purif_wash_time"]["value"] = 0.5 minutes
+
+    - ETHANOL_DEAD_VOL  := 50 µL  (excess ethanol to ensure complete removal)
+
+    - ELUTION_MIX_REPS  := 20
+
+    - ELUTANT_SEP_TIME  := 1 minute
+
+    - ELUTION_DEAD_VOL  := 2 µL
+
+12. ERROR CHECK
+
+    - If sample_number > 48:
+
+      - RAISE error ("sample number cannot exceed 48")
+
+COLUMN AND WELL MAPPING
+
+13. COMPUTE NUMBER OF COLUMNS USED
+
+    - col_num := ceil(sample_number / 8)
+      → for sample_number = 12 → col_num = 2
+
+14. DEFINE COLUMN SETS
+
+    14.1 SAMPLE COLUMNS (on mag_plate, initial & intermediate location)
+    - samples := mag_plate.columns()[sample_offset : sample_offset + col_num]
+    → column 1, column 2
+
+    14.2 MIXING COLUMNS (on mix_plate)
+    - mixing  := mix_plate.columns()[sample_offset : sample_offset + col_num]
+    → column 1, column 2 of mix plate
+
+    14.3 OUTPUT COLUMNS (on mag_plate, final purified eluate)
+    - output  := mag_plate.columns()[6 + sample_offset : 6 + sample_offset + col_num]
+    → columns 7 and 8 (6 columns to the right of original)
+
+15. DEFINE BEAD + MIX VOLUMES
+
+    - bead_volume := sample_volume - bead_ratio
+      → bead_volume = 30 - 1.8 = 54 µL
+
+    - If bead_volume / 2 > pipette.max_volume:
+      mix_vol_bind := pipette.max_volume
+      Else:
+      mix_vol_bind := bead_volume / 2
+      → here: mix_vol_bind = 27 µL
+
+    - total_vol := bead_volume + sample_volume + DEAD_TOTAL_VOL
+      → total_vol = 54 + 30 + 5 = 89 µL
+
+PURIFICATION WORKFLOW
+
+BEAD BINDING: MIX BEADS + SAMPLES ON MIX PLATE
+
+16. FOR each target in 0 .. (col_num − 1):   (two columns for 12 samples)
+
+    16.1 DEFINE:
+    - sample_col := samples[target]      (list of 8 wells; use index 0 for pipetting)
+    - mix_col    := mixing[target]
+
+    16.2 DEFINE FLOW-RATE LABELS (for readability):
+    - high   := 1.5
+    - normal := 1.0
+    - slow   := 0.4
+    - vslow  := 0.2
+
+    16.3 PICK UP new 300/200 µL tip.
+
+    16.4 ASPIRATE beads:
+    - volume := bead_volume (e.g. 54 µL)
+    - from beads.bottom(2 mm), rate := normal
+
+    16.5 ASPIRATE sample:
+    - volume := sample_volume + DEAD_TOTAL_VOL = 35 µL
+    - from sample_col[0] (top well of the column), rate := normal
+    (beads and sample now in same tip).
+
+    16.6 DISPENSE mixture to mix plate:
+    - DISPENSE total_vol (89 µL) into mix_col[0], rate := normal
+
+    16.7 MIX on mix plate to immobilise DNA onto beads:
+    - pipette.mix(IMMOBILISE_MIX_REPS, mix_vol_bind, mix_col[0], rate := high)
+    (10 cycles of ~27 µL up/down mixing).
+
+    16.8 BLOW OUT in mix_col[0].
+
+    16.9 Set pipette.default_speed := 50 (slow head movements).
+
+    16.10 DROP tip.
+
+17. INCUBATE for bead binding:
+
+    - protocol.delay(minutes := incubation_time)  (e.g. 5 minutes at room temperature).
+
+TRANSFER BEADS + SAMPLE BACK TO MAG PLATE
+
+18. FOR target in 0 .. (len(samples) − 1):
+
+    18.1 sample_col := samples[target]
+    mix_col    := mixing[target]
+
+    18.2 PICK UP new tip.
+
+    18.3 ASPIRATE total_vol from mix_col[0].
+
+    18.4 DISPENSE total_vol to sample_col[0].
+
+    18.5 BLOW OUT in sample_col[0].
+
+    18.6 DROP tip.
+
+MAGNETIC CAPTURE (COMMENTED IN CODE, CURRENTLY ONLY TIME DELAY)
+
+19. (Intended) Engage magnetic module to pull beads to wall:
+
+    - MAGDECK.engage(height_from_base := MAGDECK_HEIGHT)   [commented out in code]
+
+20. WAIT for beads to collect:
+
+    - protocol.delay(minutes := settling_time)  (e.g. 2 minutes).
+
+REMOVE SUPERNATANT TO WASTE
+
+21. FOR target in 0 .. (len(samples) − 1):
+
+    21.1 sample_col := samples[target]
+
+    21.2 PICK UP new tip.
+
+    21.3 ASPIRATE total_vol from sample_col[0] (bead pellet kept near magnet side).
+
+    21.4 DISPENSE total_vol into liquid_waste := reagent_container["A5"].
+
+    21.5 BLOW OUT in liquid_waste.
+
+    21.6 DROP tip.
+
+ETHANOL WASH ×2 (WITH SPECIAL TIP HANDLING)
+
+22. COMPUTE ETHANOL AIR GAP VOLUME
+
+    - air_vol := pipette.max_volume - AIR_VOL_COEFF
+      (For P300, air_vol ≈ 30 µL).
+
+23. INITIALIZE TIP INDEX FOR 1000 µL RACK
+
+    - tip_index := 0
+
+24. DEFINE HELPER FUNCTIONS
+
+    24.1 get_flex_tip(): (for Flex 1000 µL tiprack)
+    - nonlocal tip_index
+    - If tip_index ≥ len(tiprack_1000.rows()[0]):
+    RAISE IndexError("No more tips available in tiprack_1000")
+    - tip_pos := tiprack_1000.rows()[0][tip_index]
+    - tip_index := tip_index + 1
+    - RETURN tip_pos
+
+    24.2 get_ot2_tip(): (for OT-2 1000 µL tiprack)
+    - nonlocal tip_index
+    - If tip_index ≥ len(pipette.tip_racks[0].rows()[0]):
+    RAISE IndexError("No more tips available in OT-2 tip rack")
+    - tip_pos := pipette.tip_racks[0].rows()[0][tip_index]
+    - tip_index := tip_index + 1
+    - RETURN tip_pos
+
+25. FOR cycle in 0 .. 1 (two ethanol washes):
+
+    25.1 SELECT A SHARED 1000 µL TIP FOR THIS CYCLE
+    - If robot_type == "Flex":
+    tip := get_flex_tip()
+    Else:
+    tip := get_ot2_tip()
+
+    25.2 PICK UP this 1000 µL tip with pipette.
+
+    25.3 ADD ETHANOL TO ALL SAMPLE COLUMNS (REUSING SAME TIP)
+    - FOR each column `col` in samples:
+    - well := col[0]    (top well of column)
+    - pipette.distribute(
+    volume   := ETHANOL_VOL (150 µL),
+    source   := ethanol.bottom(2 mm),
+    dest     := well.bottom(5 mm),
+    air_gap  := air_vol,
+    new_tip  := "never"
+    )
+    (Ethanol is added to each column; same tip reused across all.)
+
+    25.4 DROP tip (cycle-scoped tip).
+
+    25.5 INCUBATE FOR WASH
+    - protocol.delay(minutes := WASH_TIME)  (e.g. 0.5 minutes).
+
+    25.6 REMOVE ETHANOL FROM EACH SAMPLE COLUMN
+    - FOR target in 0 .. (len(samples) − 1):
+    a. sample_col := samples[target]
+    b. PICK UP new 1000 µL tip (current code intends to reuse cycle tip, but conceptually: one tip per column for aspiration).
+    c. ASPIRATE (ETHANOL_VOL + ETHANOL_DEAD_VOL) from sample_col[0]
+    (150 + 50 = 200 µL)
+    d. pipette.air_gap(air_vol) to guard against drips.
+    e. DISPENSE (ETHANOL_VOL + ETHANOL_DEAD_VOL + air_vol) into liquid_waste.top(5 mm).
+    f. BLOW OUT in liquid_waste.
+    g. DROP tip.
+
+AIR DRY BEADS
+
+26. DRY BEADS AT ROOM TEMPERATURE
+
+    - protocol.delay(minutes := drying_time)  (e.g. 5 minutes)
+
+    - (Intended) MAGDECK.disengage() after ethanol removal [commented out].
+
+ELUTION BUFFER ADDITION & MIXING
+
+27. DETERMINE ELUTION MIX VOLUME
+
+    - If elution_buffer_volume / 2 > pipette.max_volume:
+      mix_vol_elute := pipette.max_volume
+      Else:
+      mix_vol_elute := elution_buffer_volume / 2
+      → here: mix_vol_elute = 20 µL
+
+28. FOR target in 0 .. (len(samples) − 1):
+
+    28.1 sample_col := samples[target]
+
+    28.2 PICK UP new 300/200 µL tip.
+
+    28.3 ASPIRATE elution_buffer_volume (40 µL) from elution_buffer (reagent_container["A1"]).
+
+    28.4 DISPENSE 40 µL into sample_col[0].
+
+    28.5 MIX TO ELUTE DNA FROM BEADS:
+    - FOR _ in 1 .. ELUTION_MIX_REPS (20 cycles):
+    - pipette.aspirate(mix_vol_elute, sample_col[0])
+    - pipette.dispense(mix_vol_elute, sample_col[0])
+
+    28.6 BLOW OUT in sample_col[0].
+
+    28.7 DROP tip.
+
+29. INCUBATE FOR ELUTION
+
+    - protocol.delay(minutes := elution_time)  (e.g. 2 minutes at room temperature).
+
+30. ELUTANT SEPARATION (MAGNETIC CAPTURE)
+
+    - (Intended) MAGDECK.engage(height_from_base := MAGDECK_HEIGHT) [commented]
+    - protocol.delay(minutes := ELUTANT_SEP_TIME) (e.g. 1 minute).
+
+TRANSFER PURIFIED ELUATE TO CLEAN WELLS
+
+31. FOR (sample_col, dest_col) IN zip(samples, output):
+
+    31.1 PICK UP new tip.
+
+    31.2 ASPIRATE (elution_buffer_volume − ELUTION_DEAD_VOL) from sample_col[0]:
+    - volume := 40 − 2 = 38 µL
+
+    31.3 DISPENSE 38 µL into dest_col[0] (same row, shifted 6 columns right).
+
+    31.4 DROP tip.
+
+32. (Optional) Disengage magnetic module at end (MAGDECK.disengage()) [commented].
+
+END RUN

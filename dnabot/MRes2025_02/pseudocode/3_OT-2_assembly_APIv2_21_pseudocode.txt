@@ -1,0 +1,167 @@
+PROTOCOL: "DNABOT Step 3 – Assembly with thermocycler Gen2"
+ROBOT: OT-2
+API level: 2.21
+
+ROBOT CONTEXT
+- robot_type := "OT-2"
+- Using:
+    - Single-channel P20 (p20_single_gen2) on right mount
+    - Thermocycler Module Gen2
+    - Standard OT-2 96-well 20 µL tipracks
+
+ASSEMBLY INPUT MAP (final_assembly_dict)
+- Destination well → list of purified clip wells (on clip plate, slot 1)
+  Current test dictionary:
+    - "A1" ← ["A7", "B7", "C7", "F7", "E7"]   (5 parts)
+    - "B1" ← ["A7", "B7", "D7", "G7"]        (4 parts)
+    - "C1" ← ["A7", "B7", "E7", "H7"]        (4 parts)
+
+TIPRACK / PIPETTE SETUP
+1. Set tiprack_type := "opentrons_96_tiprack_20ul".
+2. tiprack_num (input) = 1
+3. Inside final_assembly():
+    - Increment tiprack_num := tiprack_num + 1 → 2
+    - Candidate tiprack slots for OT-2:
+        CANDIDATE_TIPRACK_SLOTS := ["3", "5", "6", "9"]
+    - Select first 2 slots (because tiprack_num = 2):
+        slots := ["3", "5"]
+4. LOAD tipracks:
+    - Load "opentrons_96_tiprack_20ul" into slot 3
+    - Load "opentrons_96_tiprack_20ul" into slot 5
+5. LOAD single-channel P20 on right mount with these tipracks.
+6. (Flow rates remain at default because the OT-2 branch in the if/elif is not reached.)
+
+LABWARE SETUP
+7. CLIP PLATE (purified clip products from Step 2):
+    - For OT-2:
+        - CLIP_PLATE_TYPE := __LABWARES["clip_plate"]["id"]
+        - CLIP_PLATE_POSITION := "1"
+    - LOAD 96-well clip plate in slot 1 → clip_plate
+    - purified_clip_plate := clip_plate
+
+8. TUBE RACK (assembly master mixes):
+    - For OT-2:
+        - TUBE_RACK_TYPE := __LABWARES["24_tuberack_1500ul"]["id"]
+        - TUBE_RACK_POSITION := "4"
+    - LOAD 24-tube rack into slot 4 → tube_rack
+    - Master mix wells will be chosen later based on number of parts per assembly.
+
+9. DESTINATION FINAL ASSEMBLY PLATE:
+    - For OT-2:
+        - DESTINATION_PLATE_TYPE := __LABWARES["final_assembly_plate"]["id"]
+        - DESTINATION_RACK_POSITION := "2"
+    - LOAD final assembly 96-well plate into slot 2 → destination_plate
+
+THERMOCYCLER SETUP
+10. LOAD thermocycler module Gen2:
+    - tc_mod := load thermocyclerModuleV2 (default location on OT-2)
+11. OPEN the thermocycler lid.
+12. DEACTIVATE thermocycler lid heating.
+13. SET thermocycler block temperature to 4 °C (pre-cool block for assembly).
+
+GLOBAL ASSEMBLY CONSTANTS
+14. TOTAL_VOL := 15 µL  (final reaction volume per assembly well)
+15. PART_VOL  := 1.5 µL per purified clip
+16. MIX_SETTINGS := (1, 3)  (not directly used; mixing is hard-coded below)
+17. sample_number := number of keys in final_assembly_dict (here 3)
+18. ERROR CHECK:
+    - If sample_number > 96 → RAISE error ("Final assembly number cannot exceed 96").
+
+TIPRACK LOGIC (for internal counting)
+19. INITIAL_TIP := "A1"
+20. Candidate tip slots already defined as ["3", "5", "6", "9"]; only first 2 are used here.
+
+MASTER MIX DISTRIBUTION STEP
+21. Determine number of parts per assembly:
+    - final_assembly_lengths := list of length(values) for each construct:
+        e.g. [5, 4, 4] for A1, B1, C1.
+    - unique_assemblies_lengths := unique set of these lengths, e.g. {4, 5}.
+    - master_mix_well_letters := ["A", "B", "C", "D"] (used to choose tube rack wells).
+
+22. FOR EACH distinct number of parts x IN unique_assemblies_lengths:
+    22.1 Compute master mix tube position in the tube rack:
+         - master_mix_well := master_mix_well_letters[(x - 1) // 6] + str(x - 1)
+           (For x ≤ 6 this maps to row "A" and column (x−1), e.g. "A4" when x=5.)
+    22.2 Identify destination wells that use exactly x parts:
+         - destination_inds := indices i where final_assembly_lengths[i] == x
+         - destination_wells := list of keys of final_assembly_dict at those indices
+           (e.g. if x=5 → ["A1"]; if x=4 → ["B1","C1"])
+    22.3 Prepare pipette clearance:
+         - pipette.well_bottom_clearance.aspirate := 1 mm
+         - pipette.well_bottom_clearance.dispense := 2 mm
+    22.4 PICK UP a fresh tip (from P20 tiprack).
+    22.5 FOR EACH destination_well IN destination_wells:
+         - DISTRIBUTE master mix from tube_rack[master_mix_well] to destination_plate[destination_well]:
+             volume per transfer = TOTAL_VOL − x * PART_VOL
+                 (i.e. 15 − x*1.5 µL, so that after x parts the final volume is 15 µL).
+             - blow_out := True (in source tube)
+             - blowout_location := "source well"
+             - new_tip := "never" (reuse same tip for all wells of this group).
+    22.6 DROP tip.
+
+PART TRANSFER AND MIXING STEP
+23. Set relative flow-rate labels:
+    - high := 2.0
+    - normal := 1.0
+    - slow := 0.4
+    - vslow := 0.2
+
+24. FOR EACH assembly (key, values) IN final_assembly_dict:
+    - key = destination well on assembly plate (e.g. "A1")
+    - values = list of purified clip wells on clip_plate (e.g. ["A7","B7",...])
+
+    24.1 FOR EACH part_well IN values:
+         a. PICK UP a fresh P20 tip.
+         b. Set clearance:
+             - pipette.well_bottom_clearance.aspirate := 1 mm
+             - pipette.well_bottom_clearance.dispense := 2 mm
+         c. ASPIRATE PART_VOL (1.5 µL) from purified_clip_plate[part_well].bottom(1 mm) at rate=slow.
+         d. DISPENSE 1.5 µL into destination_plate[key].bottom(2 mm) at rate=slow.
+         e. MIX AFTER TRANSFER in destination well:
+             - ASPIRATE 10 µL from bottom(1 mm); DISPENSE 10 µL to bottom(3 mm) at rate=high.
+             - ASPIRATE 10 µL from bottom(2 mm); DISPENSE 10 µL to bottom(1 mm) at rate=high.
+             - ASPIRATE 10 µL from bottom(3 mm); DISPENSE 10 µL to bottom(1 mm) at rate=high.
+             - ASPIRATE 10 µL from bottom(2 mm) at rate=slow;
+               DISPENSE 10 µL to bottom(3 mm) at rate=vslow with push_out ≈ 0.5 µL
+         f. WAIT 5 seconds (protocol.delay(seconds=5)).
+         g. MOVE tip to 8 mm below top of destination_plate[key].top(-8).
+         h. BLOW OUT.
+         i. TOUCH TIP at destination_plate[key] (radius 0.6, offset −8 mm, speed 10).
+         j. DROP tip.
+
+    (Result: each assembly well now contains appropriate master mix + all clip parts, well mixed.)
+
+THERMOCYCLER ASSEMBLY PROGRAM
+25. Close and program thermocycler after all assemblies set up:
+
+    25.1 CLOSE thermocycler lid.
+    25.2 SET lid temperature to 105 °C.
+
+    25.3 RUN stepwise decreasing temperature program on block:
+         - 72 °C for 1 minute
+         - 70 °C for 1 minute
+         - 68 °C for 1 minute
+         - 66 °C for 1 minute
+         - 64 °C for 2 minutes
+         - 62 °C for 2 minutes
+         - 60 °C for 2 minutes
+         - 58 °C for 2 minutes
+         - 56 °C for 2 minutes
+         - 54 °C for 2 minutes
+         - 52 °C for 2 minutes
+         - 50 °C for 2 minutes
+         - 48 °C for 2 minutes
+         - 46 °C for 2 minutes
+         - 44 °C for 1 minute
+         - 42 °C for 1 minute
+         - 40 °C for 1 minute
+
+    25.4 HOLD block at 4 °C (final hold).
+    25.5 Adjust lid:
+         - SET lid temperature to 37 °C
+         - WAIT 2 minutes
+         - DEACTIVATE lid heating
+         - OPEN lid
+         - LEAVE block at 4 °C (post-program hold)
+
+END RUN
