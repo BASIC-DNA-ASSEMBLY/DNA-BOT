@@ -3,7 +3,7 @@
 
 from PySide6.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QLabel, QComboBox, QPushButton,
-    QFileDialog, QFormLayout, QScrollArea, QFrame, QHBoxLayout
+    QFileDialog, QFormLayout, QScrollArea, QFrame, QHBoxLayout, QLineEdit
 )
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QPixmap, QFont
@@ -19,6 +19,24 @@ FLEX_SINGLE_PIPETTES = ["Flex_1channel_50"]
 
 OT2_MULTI_PIPETTES = ["p300_multi_gen2"]
 FLEX_MULTI_PIPETTES = ["Flex_8channel_1000"]
+
+OT2_DEFAULTS = {
+    "single_pipette": "p20_single_gen2",
+    "multi_pipette": "p300_multi_gen2",
+    "single_mount": "right",
+    "multi_mount": "left",
+    "thermocycler": "thermocyclerModuleV2",
+    "magdeck": "magnetic module gen2",
+}
+
+FLEX_DEFAULTS = {
+    "single_pipette": "Flex_1channel_50",
+    "multi_pipette": "Flex_8channel_1000",
+    "single_mount": "right",
+    "multi_mount": "left",
+    "thermocycler": "thermocyclerModuleV2",
+    "magdeck": "magneticBlockV1",
+}
 
 OT2_LABWARE = {
     "24_tuberack_1500ul": ["e14151500starlab_24_tuberack_1500ul"],
@@ -39,7 +57,9 @@ OT2_LABWARE = {
 FLEX_LABWARE = {
     "24_tuberack_1500ul": ["e14151500starlab_24_tuberack_1500ul"],
     "tiprack_20ul": ["opentrons_flex_96_tiprack_50ul"],
-    "tiprack_300ul": ["opentrons_flex_96_tiprack_1000ul"],
+    "tiprack_300ul": ["opentrons_flex_96_tiprack_200ul"],
+    "flex_96_tiprack_200ul": ["opentrons_flex_96_tiprack_200ul"],
+    "flex_96_tiprack_1000ul": ["opentrons_flex_96_tiprack_1000ul"],
     "clip_source_plate": ["4ti0960rig_96_wellplate_200ul"],
     "clip_plate": ["4ti0960rig_96_wellplate_200ul"],
     "mix_plate": ["4ti0960rig_96_wellplate_200ul"],
@@ -51,6 +71,8 @@ FLEX_LABWARE = {
     "96_deepwellplate_2ml": ["4ti0136_96_wellplate_2200ul"],
     "12_corning_wellplate": ["corning_12_wellplate_6.9ml_flat"]
 }
+
+ALL_LABWARE_KEYS = list(dict.fromkeys(list(OT2_LABWARE.keys()) + list(FLEX_LABWARE.keys())))
 
 # ---------------------------------------
 # MODERN STYLESHEET
@@ -317,13 +339,54 @@ class GUI(QWidget):
         
         self.layout.addWidget(hardware_frame)
 
+        # Clip Parameters Section
+        self.add_section_header("Clip Parameters")
+        params_frame = self.create_frame()
+        params_layout = QVBoxLayout(params_frame)
+
+        params = self.user_settings["parameters"]
+        self.premix_linkers = self.add_dropdown_to_layout(
+            params_layout,
+            "Premix Linkers",
+            ["Yes", "No"]
+        )
+        self.premix_linkers.setCurrentText(str(params["premix_linkers"]["value"]))
+
+        self.premix_parts = self.add_dropdown_to_layout(
+            params_layout,
+            "Premix Parts",
+            ["Yes", "No"]
+        )
+        self.premix_parts.setCurrentText(str(params["premix_parts"]["value"]))
+
+        self.linkers_volume = self.add_line_edit_to_layout(
+            params_layout,
+            "Linkers Volume (uL)",
+            str(params["linkers_volume"]["value"])
+        )
+
+        self.parts_volume = self.add_line_edit_to_layout(
+            params_layout,
+            "Parts Volume (uL)",
+            str(params["parts_volume"]["value"])
+        )
+
+        self.thermo_temp = self.add_line_edit_to_layout(
+            params_layout,
+            "Thermocycler Temp (C)",
+            str(params["thermo_temp"]["value"])
+        )
+
+        self.layout.addWidget(params_frame)
+
         # Labware Section
         self.add_section_header("Labware Configuration")
         labware_frame = self.create_frame()
         labware_layout = QVBoxLayout(labware_frame)
         
         self.labware_widgets = {}
-        for key, items in OT2_LABWARE.items():
+        for key in ALL_LABWARE_KEYS:
+            items = OT2_LABWARE.get(key, FLEX_LABWARE.get(key, []))
             widget = self.add_dropdown_to_layout(labware_layout, key.replace("_", " ").title(), items)
             self.labware_widgets[key] = widget
         
@@ -382,6 +445,7 @@ class GUI(QWidget):
 
         self.layout.addStretch()
 
+        self.update_robot_type()
         self.show()
         self._app.exec()
 
@@ -489,16 +553,34 @@ class GUI(QWidget):
         widget.addItems(options)
         if callback:
             widget.currentTextChanged.connect(callback)
-        
+
+        widget._label_widget = label_widget
+        form.addRow(label_widget, widget)
+        parent_layout.addLayout(form)
+        return widget
+
+    def add_line_edit_to_layout(self, parent_layout, label, value):
+        """Add a line edit to a specific layout"""
+        form = QFormLayout()
+        form.setSpacing(8)
+        form.setContentsMargins(10, 5, 10, 5)
+
+        label_widget = QLabel(label)
+        label_widget.setStyleSheet("font-weight: 600;")
+
+        widget = QLineEdit()
+        widget.setText(value)
+
         form.addRow(label_widget, widget)
         parent_layout.addLayout(form)
         return widget
 
     def update_robot_type(self):
-        """Update pipettes and labware based on robot type"""
+        """Update hardware and labware defaults based on robot type"""
         robot = self.robot_type.currentText()
         if robot == "OT-2":
             lab = OT2_LABWARE
+            defaults = OT2_DEFAULTS
             self.single_pipette.clear()
             self.single_pipette.addItems(OT2_SINGLE_PIPETTES)
             self.single_pipette.setCurrentIndex(0)
@@ -507,6 +589,7 @@ class GUI(QWidget):
             self.multi_pipette.setCurrentIndex(0)
         else:
             lab = FLEX_LABWARE
+            defaults = FLEX_DEFAULTS
             self.single_pipette.clear()
             self.single_pipette.addItems(FLEX_SINGLE_PIPETTES)
             self.single_pipette.setCurrentIndex(0)
@@ -514,9 +597,22 @@ class GUI(QWidget):
             self.multi_pipette.addItems(FLEX_MULTI_PIPETTES)
             self.multi_pipette.setCurrentIndex(0)
 
+        self.single_pipette.setCurrentText(defaults["single_pipette"])
+        self.multi_pipette.setCurrentText(defaults["multi_pipette"])
+        self.single_mount.setCurrentText(defaults["single_mount"])
+        self.multi_mount.setCurrentText(defaults["multi_mount"])
+        self.thermocycler.setCurrentText(defaults["thermocycler"])
+        self.magdeck.setCurrentText(defaults["magdeck"])
+
+        visible_keys = set(lab.keys())
         for key, widget in self.labware_widgets.items():
-            widget.clear()
-            widget.addItems(lab[key])
+            is_visible = key in visible_keys
+            widget.setVisible(is_visible)
+            widget._label_widget.setVisible(is_visible)
+            if is_visible:
+                widget.clear()
+                widget.addItems(lab[key])
+                widget.setCurrentIndex(0)
 
     def select_construct(self):
         """Open file dialog for construct CSV"""
@@ -557,6 +653,12 @@ class GUI(QWidget):
 
         us["hardware"]["single_pipette_mount"]["id"] = self.single_mount.currentText()
         us["hardware"]["multi_pipette_mount"]["id"] = self.multi_mount.currentText()
+
+        us["parameters"]["premix_linkers"]["value"] = self.premix_linkers.currentText()
+        us["parameters"]["premix_parts"]["value"] = self.premix_parts.currentText()
+        us["parameters"]["linkers_volume"]["value"] = float(self.linkers_volume.text())
+        us["parameters"]["parts_volume"]["value"] = float(self.parts_volume.text())
+        us["parameters"]["thermo_temp"]["value"] = float(self.thermo_temp.text())
 
         for key, widget in self.labware_widgets.items():
             us["labwares"][key]["id"] = widget.currentText()

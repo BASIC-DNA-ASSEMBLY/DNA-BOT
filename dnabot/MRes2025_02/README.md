@@ -171,10 +171,38 @@ The Warning/Error Message can just be ignored, as it does not affect the Code an
 **Run GUI:**
 ```bash
 
-python dnabot_app2_1_final.py
+python dnabot_app_2_2.py
 
 ```
 The final protocol files are stored in the same folder as the csv files, in our case in the "data" folder.
+
+<br>
+
+**Run CLI:**
+```bash
+
+python dnabot_app_2_2.py nogui \
+  --robot_type Flex \
+  --construct_path ./data/constructs_temp.csv \
+  --source_paths ./data/BIOLEGIO_BASIC_RBS_EXT_SET.csv ./data/part_plate_2_230419.csv
+
+```
+
+CLI mode uses values from `default_settings_2_1_final.yaml` by default. You can override clip parameters at the command line if needed:
+
+```bash
+
+python dnabot_app_2_2.py nogui \
+  --robot_type Flex \
+  --construct_path ./data/constructs_temp.csv \
+  --source_paths ./data/BIOLEGIO_BASIC_RBS_EXT_SET.csv ./data/part_plate_2_230419.csv \
+  --premix_linkers Yes \
+  --premix_parts No \
+  --linkers_volume 20 \
+  --parts_volume 15 \
+  --thermo_temp 4
+
+```
 
 <br>
 
@@ -197,7 +225,7 @@ The final protocol files are stored in the same folder as the csv files, in our 
                                              ▼
           ┌─────────────────────────────────────────────────────────────────────┐
           │                           USER INPUT (GUI)                          │
-          │                     dnabot_gui2_1_final_modern.py                   │
+          │                           dnabot_gui_2_2.py                         │
           │   • Select robot + modules + labware                                │
           │   • Upload Construct CSV + Part CSVs                                │
           │   → Produces a unified user_settings object                         │
@@ -206,7 +234,7 @@ The final protocol files are stored in the same folder as the csv files, in our 
                                              ▼
           ┌─────────────────────────────────────────────────────────────────────┐
           │                           APPLICATION CORE                          │
-          │                         dnabot_app2_1_final.py                      │
+          │                           dnabot_app_2_2.py                         │
           │   • Merges GUI input + YAML defaults                                │
           │   • Parses constructs + parts                                       │
           │   • Injects user- and experiment-specific parameters                │
@@ -248,7 +276,7 @@ MRes_2025_Protocols/Team 1
 │   └── 1_UNI_clip_template_APIv2_21_final.py  # Universal template file for Opentrons flex/OT-2 CLIP reaction
 │   └── ...         
 ├── default_settings_2_1_final.yaml            # Defined Labware and Hardware for Opentrons Flex and OT-2
-├── dnabot_app2_1_final.py                     # APP Python code      
-├── dnabot_gui2_1_final_modern.py              # Updated and modernised GUI          
+├── dnabot_app_2_2.py                          # App entrypoint with GUI and CLI      
+├── dnabot_gui_2_2.py                          # Updated and modernised GUI          
 └── requirements.txt                           # Packages necessary to run the DNABOT App and GUI
 ```

@@ -22,7 +22,6 @@ from pathlib import Path
 abs_path = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, abs_path)
 
-import dnabot_gui_2_2 as gui
 import mplates
 import slots_2_1 as slots 
 
@@ -107,8 +106,12 @@ def __cli():
     # Specific options for collecting settings from command line
     subparsers = parser.add_subparsers(help='Optional, switch to define settings from the terminal '
                                             'instead of the graphical interface. '
-                                            'Type "python dnabot_app.py nogui -h" for more info.')
+                                            'Type "python dnabot_app_2_2.py nogui -h" for more info.')
     parser_nogui = subparsers.add_parser('nogui')
+    parser_nogui.add_argument('--robot_type',
+                              help="Robot type to target when generating protocols.",
+                              choices=['OT-2', 'Flex'],
+                              required=True)
     parser_nogui.add_argument('--construct_path',
                               help='File listing constructs to be implemented.',
                               required=True)
@@ -131,6 +134,23 @@ def __cli():
                               help="Template directory. Default: 'template_opentrons_scripts' "
                                    "located next to the present script.",
                               default=None, type=str or None)
+    parser_nogui.add_argument('--premix_linkers',
+                              help="Override clip linker premixing. Choices: Yes or No. Defaults to the YAML value.",
+                              choices=['Yes', 'No'],
+                              default=None)
+    parser_nogui.add_argument('--premix_parts',
+                              help="Override clip part premixing. Choices: Yes or No. Defaults to the YAML value.",
+                              choices=['Yes', 'No'],
+                              default=None)
+    parser_nogui.add_argument('--linkers_volume',
+                              help="Override linker premix volume in uL. Defaults to the YAML value.",
+                              default=None, type=float)
+    parser_nogui.add_argument('--parts_volume',
+                              help="Override part premix volume in uL. Defaults to the YAML value.",
+                              default=None, type=float)
+    parser_nogui.add_argument('--thermo_temp',
+                              help="Override clip thermocycler hold temperature in C. Defaults to the YAML value.",
+                              default=None, type=float)
     # Makes life easier to decide if we should switch to GUI or not
     parser.set_defaults(nogui=False)
     parser_nogui.set_defaults(nogui=True)
@@ -169,6 +189,7 @@ def __info_from_gui(user_settings: dict) -> dict:
     # Obtain user input
     print("Requesting user input, if not visible checked minimized windows.")
     # Collect info
+    import dnabot_gui_2_2 as gui
     root = tk.Tk() 
     gui_inst = gui.GUI(root, user_settings)
     root.destroy()
@@ -191,11 +212,22 @@ def main():
 
     if args.nogui:
         robot_type = args.robot_type
+        user_settings['hardware']['robot_type']['id'] = robot_type
         etoh_well = args.etoh_well
         soc_column = args.soc_column
         hardware_settings = user_settings['hardware']
         labware_settings = user_settings['labwares']
         parameter_settings = user_settings['parameters']
+        if args.premix_linkers is not None:
+            parameter_settings['premix_linkers']['value'] = args.premix_linkers
+        if args.premix_parts is not None:
+            parameter_settings['premix_parts']['value'] = args.premix_parts
+        if args.linkers_volume is not None:
+            parameter_settings['linkers_volume']['value'] = args.linkers_volume
+        if args.parts_volume is not None:
+            parameter_settings['parts_volume']['value'] = args.parts_volume
+        if args.thermo_temp is not None:
+            parameter_settings['thermo_temp']['value'] = args.thermo_temp
         construct_path = os.path.abspath(args.construct_path)
         sources_paths = [os.path.abspath(path) for path in args.source_paths]
         template_dir = os.path.abspath(args.template_dir) if args.template_dir else None
@@ -205,7 +237,7 @@ def main():
             output_dir = os.path.dirname(construct_path)
     else:
         user_inputs = __info_from_gui(user_settings)
-        #robot_type = user_inputs['robot_type'] under 'hardware'
+        robot_type = user_inputs['robot_type']
         etoh_well = user_inputs['etoh_well']
         soc_column = user_inputs['soc_column']
         hardware_settings = user_inputs['hardware']  #changed from user_settings to user_inputs so that changed hardware is registered as default
@@ -223,10 +255,6 @@ def main():
         template_dir = None
 
     # Select deck positions based on robot type
-    robot_type = user_inputs['robot_type']   #user_settings to user_input
-
-
-
     # print("DEBUG: robot_type =", robot_type)
     # print("DEBUG: single_pipette =", hardware_settings['single_pipette']['id'])
 
@@ -254,36 +282,36 @@ def main():
 
     # Check pipette compatibility with robot type
     if robot_type=='OT-2':
-        if user_settings['hardware']['single_pipette']['id']==('p20_single_gen2'):
+        if hardware_settings['single_pipette']['id']==('p20_single_gen2'):
             pass
         else:
             raise ValueError("Invalid pipette for robot type. OT-2 requires 'p20_single_gen2'.")
 
     if robot_type=='Flex':
-        if user_settings['hardware']['single_pipette']['id']==('Flex_1channel_50'):
+        if hardware_settings['single_pipette']['id'] in ('Flex_1channel_50', 'flex_1channel_50'):
             pass
         else:
             raise ValueError("Invalid single pipette for robot type. Flex requires 'Flex_1channel_50'.")
 
     if robot_type=='OT-2':
-        if user_settings['hardware']['multi_pipette']['id']==('p300_multi_gen2'):
+        if hardware_settings['multi_pipette']['id']==('p300_multi_gen2'):
             pass
         else:
             raise ValueError("Invalid multi pipette for robot type. OT-2 requires 'p300_multi_gen2'.")
     if robot_type=='Flex':
-        if user_settings['hardware']['multi_pipette']['id']==('Flex_8channel_1000'):
+        if hardware_settings['multi_pipette']['id'] in ('Flex_8channel_1000', 'flex_8channel_1000'):
             pass
         else:
             raise ValueError("Invalid multi pipette for robot type. Flex requires 'Flex_8channel_1000'.")
  # Check Mag plate compatibility with robot type
     if robot_type=='Flex':
-        if user_settings['hardware']['mag_deck']['id']==('magneticBlockV1'):
+        if hardware_settings['mag_deck']['id']==('magneticBlockV1'):
             pass
         else:
             raise ValueError("Invalid purification magnet for robot type. Flex requires 'magneticBlockV1'.")
 
     if robot_type=='OT-2':
-        if user_settings['hardware']['mag_deck']['id']==('magnetic module gen1') or user_settings['hardware']['mag_deck']['id']==('magnetic module gen2'):
+        if hardware_settings['mag_deck']['id'] in ('magnetic module gen1', 'magnetic module gen2', 'magneticModuleV1', 'magneticModuleV2'):
             pass
         else:
             raise ValueError("Invalid purification magnet for robot type. OT-2 requires magnetic module Gen1 or Gen2.")
@@ -870,19 +898,32 @@ def generate_opentrons_script(opentrons_script_path, template_path, **kwargs):
     with open(opentrons_script_path, 'w') as wf:
         with open(template_path, 'r') as rf:
             lines = rf.readlines()
-        
-        # Find the line that starts with 'requirements'
+
+        hardware = kwargs.get('__HARDWARE', {})
+        robot_type = hardware.get('robot_type', {}).get('id')
+
+        # Inject generated globals after the import block so module imports are
+        # resolved before the template-specific dictionaries appear.
+        import_end_index = 0
+        for index, line in enumerate(lines):
+            stripped = line.strip()
+            if stripped.startswith('import ') or stripped.startswith('from '):
+                import_end_index = index + 1
+
+        # Find the first line that starts with 'requirements'
         requirements_index = None
         for index, line in enumerate(lines):
             if line.strip().startswith('requirements'):
                 requirements_index = index
                 break
-        
-        # Write lines before 'requirements'
-        for line in lines[:requirements_index]:
+
+        for line in lines[:import_end_index]:
             wf.write(line)
-        
-        # Write the kwargs as global variables
+
+        wf.write('\n')
+        if robot_type == 'Flex':
+            wf.write('requirements = {"robotType": "Flex"}\n\n')
+
         for key, value in kwargs.items():
             wf.write('{}='.format(key))
             if isinstance(value, dict):
@@ -893,9 +934,22 @@ def generate_opentrons_script(opentrons_script_path, template_path, **kwargs):
                 wf.write(str(value))
             wf.write('\n')
         wf.write('\n')
-        
-        # Write the remaining lines including and after 'requirements'
-        for line in lines[requirements_index:]:
+
+        if requirements_index is None:
+            for line in lines[import_end_index:]:
+                wf.write(line)
+            return
+
+        skip_requirements_block = False
+        for index, line in enumerate(lines[import_end_index:], start=import_end_index):
+            stripped = line.strip()
+            if index == requirements_index:
+                skip_requirements_block = True
+                continue
+            if skip_requirements_block:
+                if stripped == '':
+                    skip_requirements_block = False
+                continue
             wf.write(line)
 
 def generate_master_mix_df(clip_number):

@@ -3,34 +3,23 @@ as the second step in the BASIC workflow.'''
 
 from opentrons import protocol_api
 
+requirements = {"robotType": "Flex"}
+
+sample_number=12
+ethanol_well=None
+__HARDWARE={"robot_type": {"id": "Flex"}, "single_pipette": {"id": "Flex_1channel_50"}, "single_pipette_mount": {"id": "right"}, "multi_pipette": {"id": "Flex_8channel_1000"}, "multi_pipette_mount": {"id": "left"}, "thermocycler": {"id": "thermocyclerModuleV2"}, "mag_deck": {"id": "magneticBlockV1"}}
+__LABWARES={"tiprack_20ul": {"id": "opentrons_flex_96_tiprack_50ul"}, "tiprack_300ul": {"id": "opentrons_flex_96_tiprack_200ul"}, "flex_96_tiprack_200ul": {"id": "opentrons_flex_96_tiprack_200ul"}, "flex_96_tiprack_1000ul": {"id": "opentrons_flex_96_tiprack_1000ul"}, "24_tuberack_1500ul": {"id": "e14151500starlab_24_tuberack_1500ul"}, "clip_source_plate": {"id": "4ti0960rig_96_wellplate_200ul"}, "clip_plate": {"id": "4ti0960rig_96_wellplate_200ul"}, "mix_plate": {"id": "4ti0960rig_96_wellplate_200ul"}, "final_assembly_plate": {"id": "4ti0960rig_96_wellplate_200ul"}, "transform_plate": {"id": "4ti0960rig_96_wellplate_200ul"}, "agar_plate": {"id": "4ti0960rig_96_wellplate_200ul"}, "mag_plate": {"id": "4ti0960rig_96_wellplate_200ul"}, "12_reservoir_21000ul": {"id": "4ti0131_12_reservoir_21000ul"}, "96_deepwellplate_2ml": {"id": "4ti0136_96_wellplate_2200ul"}, "12_corning_wellplate": {"id": "corning_12_wellplate_6.9ml_flat"}}
+__PARAMETERS={"clip_keep_thermo_lid_closed": {"value": "No"}, "premix_linkers": {"value": "Yes"}, "premix_parts": {"value": "Yes"}, "linkers_volume": {"value": 20}, "parts_volume": {"value": 20}, "thermo_temp": {"value": 4}, "purif_magdeck_height": {"value": 10.8}, "purif_wash_time": {"value": 0.5}, "purif_bead_ratio": {"value": 1.8}, "purif_incubation_time": {"value": 5}, "purif_settling_time": {"value": 2}, "purif_drying_time": {"value": 5}, "purif_elution_time": {"value": 2}, "transform_incubation_temp": {"value": 4}, "transform_incubation_time": {"value": 20}}
+
+
 # Rename to 'purification_template' and paste into 'template_ot2_scripts' folder in DNA-BOT to use
 
 metadata = {
      'protocolName': 'DNABOT Step 2: Purification',
      'description': 'Implements magbead purification reactions for BASIC assembly using an opentrons', 'apiLevel': '2.21',
 }
-
-DECK_LAYOUT = {
-    'OT-2': {
-        'candidate_tiprack_slots': ['3', '6', '9', '2', '5'],
-        'candidate_tiprack_slots_1000': ['2'],
-        'magdeck_position': '1',
-        'mix_plate_position': '4',
-        'reagent_container_position': '7',
-        'bead_container_position': '8',
-    },
-    'Flex': {
-        'candidate_tiprack_slots': ['D3', 'C3', 'B3'],
-        'candidate_tiprack_slots_1000': ['C2'],
-        'magdeck_position': 'D1',
-        'mix_plate_position': 'C1',
-        'reagent_container_position': 'A2',
-        'bead_container_position': 'B2',
-    },
-}
 def run(protocol: protocol_api.ProtocolContext):
     robot_type=__HARDWARE['robot_type']['id']
-    layout = DECK_LAYOUT[robot_type]
     if robot_type=='Flex':
         trash = protocol.load_trash_bin("A3")
         tc_mod = protocol.load_module(module_name=__HARDWARE['thermocycler']['id'], location = "B1")
@@ -82,14 +71,14 @@ def run(protocol: protocol_api.ProtocolContext):
         
         # Tiprack
         if robot_type=='OT-2':
-            CANDIDATE_TIPRACK_SLOTS = layout['candidate_tiprack_slots']
-            CANDIDATE_TIPRACK_SLOT_1000 = layout['candidate_tiprack_slots_1000']
+            CANDIDATE_TIPRACK_SLOTS = ['3', '6', '9', '2', '5']
+            CANDIDATE_TIPRACK_SLOT_1000 = ["2"]  # <-- Add this (or another slot), # CHANGE bc tiprack type was not defined before, we just uncommented the lines and added brackets around 2 and c2
             #tiprack_type = __LABWARES['96_tiprack_300ul']['id']
             tiprack_type = __LABWARES['tiprack_300ul']['id']
             tiprack_1000 = __LABWARES['tiprack_300ul']['id']
         elif robot_type=='Flex':
-            CANDIDATE_TIPRACK_SLOTS = layout['candidate_tiprack_slots']
-            CANDIDATE_TIPRACK_SLOT_1000 = layout['candidate_tiprack_slots_1000']
+            CANDIDATE_TIPRACK_SLOTS = ["D3", "C3", "B3"]
+            CANDIDATE_TIPRACK_SLOT_1000 = ["C2"]
             tiprack_type = __LABWARES['tiprack_20ul']['id']
             tiprack_1000 = __LABWARES['tiprack_20ul']['id']
         else:
@@ -129,34 +118,34 @@ def run(protocol: protocol_api.ProtocolContext):
         #MAGDECK_POSITION = '1' Magnetic Block Updated
         MAGNETIC_PLATE_TYPE = __LABWARES['mag_plate']['id']
         if robot_type=='OT-2':
-            MAGDECK_POSITION = layout['magdeck_position']
+            MAGDECK_POSITION = '1'
             MAGDECK = protocol.load_module(__HARDWARE['mag_deck']['id'], location= MAGDECK_POSITION)
             MAGDECK.disengage()
             mag_plate = MAGDECK.load_labware(MAGNETIC_PLATE_TYPE)    # CHANGE OG   mag_plate = protocol.load_labware(MAGNETIC_PLATE_TYPE, MAGDECK_POSITION)
         elif robot_type=='Flex':
-            MAGDECK_POSITION = layout['magdeck_position']
+            MAGDECK_POSITION = 'D1'
             MAGDECK = protocol.load_module(__HARDWARE['mag_deck']['id'], location=MAGDECK_POSITION)
             mag_plate = MAGDECK.load_labware(MAGNETIC_PLATE_TYPE)     
 
         # Mix Plate
         MIX_PLATE_TYPE = __LABWARES['mix_plate']['id']
         if robot_type=='OT-2':
-            MIX_PLATE_POSITION = layout['mix_plate_position']
+            MIX_PLATE_POSITION = '4'
         elif robot_type=='Flex':
-            MIX_PLATE_POSITION = layout['mix_plate_position']
+            MIX_PLATE_POSITION = 'C1'
         
         # Reagents
         REAGENT_CONTAINER_TYPE = __LABWARES['12_reservoir_21000ul']['id']
         if robot_type=='OT-2':
-            REAGENT_CONTAINER_POSITION = layout['reagent_container_position']
+            REAGENT_CONTAINER_POSITION = '7'
         elif robot_type=='Flex':
-            REAGENT_CONTAINER_POSITION = layout['reagent_container_position']
+            REAGENT_CONTAINER_POSITION = 'A2'
             # Beads
         BEAD_CONTAINER_TYPE = __LABWARES['96_deepwellplate_2ml']['id']
         if robot_type=='OT-2':
-            BEAD_CONTAINER_POSITION = layout['bead_container_position']
+            BEAD_CONTAINER_POSITION = '8'
         elif robot_type=='Flex':
-            BEAD_CONTAINER_POSITION = layout['bead_container_position']
+            BEAD_CONTAINER_POSITION = 'B2'
         
         # Settings
         #LIQUID_WASTE_WELL = 'A5'

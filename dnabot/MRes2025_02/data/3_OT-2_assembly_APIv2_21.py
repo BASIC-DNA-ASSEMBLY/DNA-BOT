@@ -1,21 +1,14 @@
 from opentrons import protocol_api
 import numpy as np
+
+final_assembly_dict={"A1": ["A7", "B7", "C7", "D7", "E7"], "B1": ["A7", "B7", "C7", "D7", "F7"], "C1": ["A7", "B7", "C7", "G7", "E7"], "D1": ["A7", "B7", "C7", "G7", "F7"], "E1": ["A7", "H7", "D7", "A8", "B8"], "F1": ["A7", "H7", "D7", "C8", "B8"], "G1": ["A7", "H7", "G7", "A8", "B8"], "H1": ["A7", "H7", "G7", "C8", "B8"], "A2": ["A7", "B7", "D8", "D7", "E7"]}
+tiprack_num=1
+__HARDWARE={"robot_type": {"id": "OT-2"}, "single_pipette": {"id": "p20_single_gen2"}, "single_pipette_mount": {"id": "right"}, "multi_pipette": {"id": "p300_multi_gen2"}, "multi_pipette_mount": {"id": "left"}, "thermocycler": {"id": "thermocyclerModuleV2"}, "mag_deck": {"id": "magnetic module gen2"}}
+__LABWARES={"tiprack_20ul": {"id": "opentrons_96_tiprack_20ul"}, "tiprack_300ul": {"id": "opentrons_96_tiprack_300ul"}, "flex_96_tiprack_200ul": {"id": "opentrons_flex_96_tiprack_200ul"}, "flex_96_tiprack_1000ul": {"id": "opentrons_flex_96_tiprack_1000ul"}, "24_tuberack_1500ul": {"id": "e14151500starlab_24_tuberack_1500ul"}, "clip_source_plate": {"id": "4ti0960rig_96_wellplate_200ul"}, "clip_plate": {"id": "4ti0960rig_96_wellplate_200ul"}, "mix_plate": {"id": "4ti0960rig_96_wellplate_200ul"}, "final_assembly_plate": {"id": "4ti0960rig_96_wellplate_200ul"}, "transform_plate": {"id": "4ti0960rig_96_wellplate_200ul"}, "agar_plate": {"id": "4ti0960rig_96_wellplate_200ul"}, "mag_plate": {"id": "4ti0960rig_96_wellplate_200ul"}, "12_reservoir_21000ul": {"id": "4ti0131_12_reservoir_21000ul"}, "96_deepwellplate_2ml": {"id": "4ti0136_96_wellplate_2200ul"}, "12_corning_wellplate": {"id": "corning_12_wellplate_6.9ml_flat"}}
+__PARAMETERS={"clip_keep_thermo_lid_closed": {"value": "No"}, "premix_linkers": {"value": "Yes"}, "premix_parts": {"value": "Yes"}, "linkers_volume": {"value": 20}, "parts_volume": {"value": 20}, "thermo_temp": {"value": 4}, "purif_magdeck_height": {"value": 10.8}, "purif_wash_time": {"value": 0.5}, "purif_bead_ratio": {"value": 1.8}, "purif_incubation_time": {"value": 5}, "purif_settling_time": {"value": 2}, "purif_drying_time": {"value": 5}, "purif_elution_time": {"value": 2}, "transform_incubation_temp": {"value": 4}, "transform_incubation_time": {"value": 20}}
+
 # metadata
 metadata = {'protocolName': 'DNABOT Step 3: Assembly with thermocycler Gen2', "apiLevel": "2.21"}
-DECK_LAYOUT = {
-    'OT-2': {
-        'clip_plate_position': '1',
-        'tube_rack_position': '4',
-        'destination_rack_position': '2',
-        'candidate_tiprack_slots': ['3', '5', '6', '9'],
-    },
-    'Flex': {
-        'clip_plate_position': 'D1',
-        'tube_rack_position': 'C1',
-        'destination_rack_position': 'C2',
-        'candidate_tiprack_slots': ['D2', 'D3', 'C3', 'B3'],
-    },
-}
 # Construct assemblies are set up on thermocycler module gen2 by combining purified clip parts.
 
 # Test dictionary can be used for simulation 3 or 88 assemblies
@@ -75,7 +68,6 @@ tiprack_num=1'''
 def run(protocol: protocol_api.ProtocolContext):
 
     robot_type=__HARDWARE['robot_type']['id']
-    layout = DECK_LAYOUT[robot_type]
     if robot_type=='Flex':
         trash = protocol.load_trash_bin("A3")
         tc_mod = protocol.load_module(module_name=__HARDWARE['thermocycler']['id'], location = "B1")
@@ -122,23 +114,23 @@ def run(protocol: protocol_api.ProtocolContext):
         # ADDED VERSION
         if robot_type=='OT-2':
             CLIP_PLATE_TYPE = __LABWARES['clip_plate']['id']
-            CLIP_PLATE_POSITION = layout['clip_plate_position']
+            CLIP_PLATE_POSITION = '1'
         elif robot_type=='Flex':
             CLIP_PLATE_TYPE = __LABWARES['clip_plate']['id']
-            CLIP_PLATE_POSITION = layout['clip_plate_position']
+            CLIP_PLATE_POSITION = 'D1'
         #Tuberack
         if robot_type=='OT-2':
             TUBE_RACK_TYPE = __LABWARES['24_tuberack_1500ul']['id']
-            TUBE_RACK_POSITION = layout['tube_rack_position']
+            TUBE_RACK_POSITION = '4'
         elif robot_type=='Flex':
             TUBE_RACK_TYPE = __LABWARES['24_tuberack_1500ul']['id']
-            TUBE_RACK_POSITION = layout['tube_rack_position']           
+            TUBE_RACK_POSITION = 'C1'           
         if robot_type=='OT-2':
             DESTINATION_PLATE_TYPE = __LABWARES['final_assembly_plate']['id']
-            DESTINATION_RACK_POSITION = layout['destination_rack_position']                                     #originally named TUBE_RACK_POSITION but changed due to clashing on names and positions
+            DESTINATION_RACK_POSITION = '2'                                     #originally named TUBE_RACK_POSITION but changed due to clashing on names and positions
         elif robot_type=='Flex':
             DESTINATION_PLATE_TYPE = __LABWARES['final_assembly_plate']['id']
-            DESTINATION_RACK_POSITION = layout['destination_rack_position']                                    #originally named TUBE_RACK_POSITION but changed due to clashing on names and positions
+            DESTINATION_RACK_POSITION = 'C2'                                    #originally named TUBE_RACK_POSITION but changed due to clashing on names and positions
         
         #Destination plate
         DESTINATION_PLATE_TYPE = __LABWARES['final_assembly_plate']['id']
@@ -161,7 +153,12 @@ def run(protocol: protocol_api.ProtocolContext):
         # Constants
         INITIAL_TIP = 'A1'
         # Candidate Tiprack Slots according to robot type
-        CANDIDATE_TIPRACK_SLOTS = layout['candidate_tiprack_slots']
+        if robot_type=='OT-2':
+            CANDIDATE_TIPRACK_SLOTS = ['3', '5', '6', '9']    #'2' removed as being used as destination plate position
+        elif robot_type=='Flex':
+            CANDIDATE_TIPRACK_SLOTS = ['D2', 'D3', 'C3', 'B3']    #'C2' see above
+        else:
+            raise ValueError("Invalid robot type. Must be 'OT-2' or 'Flex'.")
         PIPETTE_TYPE = __HARDWARE['single_pipette']['id']
         PIPETTE_MOUNT = __HARDWARE['single_pipette_mount']['id']
         
@@ -174,7 +171,7 @@ def run(protocol: protocol_api.ProtocolContext):
                 pipette.flow_rate.aspirate = 20
                 pipette.flow_rate.dispense = 20
                 pipette.flow_rate.blow_out = 35
-            elif robot_type=='OT-2':            
+            elif robot_type=='OT2':            
                 if(PIPETTE_TYPE)=="p20_single_gen2":
                     pipette.flow_rate.aspirate = 8
                     pipette.flow_rate.dispense = 8

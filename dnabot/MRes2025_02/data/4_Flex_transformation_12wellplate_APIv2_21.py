@@ -9,6 +9,15 @@ Created on Thu Nov 11 14:26:07 2021
 from opentrons import protocol_api
 import numpy as np
 
+requirements = {"robotType": "Flex"}
+
+spotting_tuples=[(('A1', 'B1', 'C1', 'D1', 'E1', 'F1', 'G1', 'H1'), ('A1', 'B1', 'C1', 'D1', 'E1', 'F1', 'G1', 'H1'), (5, 5, 5, 5, 5, 5, 5, 5)), (('A2',), ('A2',), (5,))]
+soc_well='ANone'
+__HARDWARE={"robot_type": {"id": "Flex"}, "single_pipette": {"id": "Flex_1channel_50"}, "single_pipette_mount": {"id": "right"}, "multi_pipette": {"id": "Flex_8channel_1000"}, "multi_pipette_mount": {"id": "left"}, "thermocycler": {"id": "thermocyclerModuleV2"}, "mag_deck": {"id": "magneticBlockV1"}}
+__LABWARES={"tiprack_20ul": {"id": "opentrons_flex_96_tiprack_50ul"}, "tiprack_300ul": {"id": "opentrons_flex_96_tiprack_200ul"}, "flex_96_tiprack_200ul": {"id": "opentrons_flex_96_tiprack_200ul"}, "flex_96_tiprack_1000ul": {"id": "opentrons_flex_96_tiprack_1000ul"}, "24_tuberack_1500ul": {"id": "e14151500starlab_24_tuberack_1500ul"}, "clip_source_plate": {"id": "4ti0960rig_96_wellplate_200ul"}, "clip_plate": {"id": "4ti0960rig_96_wellplate_200ul"}, "mix_plate": {"id": "4ti0960rig_96_wellplate_200ul"}, "final_assembly_plate": {"id": "4ti0960rig_96_wellplate_200ul"}, "transform_plate": {"id": "4ti0960rig_96_wellplate_200ul"}, "agar_plate": {"id": "4ti0960rig_96_wellplate_200ul"}, "mag_plate": {"id": "4ti0960rig_96_wellplate_200ul"}, "12_reservoir_21000ul": {"id": "4ti0131_12_reservoir_21000ul"}, "96_deepwellplate_2ml": {"id": "4ti0136_96_wellplate_2200ul"}, "12_corning_wellplate": {"id": "corning_12_wellplate_6.9ml_flat"}}
+__PARAMETERS={"clip_keep_thermo_lid_closed": {"value": "No"}, "premix_linkers": {"value": "Yes"}, "premix_parts": {"value": "Yes"}, "linkers_volume": {"value": 20}, "parts_volume": {"value": 20}, "thermo_temp": {"value": 4}, "purif_magdeck_height": {"value": 10.8}, "purif_wash_time": {"value": 0.5}, "purif_bead_ratio": {"value": 1.8}, "purif_incubation_time": {"value": 5}, "purif_settling_time": {"value": 2}, "purif_drying_time": {"value": 5}, "purif_elution_time": {"value": 2}, "transform_incubation_temp": {"value": 4}, "transform_incubation_time": {"value": 20}}
+
+
 
 # Rename to 'purification_template' and paste into 'template_ot2_scripts' folder in DNA-BOT to use
 
@@ -16,23 +25,6 @@ metadata = {
      'apiLevel': '2.19',
      'protocolName': 'DNABOT Step 4: Transformation with thermocycler and 12 wellplate',
      'description': 'Transformation reactions using an opentrons OT-2 for BASIC assembly.'}
-
-DECK_LAYOUT = {
-    'OT-2': {
-        'candidate_single_slots': ['2', '9'],
-        'candidate_multi_slots': ['3', '6'],
-        'assembly_plate_slot': '5',
-        'soc_plate_slot': '4',
-        'agar_plate_slot': '1',
-    },
-    'Flex': {
-        'candidate_single_slots': ['D2', 'B3'],
-        'candidate_multi_slots': ['D3', 'C3'],
-        'assembly_plate_slot': 'C2',
-        'soc_plate_slot': 'C1',
-        'agar_plate_slot': 'D1',
-    },
-}
 # Example output produced by DNA-BOT for 88 constructs, uncomment and run to test the template
 #spotting_tuples=[(('A1', 'B1', 'C1', 'D1', 'E1', 'F1', 'G1', 'H1', 'A2', 'B2', 'C2', 'D2'), ('A1', 'B1', 'C1', 'A2', 'B2', 'C2', 'A3', 'B3', 'C3', 'A4', 'B4', 'C4'), (40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40)), (('E2', 'F2', 'G2', 'H2', 'A3', 'B3', 'C3', 'D3', 'E3', 'F3', 'G3', 'H3'), ('A1', 'B1', 'C1', 'A2', 'B2', 'C2', 'A3', 'B3', 'C3', 'A4', 'B4', 'C4'), (40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40)), (('A4', 'B4', 'C4', 'D4', 'E4', 'F4', 'G4', 'H4', 'A5', 'B5', 'C5', 'D5'), ('A1', 'B1', 'C1', 'A2', 'B2', 'C2', 'A3', 'B3', 'C3', 'A4', 'B4', 'C4'), (40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40)), (('E5', 'F5', 'G5', 'H5', 'A6', 'B6', 'C6', 'D6', 'E6', 'F6', 'G6', 'H6'), ('A1', 'B1', 'C1', 'A2', 'B2', 'C2', 'A3', 'B3', 'C3', 'A4', 'B4', 'C4'), (40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40)), (('A7', 'B7', 'C7', 'D7', 'E7', 'F7', 'G7', 'H7', 'A8', 'B8', 'C8', 'D8'), ('A1', 'B1', 'C1', 'A2', 'B2', 'C2', 'A3', 'B3', 'C3', 'A4', 'B4', 'C4'), (40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40)), (('E8', 'F8', 'G8', 'H8', 'A9', 'B9', 'C9', 'D9', 'E9', 'F9', 'G9', 'H9'), ('A1', 'B1', 'C1', 'A2', 'B2', 'C2', 'A3', 'B3', 'C3', 'A4', 'B4', 'C4'), (40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40)), (('A10', 'B10', 'C10', 'D10', 'E10', 'F10', 'G10', 'H10', 'A11', 'B11', 'C11', 'D11'), ('A1', 'B1', 'C1', 'A2', 'B2', 'C2', 'A3', 'B3', 'C3', 'A4', 'B4', 'C4'), (40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40)), (('E11', 'F11', 'G11', 'H11'), ('A1', 'B1', 'C1', 'A2'), (40, 40, 40, 40))]
 #soc_well='A1'
@@ -83,20 +75,19 @@ __PARAMETERS={
 def run(protocol: protocol_api.ProtocolContext):
 
     robot_type=__HARDWARE['robot_type']['id']
-    layout = DECK_LAYOUT[robot_type]
     if robot_type=='Flex':
         trash = protocol.load_trash_bin("A3")
         tc_mod = protocol.load_module(module_name=__HARDWARE['thermocycler']['id'], location = "B1")
         SINGLE_TIPRACK_TYPE = ['opentrons_flex_96_tiprack_50ul']
         MULTI_TIPRACK_TYPE = ['opentrons_flex_96_tiprack_200ul']
-        CANDIDATE_SINGLE_SLOTS = layout['candidate_single_slots']
-        CANDIDATE_MULTI_SLOTS = layout['candidate_multi_slots']
+        CANDIDATE_SINGLE_SLOTS = ["D2", "B3"]
+        CANDIDATE_MULTI_SLOTS = ["D3", "C3"]
         #tiprack_1000 = ['Flex_tiprack_1000ul'] 'opentrons_flex_96_tiprack_1000ul'
     elif robot_type=='OT-2':
         SINGLE_TIPRACK_TYPE = __LABWARES['OT-2_tiprack_20ul']['id']
         MULTI_TIPRACK_TYPE = __LABWARES['OT-2_tiprack_300ul']['id']
-        CANDIDATE_SINGLE_SLOTS = layout['candidate_single_slots']
-        CANDIDATE_MULTI_SLOTS = layout['candidate_multi_slots']
+        CANDIDATE_SINGLE_SLOTS = ['2', '9']
+        CANDIDATE_MULTI_SLOTS = ['3', '6']
         tc_mod = protocol.load_module(module_name=__HARDWARE['thermocycler']['id'])
     else:
         raise ValueError("Invalid robot type. Must be 'OT-2' or 'Flex'.")
@@ -124,20 +115,20 @@ def run(protocol: protocol_api.ProtocolContext):
     single_pipette = protocol.load_instrument(SINGLE_PIPETTE_TYPE, mount=SINGLE_PIPETTE_MOUNT,tip_racks=single_tipracks)
     if robot_type=='Flex':
         ASSEMBLY_PLATE_TYPE = __LABWARES['final_assembly_plate']['id']
-        ASSEMBLY_PLATE_SLOT = layout['assembly_plate_slot']
+        ASSEMBLY_PLATE_SLOT = 'C2'
         TRANSFORMATION_PLATE_TYPE = __LABWARES['transformation_plate']['id']
         SOC_PLATE_TYPE = __LABWARES['96_deepwellplate_2ml']['id']
-        SOC_PLATE_SLOT = layout['soc_plate_slot']
+        SOC_PLATE_SLOT = 'C1'
         AGAR_PLATE_TYPE = __LABWARES['12_corning_wellplate']['id']
-        AGAR_PLATE_SLOT = layout['agar_plate_slot']
+        AGAR_PLATE_SLOT = 'D1'
     elif robot_type=='OT-2':
         ASSEMBLY_PLATE_TYPE = __LABWARES['final_assembly_plate']['id']
-        ASSEMBLY_PLATE_SLOT = layout['assembly_plate_slot']
+        ASSEMBLY_PLATE_SLOT = '5'
         TRANSFORMATION_PLATE_TYPE = __LABWARES['transformation_plate']['id']
         SOC_PLATE_TYPE = __LABWARES['96_deepwellplate_2ml']['id']
-        SOC_PLATE_SLOT = layout['soc_plate_slot']
+        SOC_PLATE_SLOT = '4'
         AGAR_PLATE_TYPE = __LABWARES['12_corning_wellplate']['id']
-        AGAR_PLATE_SLOT = layout['agar_plate_slot']
+        AGAR_PLATE_SLOT = '1'
     else:
         raise ValueError("Invalid robot type. Must be 'OT-2' or 'Flex'.")
 

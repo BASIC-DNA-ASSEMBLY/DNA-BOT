@@ -42,8 +42,15 @@ labwares:
   tiprack_300ul:
     id: opentrons_96_tiprack_300ul
     id: tipone_yellow_3dprinted_96_tiprack_300ul  # BRS
-    id: opentrons_flex_96_tiprack_1000ul #FLEX
     id: opentrons_flex_96_tiprack_200ul #FLEX
+
+  flex_96_tiprack_200ul:
+    id: opentrons_96_tiprack_300ul
+    id: opentrons_flex_96_tiprack_200ul #FLEX
+
+  flex_96_tiprack_1000ul:
+    id: opentrons_96_tiprack_1000ul
+    id: opentrons_flex_96_tiprack_1000ul #FLEX
 
   # Plates ################################################
   # Opentrons 4-in-1 tubes rack for 1.5 ml eppendorf tubes (steps: clip, assembly, transformation)
@@ -126,9 +133,9 @@ parameters:
   premix_parts:
     value: 'Yes'
   linkers_volume:
-    value: 20
+    value: 40
   parts_volume:
-    value: 20
+    value: 40
   thermo_temp:
     value: 4
   # Purification step #####################################
