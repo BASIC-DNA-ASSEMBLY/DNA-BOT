@@ -4,8 +4,6 @@ Originally created on Thu Apr 11 14:26:07 2019 by @author: mh2210
 
 @authors: geoffbaldwin, mh2210, gizembuldum, tduigou
 """
-#line below started to throw a syntax error - no idea why
-#from __future__ import annotations  # Enable the "hint" feature for objects
 
 import os
 import sys
@@ -25,39 +23,11 @@ sys.path.insert(0, abs_path)
 import mplates
 import slots_2_1 as slots 
 
-# Constant str
+# File naming and volume constants used across protocol generation.
+# These values define the generated script names, metadata outputs,
+# and the fixed reaction volumes for clip assembly.
+
 TEMPLATE_DIR_NAME = 'template_opentrons_scripts'
-
-# CLIP_TEMP_FNAME_1 = '1_UNI_clip_template_APIv2_21.py'
-# #CLIP_TEMP_FNAME_2 = '1_OT-2_clip_template_APIv2_21.py'
-# #CLIP_TEMP_FNAME_4 = 'clip_template_Thermocycler_Gen2_APIv2_19.py'
-
-# MAGBEAD_TEMP_FNAME_1 = '2_Flex_purification_template_APIv2_21.py'
-# #MAGBEAD_TEMP_FNAME_2 = '2_OT-2_purification_template_APIv2_21.py'
-
-# F_ASSEMBLY_TEMP_FNAME_1 = '3_Flex_assembly_template_APIv2_21.py'
-# #F_ASSEMBLY_TEMP_FNAME_2 = '3_OT-2_assembly_template_APIv2_21.py'
-# #F_ASSEMBLY_TEMP_FNAME_3 = 'assembly_template_Thermocycler_Gen1_APIv2.8.py'
-# #F_ASSEMBLY_TEMP_FNAME_4 = 'assembly_template_Thermocycler_Gen2_APIv2.8.py'
-
-# TRANSFORMATION_TEMP_FNAME_1 = '4_Flex_transformation_template_12wellplate_APIv2_21.py'
-# TRANSFORMATION_TEMP_FNAME_2 = '4_OT-2_transformation_template_12wellplate_APIv2_21.py'
-# #TRANSFORMATION_TEMP_FNAME_3 = 'transformation_template_Thermocycler_Gen1_APIv2.8.py'
-# #TRANSFORMATION_TEMP_FNAME_4 = 'transformation_template_Thermocycler_Gen2_APIv2.8.py'
-
-# CLIP_FNAME_1 = '1_Flex_clip_APIv2_21.py'
-# CLIP_FNAME_2 = '1_OT-2_clip_APIv2_21.py'
-
-# MAGBEAD_FNAME_1 = '2_Flex_purification_APIv2_21.py'
-# MAGBEAD_FNAME_2 = '2_OT-2_purification_APIv2_21.py'
-
-# F_ASSEMBLY_FNAME_1 = '3_Flex_assembly_APIv2_21.py'
-# F_ASSEMBLY_FNAME_2 = '3_OT-2_assembly_APIv2_21.py'
-
-# TRANSFORMATION_FNAME_1 = '4_Flex_transformation_12wellplate_APIv2_21.py'
-# TRANSFORMATION_FNAME_2 = '4_OT-2_transformation_12wellplate_APIv2_21.py'
-# #TRANSFORMATION_FNAME_3 = '4_transformation_ot2_Thermocycler_APIv2.8.py'
-# #TRANSFORMATION_FNAME_4 = '4_transformation_ot2_Thermocycler_12wellplate_APIv2.8.py'
 
 CLIPS_INFO_FNAME = 'clip_run_info.csv'
 FINAL_ASSEMBLIES_INFO_FNAME = 'final_assembly_run_info.csv'
@@ -71,22 +41,18 @@ T4_BUFF_VOL = 3
 BSAI_VOL = 1
 T4_LIG_VOL = 0.5
 CLIP_MAST_WATER = 15.5
-#ngDNA_PART_PER_CLIP = 200
 MIN_VOL = 1
 MAX_CONSTRUCTS = 96
 MAX_CLIPS = 48
 FINAL_ASSEMBLIES_PER_CLIP = 15
-#DEFAULT_PART_VOL = 1
 MAX_SOURCE_PLATES = 6
 MAX_FINAL_ASSEMBLY_TIPRACKS = 7
 
 # Constant dicts for 96 and 12 well plate formats
 SPOTTING_VOLS_DICT = {2: 5, 3: 5, 4: 5, 5: 5, 6: 5, 7: 5}
 SPOTTING_VOLS_DICT_12 = {2: 40, 3: 40, 4: 40, 5: 40, 6: 40, 7: 40}
-
-# Constant lists
-
-
+# Default settings file used to seed either the GUI or CLI workflow.
+# Runtime selections can override these values before scripts are written.
 # Settings
 DEFAULT_SETTINGS_FILE = Path(__file__).resolve().parent / 'default_settings_2_2.yaml'
 
@@ -203,7 +169,8 @@ def __info_from_gui(user_settings: dict) -> dict:
 
 
 def main():
-    
+    # Collect inputs, validate hardware, derive all protocol variables,
+    # then write the robot scripts plus run metadata into the output folder.
     # Parse args if any
     args = __cli()
 
@@ -254,25 +221,7 @@ def main():
         output_dir = os.path.dirname(construct_path)
         template_dir = None
 
-    # Select deck positions based on robot type
-    # print("DEBUG: robot_type =", robot_type)
-    # print("DEBUG: single_pipette =", hardware_settings['single_pipette']['id'])
-
-
-
-
-
-    # if robot_type=='OT-2':
-    #     if hardware_settings['single_pipette']['id'] == 'p20_single_gen2':
-    #         pass
-    #     else:
-    #         raise ValueError("Invalid pipette for robot type. OT-2 requires 'p20_single_gen2'.")
-        
-
-    
-
-
-
+    # Choose source-plate deck positions that match the selected robot layout.
     if robot_type=='OT-2':
         SOURCE_DECK_POS = ['2', '5', '1']
     elif robot_type=='Flex':
@@ -280,6 +229,8 @@ def main():
     else:
         raise ValueError("Invalid robot type. Must be 'OT-2' or 'Flex'.")
 
+    # Guardrail checks to stop generation when the configured hardware
+    # does not match the expected pipettes or magnetic module.
     # Check pipette compatibility with robot type
     if robot_type=='OT-2':
         if hardware_settings['single_pipette']['id']==('p20_single_gen2'):
@@ -320,6 +271,8 @@ def main():
     if len(sources_paths) > len(SOURCE_DECK_POS):
         raise ValueError('Number of source plates exceeds deck positions.')
 
+    # Resolve the template directory either from the CLI override or from
+    # the standard location next to this generator script.
     # Path to template directory
     if template_dir is not None:
         # Just to comment this case: only way to fall here is that the variable
@@ -345,12 +298,17 @@ def main():
     construct_base = os.path.splitext(construct_base)[0]
     print('User input successfully collected.')
 
+    # Parse constructs and source plates into in-memory tables used by the
+    # downstream clip, assembly, and transformation script generators.
     # Process input csv files
     print('Processing input csv files...')
     constructs_list = generate_constructs_list(construct_path)
     clips_df = generate_clips_df(constructs_list)
     sources_dict = generate_sources_dict(sources_paths, SOURCE_DECK_POS)
 
+    # Build the data structures that are injected into the Opentrons templates.
+    # These capture clip transfers, purification counts, assembly mapping,
+    # and spotting plans.
     # Calculate OT-2 script variables
     print('Calculating OT-2 variables...')
     clips_dict = generate_clips_dict(
@@ -373,7 +331,7 @@ def main():
         constructs_list,
         SPOTTING_VOLS_DICT_12
         )
-# Write OT-2 scripts
+    # Render the robot-specific protocol files from shared templates.
     print('Writing files...')
 
     if robot_type == 'Flex':
@@ -438,76 +396,8 @@ def main():
     else:
         pass
 
-    # # generate_opentrons_script(
-    # #     CLIP_FNAME_1,
-    # #     os.path.join(template_dir_path, CLIP_TEMP_FNAME_1),
-    # #     clips_dict=clips_dict,
-    # #     __HARDWARE=hardware_settings,
-    # #     __LABWARES=labware_settings,
-    # #     __PARAMETERS=parameter_settings)
-    # # generate_opentrons_script(
-    # #     CLIP_FNAME_2,
-    # #     os.path.join(template_dir_path, CLIP_TEMP_FNAME_2),
-    # #     clips_dict=clips_dict,
-    # #     __HARDWARE=hardware_settings,
-    # #     __LABWARES=labware_settings,
-    # #     __PARAMETERS=parameter_settings)
-
-       
-    # generate_opentrons_script(
-    #     MAGBEAD_FNAME_1,
-    #     os.path.join(template_dir_path, MAGBEAD_TEMP_FNAME_1),
-    #     sample_number=magbead_sample_number,
-    #     ethanol_well=etoh_well,
-    #     __HARDWARE=hardware_settings,
-    #     __LABWARES=labware_settings,
-    #     __PARAMETERS=parameter_settings)
-    
-    # generate_opentrons_script(
-    #     MAGBEAD_FNAME_2,
-    #     os.path.join(template_dir_path, MAGBEAD_TEMP_FNAME_2),
-    #     sample_number=magbead_sample_number,
-    #     ethanol_well=etoh_well,
-    #     __HARDWARE=hardware_settings,
-    #     __LABWARES=labware_settings,
-    #     __PARAMETERS=parameter_settings)
-    
-    # generate_opentrons_script(
-    #     F_ASSEMBLY_FNAME_1,
-    #     os.path.join(template_dir_path, F_ASSEMBLY_TEMP_FNAME_1),
-    #     final_assembly_dict=final_assembly_dict,
-    #     tiprack_num=final_assembly_tipracks,
-    #     __HARDWARE=hardware_settings,
-    #     __LABWARES=labware_settings,
-    #     __PARAMETERS=parameter_settings)
-
-    # generate_opentrons_script(
-    #     F_ASSEMBLY_FNAME_2,
-    #     os.path.join(template_dir_path, F_ASSEMBLY_TEMP_FNAME_2),
-    #     final_assembly_dict=final_assembly_dict,
-    #     tiprack_num=final_assembly_tipracks,
-    #     __HARDWARE=hardware_settings,
-    #     __LABWARES=labware_settings,
-    #     __PARAMETERS=parameter_settings)   
-    
-    # generate_opentrons_script(
-    #     TRANSFORMATION_FNAME_1,
-    #     os.path.join(template_dir_path, TRANSFORMATION_TEMP_FNAME_1),
-    #     spotting_tuples=spotting_tuples,
-    #     soc_well=f"A{soc_column}",
-    #     __HARDWARE=hardware_settings,
-    #     __LABWARES=labware_settings,
-    #     __PARAMETERS=parameter_settings)
-
-    # generate_opentrons_script(
-    #     TRANSFORMATION_FNAME_2,
-    #     os.path.join(template_dir_path, TRANSFORMATION_TEMP_FNAME_2),
-    #     spotting_tuples=spotting_tuples,
-    #     soc_well=f"A{soc_column}",
-    #     __HARDWARE=hardware_settings,
-    #     __LABWARES=labware_settings,
-    #     __PARAMETERS=parameter_settings)
-
+    # Export run metadata so the wet-lab setup can be checked independently
+    # of the generated robot scripts.
     # Write information scripts
     metainfo_dir = Path().resolve() / "metainformation"
     metainfo_dir.mkdir(exist_ok=True)
@@ -528,25 +418,6 @@ def main():
         f.write('Magbead ethanol well: {}'.format(etoh_well))
         f.write('\n')
         f.write('SOC column: {}'.format(soc_column))
-
-    # Write deck position info
-    # with open(metainfo_dir / f"{construct_base}_{DECK_OUTPUT_FNAME}", "w") as ofh:
-    #     for fname in (CLIP_FNAME_1, CLIP_FNAME_2):
-    #         deck = slots.get_positions_from_clip(fname)
-    #         s = slots.format_deck_info(deck, section = f"Clip reaction script: {fname}")
-    #         ofh.write(s)
-    #     for fname in (MAGBEAD_FNAME_1, MAGBEAD_FNAME_2):
-    #         deck = slots.get_positions_from_purif(fname)
-    #         s = slots.format_deck_info(deck, section = f"Purification script: {fname}")
-    #         ofh.write(s)
-    #     for fname in (F_ASSEMBLY_FNAME_1, F_ASSEMBLY_FNAME_2):
-    #         deck = slots.get_positions_from_assembly(fname)
-    #         s = slots.format_deck_info(deck, section = f"Assembly script: {fname}")
-    #         ofh.write(s)
-    #     for fname in (TRANSFORMATION_FNAME_1, TRANSFORMATION_FNAME_2):
-    #         deck = slots.get_positions_from_transfo(fname)
-    #         s = slots.format_deck_info(deck, section = f"Transformation script: {fname}")
-    #         ofh.write(s)
     print('BOT-2 generator successfully completed!')
 
 
@@ -555,6 +426,8 @@ def generate_constructs_list(path):
     dataframe lists components of the CLIP reactions required.
 
     """
+    # Convert each construct row from the CSV into a dataframe describing
+    # the prefix linker, part, and suffix linker needed for each clip step.
 
     def process_construct(construct):
         """Processes an individual construct into a dataframe of CLIP reactions
@@ -614,6 +487,8 @@ def generate_clips_df(constructs_list):
     reactions required to synthesise the constructs in constructs_list.
 
     """
+    # Collapse repeated clip reactions across constructs so the protocol only
+    # prepares each unique clip the required number of times.
     merged_construct_dfs = pd.concat(constructs_list, ignore_index=True)
     unique_clips_df = merged_construct_dfs.drop_duplicates()
     unique_clips_df = unique_clips_df.reset_index(drop=True)
@@ -624,6 +499,8 @@ def generate_clips_df(constructs_list):
         raise ValueError(
             'Number of CLIP reactions exceeds 48. Reduce number of constructs in construct.csv.')
 
+    # Count how many physical clip reactions are needed once the per-clip
+    # reuse limit for downstream final assemblies is taken into account.
     # Count number of each CLIP reaction
     clip_count = np.zeros(len(clips_df.index))
     for i, unique_clip in unique_clips_df.iterrows():
@@ -633,6 +510,7 @@ def generate_clips_df(constructs_list):
     clip_count = clip_count // FINAL_ASSEMBLIES_PER_CLIP + 1
     clips_df['number'] = [int(i) for i in clip_count.tolist()]
 
+    # Pre-assign purification/output wells for each unique clip reaction.
     # Associate well/s for each CLIP reaction
     clips_df['mag_well'] = pd.Series(['0'] * len(clips_df.index),
                                      index=clips_df.index)
@@ -664,6 +542,8 @@ def generate_sources_dict(paths, SOURCE_DECK_POS):
                       sources csv file.
     """
 
+    # Merge one or more source CSV files into a single lookup keyed by
+    # part/linker name, and append the deck position for each source plate.
     sources_dict = {}
     for deck_index, path in enumerate(paths):
         with open(path, 'r') as csvfile:
@@ -688,6 +568,8 @@ def generate_clips_dict(clips_df, sources_dict):
     sole variable for the opentrons script "clip.ot2.py".
 
     """
+    # Translate each unique clip into the exact source wells and transfer
+    # volumes that the clip protocol template expects.
     max_part_vol = CLIP_VOL - (T4_BUFF_VOL + BSAI_VOL + T4_LIG_VOL
                                + CLIP_MAST_WATER + 2)
     clips_dict = {'prefixes_wells': [], 'prefixes_plates': [],
@@ -726,6 +608,9 @@ def generate_clips_dict(clips_df, sources_dict):
                 elif part_vol > max_part_vol:
                     raise ValueError("Part concentration is too low, you need 50 ng per kb of plasmid and final part volumes must be between 1 and 8 µL.")
                 
+                # Water fills the remaining clip reaction volume after fixed
+                # reagents, the two 1 uL linker additions, and the variable
+                # part volume have been accounted for.
                 # Calculate the required water volume to reach the total volume
                 water_vol = max_part_vol - part_vol +2
                 
@@ -750,6 +635,8 @@ def generate_final_assembly_dict(constructs_list, clips_df):
     indicating which clip reaction wells are used.
 
     """
+    # Map each construct to the purified clip wells it will draw from during
+    # final assembly, tracking reuse of clip reactions across constructs.
     final_assembly_dict = {}
     clips_count = np.zeros(len(clips_df.index))
     for construct_index, construct_df in enumerate(constructs_list):
@@ -774,6 +661,7 @@ def calculate_final_assembly_tipracks(final_assembly_dict):
     no more than MAX_FINAL_ASSEMBLY_TIPRACKS are used.
 
     """
+    # Estimate tip usage for final assembly and enforce the deck-capacity limit.
     final_assembly_lengths = []
     for values in final_assembly_dict.values():
         final_assembly_lengths.append(len(values))
@@ -800,6 +688,8 @@ def generate_spotting_tuples(constructs_list, spotting_vols_dict):
             volumes defined by corresponding value.
 
     """
+    # Package transformation spotting instructions in the grouped tuple format
+    # expected by the 96-well transformation template.
     # Calculate wells and volumes
     wells = [mplates.final_well(x + 1) for x in range(len(constructs_list))]
     vols = [SPOTTING_VOLS_DICT[len(construct_df.index)]
@@ -819,7 +709,7 @@ def generate_spotting_tuples(constructs_list, spotting_vols_dict):
         spotting_tuples.append((tuple_wells, tuple_wells, tuple_vols))
     return spotting_tuples
 
-# Introduced 12 well plate format for spotting
+# Variant of the spotting planner for the 12-well plate transformation layout.
 def generate_spotting_tuples_12(constructs_list, spotting_vols_dict):
     """Using constructs_list, generates a spotting tuple
     (Refer to 'transformation_spotting_template.py') for every column of
@@ -856,38 +746,8 @@ def generate_spotting_tuples_12(constructs_list, spotting_vols_dict):
         spotting_tuples_12.append((tuple_wells, tuple_spot_wells, tuple_vols))
     return spotting_tuples_12
 
-#OLD write code
-# def generate_opentrons_script(opentrons_script_path, template_path, **kwargs):
-#     """Generates an ot2 script named 'opentrons_script_path', where kwargs are
-#     written as global variables at the top of the script. For each kwarg, the
-#     keyword defines the variable name while the value defines the name of the
-#     variable. The remainder of template file is subsequently written below.
-
-#     """
-#     with open(opentrons_script_path, 'w') as wf:
-#         with open(template_path, 'r') as rf:
-#             for index, line in enumerate(rf):
-#                 if line[:3] == 'def':
-#                     function_start = index
-#                     break
-#                 else:
-#                     wf.write(line)
-#             for key, value in kwargs.items():
-#                 wf.write('{}='.format(key))
-#                 if type(value) == dict:
-#                     wf.write(json.dumps(value))
-#                 elif type(value) == str:
-#                     wf.write("'{}'".format(value))
-#                 else:
-#                     wf.write(str(value))
-#                 wf.write('\n')
-#             wf.write('\n')
-#         with open(template_path, 'r') as rf:
-#             for index, line in enumerate(rf):
-#                 if index >= function_start - 1:
-#                     wf.write(line)
-
-# NEW code to write before requirements={} so robot type in requirements can be specified from __hardware definition
+# Write generated variables into an Opentrons template after the import block.
+# Flex scripts also get an injected requirements line before the template body.
 def generate_opentrons_script(opentrons_script_path, template_path, **kwargs):
     """Generates an ot2 script named 'opentrons_script_path', where kwargs are
     written as global variables at the top of the script. For each kwarg, the
@@ -910,13 +770,6 @@ def generate_opentrons_script(opentrons_script_path, template_path, **kwargs):
             if stripped.startswith('import ') or stripped.startswith('from '):
                 import_end_index = index + 1
 
-        # Find the first line that starts with 'requirements'
-        requirements_index = None
-        for index, line in enumerate(lines):
-            if line.strip().startswith('requirements'):
-                requirements_index = index
-                break
-
         for line in lines[:import_end_index]:
             wf.write(line)
 
@@ -935,21 +788,7 @@ def generate_opentrons_script(opentrons_script_path, template_path, **kwargs):
             wf.write('\n')
         wf.write('\n')
 
-        if requirements_index is None:
-            for line in lines[import_end_index:]:
-                wf.write(line)
-            return
-
-        skip_requirements_block = False
-        for index, line in enumerate(lines[import_end_index:], start=import_end_index):
-            stripped = line.strip()
-            if index == requirements_index:
-                skip_requirements_block = True
-                continue
-            if skip_requirements_block:
-                if stripped == '':
-                    skip_requirements_block = False
-                continue
+        for line in lines[import_end_index:]:
             wf.write(line)
 
 def generate_master_mix_df(clip_number):
@@ -957,6 +796,8 @@ def generate_master_mix_df(clip_number):
     reaction master mix.
 
     """
+    # Summarise the clip master mix volumes with dead-volume allowance so the
+    # bench setup can be prepared before running the robot.
     COMPONENTS = {'Component': ['Promega T4 DNA Ligase buffer, 10X',
                                 'Water', 'NEB BsaI-HFv2',
                                 'Promega T4 DNA Ligase']}
@@ -978,6 +819,8 @@ def generate_sources_paths_df(paths, SOURCE_DECK_POS):
         SOURCE_DECK_POS (list): list of strings specifying candidate deck positions.
 
     """
+    # Build a simple traceability table showing which source CSV was assigned
+    # to which robot deck position.
     source_plates_dict = {'Deck position': [], 'Source plate': [], 'Path': []}
     for index, path in enumerate(paths):
         source_plates_dict['Deck position'].append(SOURCE_DECK_POS[index])
@@ -992,6 +835,7 @@ def dfs_to_csv(path, index=True, **kw_dfs):
     df indexes are written to the csv file.
 
     """
+    # Serialize multiple dataframes into one CSV report with section headers.
     with open(path, 'w', newline='') as csvfile:
         csvwriter = csv.writer(csvfile)
         for key, value in kw_dfs.items():
