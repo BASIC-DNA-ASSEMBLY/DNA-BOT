@@ -89,7 +89,7 @@ SPOTTING_VOLS_DICT_12 = {2: 40, 3: 40, 4: 40, 5: 40, 6: 40, 7: 40}
 
 
 # Settings
-DEFAULT_SETTINGS_FILE = Path(__file__).resolve().parent / 'default_settings_2_1_final.yaml'
+DEFAULT_SETTINGS_FILE = Path(__file__).resolve().parent / 'default_settings_2_2.yaml'
 
 
 def __cli():

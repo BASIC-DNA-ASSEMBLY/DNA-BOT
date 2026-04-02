@@ -188,7 +188,7 @@ python dnabot_app_2_2.py nogui \
 
 ```
 
-CLI mode uses values from `default_settings_2_1_final.yaml` by default. You can override clip parameters at the command line if needed:
+CLI mode uses values from `default_settings_2_2.yaml` by default. You can override clip parameters at the command line if needed:
 
 ```bash
 
@@ -217,7 +217,7 @@ python dnabot_app_2_2.py nogui \
                                              ▼
           ┌─────────────────────────────────────────────────────────────────────┐
           │                          CONFIGURATION LAYER                        │
-          │                     default_settings_2_1_final.yaml                 │
+          │                         default_settings_2_2.yaml                   │
           │   • Hardware + labware definitions                                  │
           │   • BASIC workflow parameters                                       │
           └─────────────────────────────────────────────────────────────────────┘
@@ -275,7 +275,7 @@ MRes_2025_Protocols/Team 1
 ├── template_opentrons_scripts/
 │   └── 1_UNI_clip_template_APIv2_21_final.py  # Universal template file for Opentrons flex/OT-2 CLIP reaction
 │   └── ...         
-├── default_settings_2_1_final.yaml            # Defined Labware and Hardware for Opentrons Flex and OT-2
+├── default_settings_2_2.yaml                  # Defined Labware and Hardware for Opentrons Flex and OT-2
 ├── dnabot_app_2_2.py                          # App entrypoint with GUI and CLI      
 ├── dnabot_gui_2_2.py                          # Updated and modernised GUI          
 └── requirements.txt                           # Packages necessary to run the DNABOT App and GUI
