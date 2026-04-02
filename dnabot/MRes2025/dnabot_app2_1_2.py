@@ -28,38 +28,6 @@ import slots_2_1 as slots
 
 # Constant str
 TEMPLATE_DIR_NAME = 'template_opentrons_scripts'
-
-# CLIP_TEMP_FNAME_1 = '1_UNI_clip_template_APIv2_21.py'
-# #CLIP_TEMP_FNAME_2 = '1_OT-2_clip_template_APIv2_21.py'
-# #CLIP_TEMP_FNAME_4 = 'clip_template_Thermocycler_Gen2_APIv2_19.py'
-
-# MAGBEAD_TEMP_FNAME_1 = '2_Flex_purification_template_APIv2_21.py'
-# #MAGBEAD_TEMP_FNAME_2 = '2_OT-2_purification_template_APIv2_21.py'
-
-# F_ASSEMBLY_TEMP_FNAME_1 = '3_Flex_assembly_template_APIv2_21.py'
-# #F_ASSEMBLY_TEMP_FNAME_2 = '3_OT-2_assembly_template_APIv2_21.py'
-# #F_ASSEMBLY_TEMP_FNAME_3 = 'assembly_template_Thermocycler_Gen1_APIv2.8.py'
-# #F_ASSEMBLY_TEMP_FNAME_4 = 'assembly_template_Thermocycler_Gen2_APIv2.8.py'
-
-# TRANSFORMATION_TEMP_FNAME_1 = '4_Flex_transformation_template_12wellplate_APIv2_21.py'
-# TRANSFORMATION_TEMP_FNAME_2 = '4_OT-2_transformation_template_12wellplate_APIv2_21.py'
-# #TRANSFORMATION_TEMP_FNAME_3 = 'transformation_template_Thermocycler_Gen1_APIv2.8.py'
-# #TRANSFORMATION_TEMP_FNAME_4 = 'transformation_template_Thermocycler_Gen2_APIv2.8.py'
-
-# CLIP_FNAME_1 = '1_Flex_clip_APIv2_21.py'
-# CLIP_FNAME_2 = '1_OT-2_clip_APIv2_21.py'
-
-# MAGBEAD_FNAME_1 = '2_Flex_purification_APIv2_21.py'
-# MAGBEAD_FNAME_2 = '2_OT-2_purification_APIv2_21.py'
-
-# F_ASSEMBLY_FNAME_1 = '3_Flex_assembly_APIv2_21.py'
-# F_ASSEMBLY_FNAME_2 = '3_OT-2_assembly_APIv2_21.py'
-
-# TRANSFORMATION_FNAME_1 = '4_Flex_transformation_12wellplate_APIv2_21.py'
-# TRANSFORMATION_FNAME_2 = '4_OT-2_transformation_12wellplate_APIv2_21.py'
-# #TRANSFORMATION_FNAME_3 = '4_transformation_ot2_Thermocycler_APIv2.8.py'
-# #TRANSFORMATION_FNAME_4 = '4_transformation_ot2_Thermocycler_12wellplate_APIv2.8.py'
-
 CLIPS_INFO_FNAME = 'clip_run_info.csv'
 FINAL_ASSEMBLIES_INFO_FNAME = 'final_assembly_run_info.csv'
 WELL_OUTPUT_FNAME = 'wells.txt'
@@ -191,6 +159,10 @@ def main():
 
     if args.nogui:
         robot_type = args.robot_type
+        if robot_type=='Flex':
+            insert_requirements=['requirements = {"robotType": "Flex", "apiLevel": "2.21"}']
+        else:
+            insert_requirements=['requirements = {"robotType": "OT-2", "apiLevel": "2.21"}']
         etoh_well = args.etoh_well
         soc_column = args.soc_column
         hardware_settings =user_settings['hardware']
@@ -205,7 +177,11 @@ def main():
             output_dir = os.path.dirname(construct_path)
     else:
         user_inputs = __info_from_gui(user_settings)
-        #robot_type = user_inputs['robot_type'] under 'hardware'
+        robot_type = user_settings['hardware']['robot_type']['id']
+        if robot_type=='Flex':
+            insert_requirements=['requirements = {"robotType": "Flex", "apiLevel": "2.21"}']
+        else:
+            insert_requirements=['requirements = {"robotType": "OT-2", "apiLevel": "2.21"}']
         etoh_well = user_inputs['etoh_well']
         soc_column = user_inputs['soc_column']
         hardware_settings =user_settings['hardware']
@@ -326,11 +302,20 @@ def main():
         )
 # Write OT-2 scripts
     print('Writing files...')
-
+    generate_opentrons_script(
+            '1_UNI_clip_APIv2_21.py',
+            os.path.join(template_dir_path, '1_UNI_clip_template_APIv2_21.py'), 
+            insert_requirements,
+            clips_dict=clips_dict,
+            __HARDWARE=hardware_settings,
+            __LABWARES=labware_settings,
+            __PARAMETERS=parameter_settings)
     if robot_type == 'Flex':
         generate_opentrons_script(
             '1_Flex_clip_APIv2_21.py',
-            os.path.join(template_dir_path, '1_UNI_clip_template_APIv2_21.py'),            clips_dict=clips_dict,
+            os.path.join(template_dir_path, '1_UNI_clip_template_APIv2_21.py'), 
+            insert_requirements,
+            clips_dict=clips_dict,
             __HARDWARE=hardware_settings,
             __LABWARES=labware_settings,
             __PARAMETERS=parameter_settings)
@@ -838,7 +823,9 @@ def generate_spotting_tuples_12(constructs_list, spotting_vols_dict):
 #                 if index >= function_start - 1:
 #                     wf.write(line)
 
-# NEW code to write before requirements={} so robot type in requirements can be specified from __hardware definition
+# NEW code to after #insert_requirements={} 
+#Robot type cannot be specified by a function in requirements, so explicit requirements
+#statement must be written for each robot
 def generate_opentrons_script(opentrons_script_path, template_path, **kwargs):
     """Generates an ot2 script named 'opentrons_script_path', where kwargs are
     written as global variables at the top of the script. For each kwarg, the
@@ -850,15 +837,15 @@ def generate_opentrons_script(opentrons_script_path, template_path, **kwargs):
         with open(template_path, 'r') as rf:
             lines = rf.readlines()
         
-        # Find the line that starts with 'requirements'
+        # Find the line that starts with '#insert_requirements'
         requirements_index = None
         for index, line in enumerate(lines):
-            if line.strip().startswith('requirements'):
+            if line.strip().startswith('#insert_requirements'):
                 requirements_index = index
                 break
         
-        # Write lines before 'requirements'
-        for line in lines[:requirements_index]:
+        # Write lines after '#insert_requirements'
+        for line in lines[:requirements_index+1]:
             wf.write(line)
         
         # Write the kwargs as global variables
