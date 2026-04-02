@@ -273,7 +273,7 @@ MRes_2025_Protocols/Team 1
 │   └── 1_OT-2_clip_APIv2_21_WORKING.py        # OT-2 running protocol for CLIP reaction
 │   └── ...       
 ├── template_opentrons_scripts/
-│   └── 1_UNI_clip_template_APIv2_21_final.py  # Universal template file for Opentrons flex/OT-2 CLIP reaction
+│   └── 1_UNI_clip_template_APIv2_21.py  # Universal template file for Opentrons flex/OT-2 CLIP reaction
 │   └── ...         
 ├── default_settings_2_2.yaml                  # Defined Labware and Hardware for Opentrons Flex and OT-2
 ├── dnabot_app_2_2.py                          # App entrypoint with GUI and CLI      

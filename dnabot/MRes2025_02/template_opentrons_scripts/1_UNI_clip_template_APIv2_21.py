@@ -342,17 +342,26 @@ def run(protocol: protocol_api.ProtocolContext):
         for i in range(len_parts):
             parts.append([loop_parts_plates[i], loop_parts_wells[i]])
         parts_unique = np.unique(np.array(parts), axis=0)
+
+        clip_count = len(parts_wells)
+        purification_script_compatible = clip_count <= 48
+        if not purification_script_compatible:
+            protocol.comment(
+                "Warning: this clip run contains more than 48 clips, so it is "
+                "not directly compatible with Step 2 "
+                "(2_UNI_purification_template_APIv2_21.py), which is capped at 48."
+            )
         
         # Calculates whether one, two, or three tipracks are needed, which are in slots 3, 6, and 9 respectively
         # loads tipracks
         if Mix_linkers_bool: 
             if Mix_parts_bool:             
-                total_tips = (4 * len(parts_wells)) + len(prefixes_unique) + len(suffixes_unique) + len(parts_unique)
-            else: total_tips = (4 * len(parts_wells)) + len(prefixes_unique) + len(suffixes_unique)
+                total_tips = (4 * clip_count) + len(prefixes_unique) + len(suffixes_unique) + len(parts_unique)
+            else: total_tips = (4 * clip_count) + len(prefixes_unique) + len(suffixes_unique)
         else: 
             if Mix_parts_bool:
-                total_tips = (4 * len(parts_wells)) + len(parts_unique)
-            else: total_tips = (4 * len(parts_wells))
+                total_tips = (4 * clip_count) + len(parts_unique)
+            else: total_tips = (4 * clip_count)
 
         letter_dict = {'A': 0, 'B': 1, 'C': 2,
                        'D': 3, 'E': 4, 'F': 5,
@@ -380,7 +389,7 @@ def run(protocol: protocol_api.ProtocolContext):
         pipette = protocol.load_instrument(PIPETTE_TYPE, mount=PIPETTE_MOUNT, tip_racks=tipracks)
 
         # Defines where the destination wells are within the destination plate
-        destination_wells = destination_plate.wells()[0:len(parts_wells)]
+        destination_wells = destination_plate.wells()[0:clip_count]
 
         ### Load Tube Rack
         # Loads tube rack according to constants assigned above
@@ -441,7 +450,7 @@ def run(protocol: protocol_api.ProtocolContext):
 
     
         #NEW transfer function for prefix, suffix and parts with custom mix parameters
-        for clip_num in range(len(parts_wells)):
+        for clip_num in range(clip_count):
             pipette.well_bottom_clearance.aspirate = 2  # tip is 2 mm above well bottom
             pipette.well_bottom_clearance.dispense = 2  # tip is 2 mm above well bottom
             #Prefix Transfer

@@ -337,13 +337,13 @@ def main():
     if robot_type == 'Flex':
         generate_opentrons_script(
             '1_Flex_clip_APIv2_21.py',
-            os.path.join(template_dir_path, '1_UNI_clip_template_APIv2_21_final.py'),            clips_dict=clips_dict,
+            os.path.join(template_dir_path, '1_UNI_clip_template_APIv2_21.py'),            clips_dict=clips_dict,
             __HARDWARE=hardware_settings,
             __LABWARES=labware_settings,
             __PARAMETERS=parameter_settings)
         generate_opentrons_script(
             '2_Flex_purification_APIv2_21.py',
-            os.path.join(template_dir_path, '2_UNI_purification_template_APIv2_21_final.py'),            sample_number=magbead_sample_number,
+            os.path.join(template_dir_path, '2_UNI_purification_template_APIv2_21.py'),            sample_number=magbead_sample_number,
             ethanol_well=etoh_well,
             __HARDWARE=hardware_settings,
             __LABWARES=labware_settings,
@@ -367,13 +367,13 @@ def main():
     elif robot_type == 'OT-2':
         generate_opentrons_script(
             '1_OT-2_clip_APIv2_21.py',
-            os.path.join(template_dir_path, '1_UNI_clip_template_APIv2_21_final.py'),            clips_dict=clips_dict,
+            os.path.join(template_dir_path, '1_UNI_clip_template_APIv2_21.py'),            clips_dict=clips_dict,
             __HARDWARE=hardware_settings,
             __LABWARES=labware_settings,
             __PARAMETERS=parameter_settings)
         generate_opentrons_script(
             '2_OT-2_purification_APIv2_21.py',
-            os.path.join(template_dir_path, '2_UNI_purification_template_APIv2_21_final.py'),            sample_number=magbead_sample_number,
+            os.path.join(template_dir_path, '2_UNI_purification_template_APIv2_21.py'),            sample_number=magbead_sample_number,
             ethanol_well=etoh_well,
             __HARDWARE=hardware_settings,
             __LABWARES=labware_settings,
