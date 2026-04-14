@@ -87,6 +87,7 @@ class GUI:
         self.vsb = tk.Scrollbar(self.root, orient="vertical", command=self.canvas.yview, width=25)
         self.vsb.pack(side="right", fill="y")
         self.canvas.configure(yscrollcommand=self.vsb.set)
+        self.canvas.bind_all("<MouseWheel>", self.onMouseWheel) # can now scroll with scrollwheel
         self.canvas.pack(side="left", fill="both", expand=False)
         self.canvas.create_window((10,0), window=self.frame, anchor="nw", tags="self.frame")
 
