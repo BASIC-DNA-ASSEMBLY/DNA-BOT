@@ -26,7 +26,6 @@ def run(protocol: protocol_api.ProtocolContext):
     if robot_type=='Flex':
         trash = protocol.load_trash_bin("A3")
         #tc_mod = protocol.load_module(module_name=__HARDWARE['thermocycler']['id'], location = "B1")
-        #tiprack_type = ['opentrons_flex_96_tiprack_50ul']
         tiprack_type = __LABWARES['tiprack_20ul']['id'] # CHANGE, CALLED ID AND NOT KEY!!
         #tiprack_1000 = ['Flex_tiprack_1000ul'] 'opentrons_flex_96_tiprack_1000ul'
     elif robot_type=='OT-2':
@@ -79,6 +78,20 @@ def run(protocol: protocol_api.ProtocolContext):
     else:
         Mix_parts_bool = False
 
+    def configure_flex_low_volume_mode(pipette, volume):
+        """Configure Flex 50 uL pipettes for the next transfer volume when supported."""
+        if robot_type != 'Flex':
+            return
+        if not hasattr(pipette, 'configure_for_volume'):
+            return
+        if getattr(pipette, 'max_volume', None) != 50:
+            return
+        pipette.configure_for_volume(max(1, min(float(volume), 50)))
+
+    def get_low_volume_push_out(volume):
+        """Match Flex low-volume defaults explicitly and give OT-2 a defined push-out too."""
+        return 7 if float(volume) < 5 else 2
+
     def get_mix_repetitions(volume):
         """Scale mix repetitions with premix volume."""
         if volume <= 20:
@@ -115,7 +128,12 @@ def run(protocol: protocol_api.ProtocolContext):
 
         final_dispense_height = max(dispense_height, np.log(volume))
         pipette.aspirate(volume/2, well.bottom(aspirate_height), rate=slow)
-        pipette.dispense(volume/2, well.bottom(final_dispense_height).move(Point(x=2, y=0, z=0)), rate=slow, push_out=volume/20)
+        pipette.dispense(
+            volume/2,
+            well.bottom(final_dispense_height).move(Point(x=2, y=0, z=0)),
+            rate=slow,
+            push_out=3,
+        )
         pipette.move_to(well.top(-5))
         protocol.delay(seconds=1)
         pipette.blow_out()
@@ -136,7 +154,12 @@ def run(protocol: protocol_api.ProtocolContext):
             pipette.dispense(aspirate_volume, dispense_location, rate=high)
 
         pipette.aspirate(aspirate_volume, well.bottom(2), rate=slow)
-        pipette.dispense(aspirate_volume, dispense_location, push_out=max(1, aspirate_volume / 5), rate=slow)
+        pipette.dispense(
+            aspirate_volume,
+            dispense_location,
+            rate=slow,
+            push_out=3,
+        )
         pipette.move_to(well.top(-5))
         protocol.delay(seconds=1)
         pipette.blow_out()
@@ -229,6 +252,7 @@ def run(protocol: protocol_api.ProtocolContext):
             # [clip_num,0] addresses the plate location
             # [clip_num,1] addresses the well location
             for clip_num in range(len(prefixes_unique)):  #high = 2.5, normal = 1, slow = 0.5,  vslow = 0.
+                configure_flex_low_volume_mode(pipette, linkers_volume / 2)
                 pick_up_tip_with_reload(pipette, slots, manual_refills_needed)
                 perform_premix(
                     pipette,
@@ -237,6 +261,7 @@ def run(protocol: protocol_api.ProtocolContext):
                 )
 
             for clip_num in range(len(suffixes_unique)):  
+                configure_flex_low_volume_mode(pipette, linkers_volume / 2)
                 pick_up_tip_with_reload(pipette, slots, manual_refills_needed)
                 perform_premix(
                     pipette,
@@ -294,6 +319,7 @@ def run(protocol: protocol_api.ProtocolContext):
             parts_unique = np.unique(np.array(parts), axis=0)
 
             for clip_num in range(len(parts_unique)):
+                configure_flex_low_volume_mode(pipette, parts_volume / 2)
                 pick_up_tip_with_reload(pipette, slots, manual_refills_needed)
                 pipette.well_bottom_clearance.aspirate = 2  # tip is 2 mm above well bottom
                 pipette.well_bottom_clearance.dispense = 1  # tip is 2 mm above well bottom
@@ -436,6 +462,7 @@ def run(protocol: protocol_api.ProtocolContext):
         # transfer master mix into destination wells
         pipette.well_bottom_clearance.aspirate = 1  # tip is x mm above well bottom
         pipette.well_bottom_clearance.dispense = 0  # tip is y mm above well bottom        
+        configure_flex_low_volume_mode(pipette, MASTER_MIX_VOLUME)
         pick_up_tip_with_reload(pipette, slots, manual_refills_needed)
         pipette.distribute(MASTER_MIX_VOLUME, master_mix, destination_wells, blow_out=True, blowout_location='source well', new_tip='never', rate=slow)
         pipette.drop_tip()
@@ -443,9 +470,19 @@ def run(protocol: protocol_api.ProtocolContext):
         # transfer water into destination wells
         pipette.well_bottom_clearance.aspirate = 1  # tip is x mm above well bottom
         pipette.well_bottom_clearance.dispense = 3  # tip is y mm above well bottom
-        
+        configure_flex_low_volume_mode(pipette, 1)
         pick_up_tip_with_reload(pipette, slots, manual_refills_needed)
-        pipette.distribute(water_vols, water, destination_wells, blow_out=True, blowout_location='source well', new_tip='never', rate=slow)
+        for destination_well, water_volume in zip(destination_wells, water_vols):
+            if water_volume <= 0:
+                continue
+            pipette.aspirate(water_volume, water.bottom(1), rate=slow)
+            protocol.delay(seconds=0.5)
+            pipette.dispense(
+                water_volume,
+                destination_well.bottom(3),
+                rate=slow,
+                push_out=get_low_volume_push_out(water_volume),
+            )
         pipette.drop_tip()
 
     
@@ -454,32 +491,35 @@ def run(protocol: protocol_api.ProtocolContext):
             pipette.well_bottom_clearance.aspirate = 2  # tip is 2 mm above well bottom
             pipette.well_bottom_clearance.dispense = 2  # tip is 2 mm above well bottom
             #Prefix Transfer
+            configure_flex_low_volume_mode(pipette, 1)
             pick_up_tip_with_reload(pipette, slots, manual_refills_needed)
             prefix_source = source_plates[prefixes_plates[clip_num]][prefixes_wells[clip_num]]
             pre_wet(pipette, prefix_source)
             pipette.aspirate(1, prefix_source.bottom(1), rate=slow)
             protocol.delay(seconds=0.5)
-            pipette.dispense(1, destination_wells[clip_num].bottom(2), rate=normal)                                                    #changed from: from_center_cartesian(0.2, 0, -0.9)
+            pipette.dispense(1, destination_wells[clip_num].bottom(2), rate=normal, push_out=get_low_volume_push_out(1))                                                    #changed from: from_center_cartesian(0.2, 0, -0.9)
             protocol.delay(seconds=0.5)
             #mix after transfer
             perform_clip_mix(pipette, destination_wells[clip_num], mix_volume=20, repetitions=2)
             #Suffix Transfer
+            configure_flex_low_volume_mode(pipette, 1)
             pick_up_tip_with_reload(pipette, slots, manual_refills_needed)
             suffix_source = source_plates[suffixes_plates[clip_num]][suffixes_wells[clip_num]]
             pre_wet(pipette, suffix_source)
             pipette.aspirate(1, suffix_source.bottom(1), rate=slow)
             protocol.delay(seconds=0.5)
-            pipette.dispense(1, destination_wells[clip_num].bottom(3), rate=normal)
+            pipette.dispense(1, destination_wells[clip_num].bottom(3), rate=normal, push_out=get_low_volume_push_out(1))
             protocol.delay(seconds=0.5)
             #mix after transfer
             perform_clip_mix(pipette, destination_wells[clip_num], mix_volume=20, repetitions=2)
             #Part Transfer
+            configure_flex_low_volume_mode(pipette, parts_vols[clip_num])
             pick_up_tip_with_reload(pipette, slots, manual_refills_needed)
             part_source = source_plates[parts_plates[clip_num]][parts_wells[clip_num]]
             pre_wet(pipette, part_source)
             pipette.aspirate(parts_vols[clip_num], part_source.bottom(1), rate=slow)
             protocol.delay(seconds=0.5)
-            pipette.dispense(parts_vols[clip_num], destination_wells[clip_num].bottom(3), rate=normal)
+            pipette.dispense(parts_vols[clip_num], destination_wells[clip_num].bottom(3), rate=normal, push_out=get_low_volume_push_out(parts_vols[clip_num]))
             protocol.delay(seconds=0.5)
             #mix after transfer
             perform_clip_mix(pipette, destination_wells[clip_num], mix_volume=20, repetitions=4)
