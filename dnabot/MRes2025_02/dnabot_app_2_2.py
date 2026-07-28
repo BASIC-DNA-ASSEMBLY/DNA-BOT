@@ -21,7 +21,7 @@ abs_path = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, abs_path)
 
 import mplates
-import slots_2_1 as slots 
+import slots_2_2 as slots 
 
 # File naming and volume constants used across protocol generation.
 # These values define the generated script names, metadata outputs,
@@ -646,11 +646,10 @@ def generate_clips_dict(clips_df, sources_dict):
                 elif part_vol > max_part_vol:
                     raise ValueError("Part concentration is too low, you need 50 ng per kb of plasmid and final part volumes must be between 1 and 8 µL.")
                 
-                # Water fills the remaining clip reaction volume after fixed
-                # reagents, the two 1 uL linker additions, and the variable
-                # part volume have been accounted for.
-                # Calculate the required water volume to reach the total volume
-                water_vol = max_part_vol - part_vol +2
+                # Water fills the remaining clip reaction volume after the
+                # 20 uL master mix, the two 1 uL linker additions, and the
+                # variable part volume have been accounted for.
+                water_vol = max_part_vol - part_vol
                 
                 # Store calculated part volume and water volume in clips_dict
                 clips_dict['parts_vols'].append([part_vol] * clip_info['number'])

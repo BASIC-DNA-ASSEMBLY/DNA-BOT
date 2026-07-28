@@ -24,7 +24,7 @@ sys.path.insert(0, abs_path)
 
 import dnabot_gui_2_2 as gui
 import mplates
-import slots_2_1 as slots 
+import slots_2_2 as slots 
 
 # Constant str
 TEMPLATE_DIR_NAME = 'template_opentrons_scripts'
