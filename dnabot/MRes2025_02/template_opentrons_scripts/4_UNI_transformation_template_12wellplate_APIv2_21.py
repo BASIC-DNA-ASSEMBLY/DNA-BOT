@@ -87,19 +87,33 @@ def run(protocol: protocol_api.ProtocolContext):
     if robot_type=='Flex':
         trash = protocol.load_trash_bin("A3")
         tc_mod = protocol.load_module(module_name=__HARDWARE['thermocycler']['id'], location = "B1")
-        SINGLE_TIPRACK_TYPE = ['opentrons_flex_96_tiprack_50ul']
+        SINGLE_TIPRACK_TYPE = __LABWARES['tiprack_20ul']['id']
         MULTI_TIPRACK_TYPE = ['opentrons_flex_96_tiprack_200ul']
         CANDIDATE_SINGLE_SLOTS = layout['candidate_single_slots']
         CANDIDATE_MULTI_SLOTS = layout['candidate_multi_slots']
         #tiprack_1000 = ['Flex_tiprack_1000ul'] 'opentrons_flex_96_tiprack_1000ul'
     elif robot_type=='OT-2':
-        SINGLE_TIPRACK_TYPE = __LABWARES['OT-2_tiprack_20ul']['id']
-        MULTI_TIPRACK_TYPE = __LABWARES['OT-2_tiprack_300ul']['id']
+        SINGLE_TIPRACK_TYPE = __LABWARES['tiprack_20ul']['id']
+        MULTI_TIPRACK_TYPE = __LABWARES['tiprack_300ul']['id']
         CANDIDATE_SINGLE_SLOTS = layout['candidate_single_slots']
         CANDIDATE_MULTI_SLOTS = layout['candidate_multi_slots']
         tc_mod = protocol.load_module(module_name=__HARDWARE['thermocycler']['id'])
     else:
         raise ValueError("Invalid robot type. Must be 'OT-2' or 'Flex'.")
+
+    def configure_flex_low_volume_mode(pipette, volume):
+        """Configure Flex 50 uL pipettes for the next transfer volume when supported."""
+        if robot_type != 'Flex':
+            return
+        if not hasattr(pipette, 'configure_for_volume'):
+            return
+        if getattr(pipette, 'max_volume', None) != 50:
+            return
+        pipette.configure_for_volume(max(1, min(float(volume), 50)))
+
+    def get_low_volume_push_out(volume):
+        """Make low-volume dispense push-out explicit on both OT-2 and Flex."""
+        return 7 if float(volume) < 5 else 2
 
      # Candidate Tiprack Slots according to robot type
    
@@ -211,11 +225,20 @@ def run(protocol: protocol_api.ProtocolContext):
 
 
         # Transfer final assemblies
-        single_pipette.transfer(ASSEMBLY_VOL,
-                             [assembly_plate.wells_by_name()[well_name] for well_name in transformation_wells],
-                             [transformation_plate.wells_by_name()[well_name] for well_name in transformation_wells],
-                             new_tip='always',
-                             mix_after=(MIX_SETTINGS))
+        for well_name in transformation_wells:
+            source_well = assembly_plate.wells_by_name()[well_name]
+            destination_well = transformation_plate.wells_by_name()[well_name]
+            configure_flex_low_volume_mode(single_pipette, ASSEMBLY_VOL)
+            single_pipette.pick_up_tip()
+            single_pipette.aspirate(ASSEMBLY_VOL, source_well.bottom(1))
+            protocol.delay(seconds=0.5)
+            single_pipette.dispense(
+                ASSEMBLY_VOL,
+                destination_well.bottom(2),
+                push_out=get_low_volume_push_out(ASSEMBLY_VOL),
+            )
+            single_pipette.mix(MIX_SETTINGS[0], MIX_SETTINGS[1], destination_well)
+            single_pipette.drop_tip()
 
 
         # Incubate for INCUBATION_TIME minutes 
@@ -343,7 +366,11 @@ def run(protocol: protocol_api.ProtocolContext):
                 # returned attribute error because 'target' was a list containing one item (the well location)
                 # target[0] takes the location out of the list
 
-            single_pipette.dispense(volume=spot_vol, rate=spotting_dispense_rate)
+            single_pipette.dispense(
+                volume=spot_vol,
+                rate=spotting_dispense_rate,
+                push_out=get_low_volume_push_out(spot_vol),
+            )
 
             protocol.max_speeds.update(SPOT_HEAD_SPEED)
             # old code:
@@ -399,6 +426,7 @@ def run(protocol: protocol_api.ProtocolContext):
                 #single_pipette.pick_up_tip()
                 for index, spot_vol in enumerate(spot_vols):
                     spot_times = spot_vols[index]/max_spot_vol
+                    configure_flex_low_volume_mode(single_pipette, max(1, min(spot_vol, max_spot_vol)))
                     single_pipette.pick_up_tip()
                     for i in range(int(spot_times)):
                         if spot_vol == 0:
@@ -471,7 +499,16 @@ def run(protocol: protocol_api.ProtocolContext):
     ### Run protocol
 
     # Register agar_plate for calibration
-    single_pipette.transfer(1, agar_plate.wells('A1'), agar_plate.wells('C4'), trash=False)
+    configure_flex_low_volume_mode(single_pipette, 1)
+    single_pipette.pick_up_tip()
+    single_pipette.aspirate(1, agar_plate.wells('A1')[0].bottom(1))
+    protocol.delay(seconds=0.5)
+    single_pipette.dispense(
+        1,
+        agar_plate.wells('C4')[0].bottom(1),
+        push_out=get_low_volume_push_out(1),
+    )
+    single_pipette.drop_tip()
     # removed:
         # single_pipette.start_at_tip(p20_tipracks[0][0])
         # pipette automatically starts from 'A1' tiprack location

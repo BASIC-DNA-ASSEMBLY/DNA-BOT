@@ -21,7 +21,7 @@ abs_path = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, abs_path)
 
 import mplates
-import slots_2_1 as slots 
+import slots_2_2 as slots 
 
 # File naming and volume constants used across protocol generation.
 # These values define the generated script names, metadata outputs,
@@ -125,7 +125,43 @@ def __cli():
 
 def __get_settings_from_file(file_path: str) -> None:
     with open(file_path) as ifh:
-        return yaml.safe_load(ifh)
+        return __normalize_settings(yaml.safe_load(ifh))
+
+
+def __normalize_settings(settings: dict) -> dict:
+    """Ensure settings entries expose a stable `options` list alongside the selected value."""
+    for section in ('hardware', 'labwares'):
+        for _, config in settings.get(section, {}).items():
+            if not isinstance(config, dict):
+                continue
+            selected_value = config.get('id')
+            options = config.get('options', [])
+            if not isinstance(options, list):
+                options = [options] if options else []
+            normalized = []
+            for option in options:
+                if option not in normalized:
+                    normalized.append(option)
+            if selected_value is not None and selected_value not in normalized:
+                normalized.insert(0, selected_value)
+            if not normalized and selected_value is not None:
+                normalized = [selected_value]
+            config['options'] = normalized
+    return settings
+
+
+def __apply_robot_labware_defaults(robot_type: str, labware_settings: dict) -> None:
+    """Align shared labware selections with the selected robot when using a common settings file."""
+    if robot_type == 'Flex':
+        labware_settings['tiprack_20ul']['id'] = 'opentrons_flex_96_tiprack_20ul'
+        labware_settings['tiprack_300ul']['id'] = 'opentrons_flex_96_tiprack_200ul'
+        if 'flex_96_tiprack_200ul' in labware_settings:
+            labware_settings['flex_96_tiprack_200ul']['id'] = 'opentrons_flex_96_tiprack_200ul'
+        if 'flex_96_tiprack_1000ul' in labware_settings:
+            labware_settings['flex_96_tiprack_1000ul']['id'] = 'opentrons_flex_96_tiprack_1000ul'
+    elif robot_type == 'OT-2':
+        labware_settings['tiprack_20ul']['id'] = 'opentrons_96_tiprack_20ul'
+        labware_settings['tiprack_300ul']['id'] = 'opentrons_96_tiprack_300ul'
 
 
 def __info_from_gui(user_settings: dict) -> dict:
@@ -184,6 +220,7 @@ def main():
         soc_column = args.soc_column
         hardware_settings = user_settings['hardware']
         labware_settings = user_settings['labwares']
+        __apply_robot_labware_defaults(robot_type, labware_settings)
         parameter_settings = user_settings['parameters']
         if args.premix_linkers is not None:
             parameter_settings['premix_linkers']['value'] = args.premix_linkers
@@ -209,6 +246,7 @@ def main():
         soc_column = user_inputs['soc_column']
         hardware_settings = user_inputs['hardware']  #changed from user_settings to user_inputs so that changed hardware is registered as default
         labware_settings = user_inputs['labwares']  # update labwares IDs
+        __apply_robot_labware_defaults(robot_type, labware_settings)
         parameter_settings = user_inputs['parameters']  # update parameters
         construct_path = user_inputs['construct_path']
         if construct_path is None:
@@ -608,11 +646,10 @@ def generate_clips_dict(clips_df, sources_dict):
                 elif part_vol > max_part_vol:
                     raise ValueError("Part concentration is too low, you need 50 ng per kb of plasmid and final part volumes must be between 1 and 8 µL.")
                 
-                # Water fills the remaining clip reaction volume after fixed
-                # reagents, the two 1 uL linker additions, and the variable
-                # part volume have been accounted for.
-                # Calculate the required water volume to reach the total volume
-                water_vol = max_part_vol - part_vol +2
+                # Water fills the remaining clip reaction volume after the
+                # 20 uL master mix, the two 1 uL linker additions, and the
+                # variable part volume have been accounted for.
+                water_vol = max_part_vol - part_vol
                 
                 # Store calculated part volume and water volume in clips_dict
                 clips_dict['parts_vols'].append([part_vol] * clip_info['number'])

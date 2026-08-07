@@ -56,7 +56,7 @@ OT2_LABWARE = {
 
 FLEX_LABWARE = {
     "24_tuberack_1500ul": ["e14151500starlab_24_tuberack_1500ul"],
-    "tiprack_20ul": ["opentrons_flex_96_tiprack_50ul"],
+    "tiprack_20ul": ["opentrons_flex_96_tiprack_20ul"],
     "tiprack_300ul": ["opentrons_flex_96_tiprack_200ul"],
     "flex_96_tiprack_200ul": ["opentrons_flex_96_tiprack_200ul"],
     "flex_96_tiprack_1000ul": ["opentrons_flex_96_tiprack_1000ul"],
@@ -73,6 +73,16 @@ FLEX_LABWARE = {
 }
 
 ALL_LABWARE_KEYS = list(dict.fromkeys(list(OT2_LABWARE.keys()) + list(FLEX_LABWARE.keys())))
+OT2_LABWARE_KEYS = set(OT2_LABWARE.keys())
+FLEX_LABWARE_KEYS = set(FLEX_LABWARE.keys())
+
+
+def unique_options(options):
+    seen = []
+    for option in options:
+        if option not in seen:
+            seen.append(option)
+    return seen
 
 # ---------------------------------------
 # MODERN STYLESHEET
@@ -309,6 +319,9 @@ class GUI(QWidget):
             ["OT-2", "Flex"],
             callback=self.update_robot_type
         )
+        self.robot_type.setCurrentText(
+            str(self.user_settings.get("hardware", {}).get("robot_type", {}).get("id", "OT-2"))
+        )
         
         self.layout.addWidget(robot_frame)
 
@@ -386,8 +399,11 @@ class GUI(QWidget):
         
         self.labware_widgets = {}
         for key in ALL_LABWARE_KEYS:
-            items = OT2_LABWARE.get(key, FLEX_LABWARE.get(key, []))
+            items = self.get_labware_options(key, "OT-2")
             widget = self.add_dropdown_to_layout(labware_layout, key.replace("_", " ").title(), items)
+            configured_choice = self.user_settings.get("labwares", {}).get(key, {}).get("id", "")
+            if configured_choice and configured_choice in items:
+                widget.setCurrentText(configured_choice)
             self.labware_widgets[key] = widget
         
         self.layout.addWidget(labware_frame)
@@ -448,6 +464,48 @@ class GUI(QWidget):
         self.update_robot_type()
         self.show()
         self._app.exec()
+
+    def get_setting_options(self, section, key):
+        setting = self.user_settings.get(section, {}).get(key, {})
+        options = setting.get("options", [])
+        if not isinstance(options, list):
+            options = [options] if options else []
+        current_value = setting.get("id")
+        if current_value and current_value not in options:
+            options = [current_value] + options
+        return unique_options([str(option) for option in options if option not in (None, "")])
+
+    def get_labware_options(self, key, robot):
+        yaml_options = self.get_setting_options("labwares", key)
+        compatible_options = (OT2_LABWARE if robot == "OT-2" else FLEX_LABWARE).get(key, [])
+        if yaml_options and compatible_options:
+            filtered = [option for option in yaml_options if option in compatible_options]
+            if filtered:
+                return filtered
+        if yaml_options:
+            return yaml_options
+        fallback = compatible_options or OT2_LABWARE.get(key, FLEX_LABWARE.get(key, []))
+        return unique_options(fallback)
+
+    def refresh_labware_options(self, robot):
+        visible_keys = OT2_LABWARE_KEYS if robot == "OT-2" else FLEX_LABWARE_KEYS
+        for key, widget in self.labware_widgets.items():
+            is_visible = key in visible_keys
+            widget.setVisible(is_visible)
+            widget._label_widget.setVisible(is_visible)
+            if not is_visible:
+                continue
+            current_choice = widget.currentText()
+            configured_choice = self.user_settings.get("labwares", {}).get(key, {}).get("id", "")
+            items = self.get_labware_options(key, robot)
+            widget.clear()
+            widget.addItems(items)
+            if current_choice and current_choice in items:
+                widget.setCurrentText(current_choice)
+            elif configured_choice and configured_choice in items:
+                widget.setCurrentText(configured_choice)
+            elif items:
+                widget.setCurrentIndex(0)
 
     def create_header(self):
         """Create the header with logo and title"""
@@ -576,10 +634,9 @@ class GUI(QWidget):
         return widget
 
     def update_robot_type(self):
-        """Update hardware and labware defaults based on robot type"""
+        """Update hardware defaults and refresh visible labware rows for the selected robot."""
         robot = self.robot_type.currentText()
         if robot == "OT-2":
-            lab = OT2_LABWARE
             defaults = OT2_DEFAULTS
             self.single_pipette.clear()
             self.single_pipette.addItems(OT2_SINGLE_PIPETTES)
@@ -588,7 +645,6 @@ class GUI(QWidget):
             self.multi_pipette.addItems(OT2_MULTI_PIPETTES)
             self.multi_pipette.setCurrentIndex(0)
         else:
-            lab = FLEX_LABWARE
             defaults = FLEX_DEFAULTS
             self.single_pipette.clear()
             self.single_pipette.addItems(FLEX_SINGLE_PIPETTES)
@@ -603,16 +659,7 @@ class GUI(QWidget):
         self.multi_mount.setCurrentText(defaults["multi_mount"])
         self.thermocycler.setCurrentText(defaults["thermocycler"])
         self.magdeck.setCurrentText(defaults["magdeck"])
-
-        visible_keys = set(lab.keys())
-        for key, widget in self.labware_widgets.items():
-            is_visible = key in visible_keys
-            widget.setVisible(is_visible)
-            widget._label_widget.setVisible(is_visible)
-            if is_visible:
-                widget.clear()
-                widget.addItems(lab[key])
-                widget.setCurrentIndex(0)
+        self.refresh_labware_options(robot)
 
     def select_construct(self):
         """Open file dialog for construct CSV"""

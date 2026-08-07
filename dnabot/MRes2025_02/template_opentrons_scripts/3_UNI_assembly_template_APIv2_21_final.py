@@ -38,7 +38,7 @@ tiprack_num=1'''
      "clip_plate":{"id":"biorad_96_wellplate_200ul_pcr"},
      "final_assembly_plate":{"id":"biorad_96_wellplate_200ul_pcr"},
      #"96_tiprack_20ul": {"id": "opentrons_96_tiprack_20ul"}, 
-     "flex_96_tiprack_50ul": {"id": "opentrons_flex_96_tiprack_50ul"}, 
+     "flex_96_tiprack_20ul": {"id": "opentrons_flex_96_tiprack_20ul"}, 
      #"96_tiprack_300ul": {"id": "opentrons_96_tiprack_300ul"}, 
      "24_tuberack_2000ul": {"id": "opentrons_24_tuberack_generic_2ml_screwcap"}, 
      #"96_wellplate_200ul_pcr_step_14": {"id": "biorad_96_wellplate_200ul_pcr"}, 
@@ -57,7 +57,7 @@ tiprack_num=1'''
 #             "p1000_multi": {"id": "flex_8channel_1000"},
 #             "mag_block": {"id": "magneticBlockV1"},
 #             "mag_plate": {"id": "nest_96_wellplate_100ul_pcr_full_skirt"}, 
-#             "flex_96_tiprack_50ul": {"id": "opentrons_flex_96_tiprack_50ul"}, 
+#             "flex_96_tiprack_20ul": {"id": "opentrons_flex_96_tiprack_20ul"}, 
 #             "flex_96_tiprack_200ul": {"id": "opentrons_flex_96_tiprack_200ul"},
 #             "flex_96_tiprack_1000ul": {"id": "opentrons_flex_96_tiprack_1000ul"}, 
 #             "24_tuberack_1500ul": {"id": "opentrons_24_tuberack_eppendorf_1.5ml_safelock_snapcap"}, 
@@ -79,11 +79,25 @@ def run(protocol: protocol_api.ProtocolContext):
     if robot_type=='Flex':
         trash = protocol.load_trash_bin("A3")
         tc_mod = protocol.load_module(module_name=__HARDWARE['thermocycler']['id'], location = "B1")
-        tiprack_type = ['opentrons_flex_96_tiprack_50ul']
+        tiprack_type = __LABWARES['tiprack_20ul']['id']
     elif robot_type=='OT-2':
         tiprack_type = __LABWARES['tiprack_20ul']['id']
     else:
         raise ValueError("Invalid robot type. Must be 'OT-2' or 'Flex'.")
+
+    def configure_flex_low_volume_mode(pipette, volume):
+        """Configure Flex 50 uL pipettes for the next transfer volume when supported."""
+        if robot_type != 'Flex':
+            return
+        if not hasattr(pipette, 'configure_for_volume'):
+            return
+        if getattr(pipette, 'max_volume', None) != 50:
+            return
+        pipette.configure_for_volume(max(1, min(float(volume), 50)))
+
+    def get_low_volume_push_out(volume):
+        """Make low-volume dispense push-out explicit on both OT-2 and Flex."""
+        return 7 if float(volume) < 5 else 2
 
        
     
@@ -211,21 +225,35 @@ def run(protocol: protocol_api.ProtocolContext):
             pipette.well_bottom_clearance.aspirate = 1 
             pipette.well_bottom_clearance.dispense = 2
 
+            master_mix_volume = TOTAL_VOL - x * PART_VOL
+            configure_flex_low_volume_mode(pipette, master_mix_volume)
             pipette.pick_up_tip()
             for destination_well in destination_wells:# make tube_rack_wells and destination_plate.wells in the same type  
-                pipette.distribute(TOTAL_VOL - x * PART_VOL, tube_rack[master_mix_well], destination_plate[destination_well],blow_out=True, blowout_location="source well", new_tip='never')
+                pipette.aspirate(master_mix_volume, tube_rack[master_mix_well].bottom(1), rate=slow)
+                pipette.dispense(
+                    master_mix_volume,
+                    destination_plate[destination_well].bottom(2),
+                    rate=slow,
+                    push_out=get_low_volume_push_out(master_mix_volume),
+                )
             pipette.drop_tip()
 
         # Part transfers
         for key, values in list(final_assembly_dict.items()):
             for value in values:# purified_clip_plate.wells and destination_plate.wells in the same type
                 #pipette.transfer(PART_VOL, purified_clip_plate.wells(value), destination_plate.wells(key), mix_after=MIX_SETTINGS, new_tip='always')#transfer parts in one tube
+                configure_flex_low_volume_mode(pipette, PART_VOL)
                 pipette.pick_up_tip()
                 pipette.well_bottom_clearance.aspirate = 1  # tip is 2 mm above well bottom
                 pipette.well_bottom_clearance.dispense = 2  # tip is 2 mm above well bottom
                 #Prefix Transfer
                 pipette.aspirate(PART_VOL, purified_clip_plate[value].bottom(1), rate=slow)
-                pipette.dispense(PART_VOL, destination_plate[key].bottom(2), rate=slow)
+                pipette.dispense(
+                    PART_VOL,
+                    destination_plate[key].bottom(2),
+                    rate=slow,
+                    push_out=get_low_volume_push_out(PART_VOL),
+                )
                 #mix after transfer
                 pipette.aspirate(10, destination_plate[key].bottom(1), rate=normal)
                 pipette.dispense(10, destination_plate[key].bottom(3), rate=high)
@@ -234,7 +262,7 @@ def run(protocol: protocol_api.ProtocolContext):
                 pipette.aspirate(10, destination_plate[key].bottom(3), rate=normal)
                 pipette.dispense(10, destination_plate[key].bottom(1), rate=high)
                 pipette.aspirate(10, destination_plate[key].bottom(2), rate=slow)
-                pipette.dispense(10, destination_plate[key].bottom(3), push_out=0.5, rate=vslow)
+                pipette.dispense(10, destination_plate[key].bottom(3), push_out=3, rate=vslow)
                 protocol.delay(seconds=5)     #changed from (5 seconds) to seconds = 5
                 pipette.move_to(destination_plate[key].top(-8))
                 pipette.blow_out()
