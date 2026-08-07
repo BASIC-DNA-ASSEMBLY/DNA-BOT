@@ -136,7 +136,7 @@ def run(protocol: protocol_api.ProtocolContext):
             pipette.dispense(aspirate_volume, dispense_location, rate=high)
 
         pipette.aspirate(aspirate_volume, well.bottom(2), rate=slow)
-        pipette.dispense(aspirate_volume, dispense_location, push_out=max(1, aspirate_volume / 5), rate=slow)
+        pipette.dispense(aspirate_volume, dispense_location, push_out=max(1, aspirate_volume / 5), rate=high)
         pipette.move_to(well.top(-5))
         protocol.delay(seconds=1)
         pipette.blow_out()
