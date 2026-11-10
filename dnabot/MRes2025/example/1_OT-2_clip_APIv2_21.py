@@ -6,7 +6,6 @@ import numpy as np
 # new __HARDWARE configuration defines all of the available hardware setups
 # gripper module for Flex is currently not included - this would only impact script 3 purification.
 
-
 #metadata
 metadata = {
      'protocolName': 'DNABOT Step 1: Clip Reaction with thermocycler (Flex Protocol)',
