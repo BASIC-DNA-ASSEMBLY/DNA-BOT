@@ -8,7 +8,7 @@ metadata = {'protocolName': 'DNABOT Step 3: Assembly with thermocycler Gen2',}
 final_assembly_dict={"A1": ["A7", "B7", "C7", "D7", "E7"], "B1": ["A7", "B7", "C7", "D7", "F7"], "C1": ["A7", "B7", "C7", "G7", "E7"], "D1": ["A7", "B7", "C7", "G7", "F7"], "E1": ["A7", "H7", "D7", "A8", "B8"], "F1": ["A7", "H7", "D7", "C8", "B8"], "G1": ["A7", "H7", "G7", "A8", "B8"], "H1": ["A7", "H7", "G7", "C8", "B8"], "A2": ["A7", "B7", "D8", "D7", "E7"]}
 tiprack_num=1
 __HARDWARE={"robot_type": {"id": "OT-2"}, "single_pipette": {"id": "p20_single_gen2"}, "single_pipette_mount": {"id": "right"}, "multi_pipette": {"id": "p300_multi_gen2"}, "multi_pipette_mount": {"id": "left"}, "thermocycler": {"id": "thermocyclerModuleV2"}, "mag_deck": {"id": "magnetic module gen1"}}
-__LABWARES={"OT-2_tiprack_20ul": {"id": "opentrons_96_tiprack_20ul"}, "OT-2_tiprack_300ul": {"id": "opentrons_96_tiprack_300ul"}, "24_tuberack_1500ul": {"id": "e14151500starlab_24_tuberack_1500ul"}, "clip_source_plate": {"id": "4ti0960rig_96_wellplate_200ul"}, "clip_plate": {"id": "4ti0960rig_96_wellplate_200ul"}, "mix_plate": {"id": "4ti0960rig_96_wellplate_200ul"}, "final_assembly_plate": {"id": "4ti0960rig_96_wellplate_200ul"}, "transform_plate": {"id": "4ti0960rig_96_wellplate_200ul"}, "agar_plate": {"id": "thermoomnitrayfor96spots_96_wellplate_50ul"}, "12_reservoir_21000ul": {"id": "4ti0131_12_reservoir_21000ul"}, "96_deepwellplate_2ml": {"id": "4ti0136_96_wellplate_2200ul"}, "12_corning_wellplate": {"id": "corning_12_wellplate_6.9ml_flat"}}
+__LABWARES={"OT-2_tiprack_20ul": {"id": "opentrons_96_tiprack_20ul"}, "OT-2_tiprack_300ul": {"id": "opentrons_96_tiprack_300ul"}, "24_tuberack_1500ul": {"id": "e14151500starlab_24_tuberack_1500ul"}, "clip_source_plate": {"id": "nest_96_wellplate_100ul_pcr_full_skirt"}, "clip_plate": {"id": "nest_96_wellplate_100ul_pcr_full_skirt"}, "mix_plate": {"id": "nest_96_wellplate_100ul_pcr_full_skirt"}, "final_assembly_plate": {"id": "nest_96_wellplate_100ul_pcr_full_skirt"}, "transform_plate": {"id": "nest_96_wellplate_100ul_pcr_full_skirt"}, "agar_plate": {"id": "nest_96_wellplate_100ul_pcr_full_skirt"}, "12_reservoir_21000ul": {"id": "nest_12_reservoir_15ml"}, "96_deepwellplate_2ml": {"id": "nest_96_wellplate_2ml_deep"}, "12_corning_wellplate": {"id": "corning_12_wellplate_6.9ml_flat"}}
 __PARAMETERS={"clip_keep_thermo_lid_closed": {"value": "No", "id": "No"}, "premix_linkers": {"value": "Yes", "id": "Yes"}, "premix_parts": {"value": "Yes", "id": "Yes"}, "linkers_volume": {"value": 20}, "parts_volume": {"value": 20}, "thermo_temp": {"value": 4}, "purif_magdeck_height": {"value": 10.8}, "purif_wash_time": {"value": 0.5}, "purif_bead_ratio": {"value": 1.8}, "purif_incubation_time": {"value": 5}, "purif_settling_time": {"value": 2}, "purif_drying_time": {"value": 5}, "purif_elution_time": {"value": 2}, "transform_incubation_temp": {"value": 4}, "transform_incubation_time": {"value": 20}}
 
 requirements = {"robotType": __HARDWARE['robot_type']['id'], "apiLevel": "2.21"}
@@ -101,7 +101,7 @@ def run(protocol: protocol_api.ProtocolContext):
             CLIP_PLATE_TYPE = __LABWARES['clip_plate']['id']
             CLIP_PLATE_POSITION = 'D1'
         #Tuberack
-        if robot_type=='OT-2':
+            if robot_type=='OT-2':
             TUBE_RACK_TYPE = __LABWARES['24_tuberack_1500ul']['id']
             TUBE_RACK_POSITION = '4'
         elif robot_type=='Flex':
