@@ -1,0 +1,134 @@
+hardware:
+  single_pipette:
+    id: p20_single_gen2
+    options:
+    - p20_single_gen2
+  single_pipette_mount:
+    id: right
+    options:
+    - left
+    - right
+  multi_pipette:
+    id: p300_multi_gen2
+    options:
+    - p300_multi_gen2
+  multi_pipette_mount:
+    id: left
+    options:
+    - left
+    - right
+  thermocycler:
+    id: thermocyclerModuleV2
+    options:
+    - thermocyclerModuleV2
+    - thermocyclerModuleV1
+  mag_deck:
+    id: magneticModuleV2
+    options:
+    - magneticModuleV1
+    - magneticModuleV2
+labwares:
+  tiprack_20ul:
+    id: opentrons_96_tiprack_20ul
+    options:
+    - opentrons_96_tiprack_20ul
+    - tipone_3dprinted_96_tiprack_20ul
+  tiprack_300ul:
+    id: opentrons_96_tiprack_300ul
+    options:
+    - opentrons_96_tiprack_300ul
+    - tipone_yellow_3dprinted_96_tiprack_300ul
+  24_tuberack_1500ul:
+    id: e14151500starlab_24_tuberack_1500ul
+    options:
+    - e14151500starlab_24_tuberack_1500ul
+    - starlab_e14151500_24_tuberack_1.5_ml
+    - opentrons_24_tuberack_eppendorf_1.5ml_safelock_snapcap
+  clip_source_plate:
+    id: 4ti0960rig_96_wellplate_200ul
+    options:
+    - 4ti0960rig_96_wellplate_200ul
+    - green_96_wellplate_200ul_pcr
+    - nest_96_wellplate_100ul_pcr_full_skirt
+  clip_plate:
+    id: 4ti0960rig_96_wellplate_200ul
+    options:
+    - 4ti0960rig_96_wellplate_200ul
+    - black_96_wellplate_200ul_pcr
+    - nest_96_wellplate_100ul_pcr_full_skirt
+  mix_plate:
+    id: 4ti0960rig_96_wellplate_200ul
+    options:
+    - 4ti0960rig_96_wellplate_200ul
+    - black_96_wellplate_200ul_pcr
+    - nest_96_wellplate_100ul_pcr_full_skirt
+  final_assembly_plate:
+    id: 4ti0960rig_96_wellplate_200ul
+    options:
+    - 4ti0960rig_96_wellplate_200ul
+    - black_96_wellplate_200ul_pcr
+    - nest_96_wellplate_100ul_pcr_full_skirt
+  transform_plate:
+    id: 4ti0960rig_96_wellplate_200ul
+    options:
+    - 4ti0960rig_96_wellplate_200ul
+    - black_96_wellplate_200ul_pcr
+    - nest_96_wellplate_100ul_pcr_full_skirt
+  agar_plate:
+    id: 4ti0960rig_96_wellplate_200ul
+    options:
+    - 4ti0960rig_96_wellplate_200ul
+    - thermoomnitrayfor96spots_96_wellplate_50ul
+    - nest_96_wellplate_100ul_pcr_full_skirt
+  mag_plate:
+    id: 4ti0960rig_96_wellplate_200ul
+    options:
+    - 4ti0960rig_96_wellplate_200ul
+  12_reservoir_21000ul:
+    id: 4ti0131_12_reservoir_21000ul
+    options:
+    - 4ti0131_12_reservoir_21000ul
+    - citadel_12_wellplate_22000ul
+    - nest_12_reservoir_15ml
+  96_deepwellplate_2ml:
+    id: 4ti0136_96_wellplate_2200ul
+    options:
+    - 4ti0136_96_wellplate_2200ul
+    - transparent_96_wellplate_2ml_deep
+    - nest_96_wellplate_2ml_deep
+  12_corning_wellplate:
+    id: corning_12_wellplate_6.9ml_flat
+    options:
+    - corning_12_wellplate_6.9ml_flat
+    - sarstedtcplatte_12_wellplate_6640ul
+parameters:
+  clip_keep_thermo_lid_closed:
+    value: 'No'
+  premix_linkers:
+    value: 'Yes'
+  premix_parts:
+    value: 'Yes'
+  linkers_volume:
+    value: 40
+  parts_volume:
+    value: 40
+  thermo_temp:
+    value: 4
+  purif_magdeck_height:
+    value: 10.8
+  purif_wash_time:
+    value: 0.5
+  purif_bead_ratio:
+    value: 1.8
+  purif_incubation_time:
+    value: 5
+  purif_settling_time:
+    value: 2
+  purif_drying_time:
+    value: 5
+  purif_elution_time:
+    value: 2
+  transform_incubation_temp:
+    value: 4
+  transform_incubation_time:
+    value: 20

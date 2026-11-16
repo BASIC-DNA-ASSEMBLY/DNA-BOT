@@ -126,3 +126,6 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Local platform-app validation dependencies
+.validation-deps/

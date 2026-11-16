@@ -1,5 +1,7 @@
 # DNA-BOT
 
+DNABOT 2.3 now has independent platform apps: [DNABOT-OT2](DNABOT-OT2/README.md) and [DNABOT-Flex](DNABOT-Flex/README.md). Each folder contains its own app, GUI, settings, helpers, four platform-specific templates, example inputs and custom labware. See the platform README for usage, validation status and workflow changes. Earlier shared versions remain available below and in `dnabot`.
+
 **Feb 2022 - DNA-BOT has now been updated to produce scripts that run on the Opentrons OT2 in APIv2.** It also incorporates options for different hardware configurations by producing multiple scripts for each of the 4 steps. The Thermocycler module can now be optionally used in the step 1 clip reactions as well as the step 4 transformations.
 In addition, different labware inputs are available through the Graphical User Interface (GUI) or Command Line Interface (CLI).
 

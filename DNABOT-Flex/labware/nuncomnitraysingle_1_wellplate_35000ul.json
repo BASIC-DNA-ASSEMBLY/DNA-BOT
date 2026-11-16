@@ -1,0 +1,62 @@
+{
+    "ordering": [
+        [
+            "A1"
+        ]
+    ],
+    "brand": {
+        "brand": "Nuncomnitraysingle",
+        "brandId": []
+    },
+    "metadata": {
+        "displayName": "Nuncomnitraysingle 1 Well Plate 35000 µL",
+        "displayCategory": "wellPlate",
+        "displayVolumeUnits": "µL",
+        "tags": []
+    },
+    "dimensions": {
+        "xDimension": 127.8,
+        "yDimension": 85.9,
+        "zDimension": 17.3
+    },
+    "wells": {
+        "A1": {
+            "depth": 14.5,
+            "totalLiquidVolume": 35000,
+            "shape": "rectangular",
+            "xDimension": 121.4,
+            "yDimension": 78,
+            "x": 63.9,
+            "y": 43.15,
+            "z": 2.8
+        }
+    },
+    "groups": [
+        {
+            "metadata": {
+                "wellBottomShape": "flat"
+            },
+            "wells": [
+                "A1"
+            ]
+        }
+    ],
+    "parameters": {
+        "format": "irregular",
+        "quirks": [
+            "centerMultichannelOnWells",
+            "touchTipDisabled"
+        ],
+        "isTiprack": false,
+        "isMagneticModuleCompatible": false,
+        "loadName": "nuncomnitraysingle_1_wellplate_35000ul"
+    },
+    "namespace": "custom_beta",
+    "version": 1,
+    "schemaVersion": 2,
+    "cornerOffsetFromSlot": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+    }
+}
