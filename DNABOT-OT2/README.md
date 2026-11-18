@@ -2,7 +2,7 @@
 
 Independent OT-2 app, GUI, settings, deck helpers, custom labware and four protocol templates. No files from the parent DNABOT installation are required. The existing shared app is retained separately for reference.
 
-Use Python 3.10 and install the app dependencies:
+Use Python 3.12 and install the app dependencies, including the Opentrons simulator (`opentrons==9.0.0`):
 
 ```powershell
 python -m pip install -r requirements.txt
@@ -19,7 +19,7 @@ The app writes four numbered protocols and a `metainformation` folder containing
 
 Hardware: P20 single Gen2, P300 multi Gen2, separate mounts, thermocycler Gen1/Gen2, and magnetic module Gen1/Gen2. Clip source plates use slots 2, 5 and 1; the tube rack uses slot 4. Assembly takes place on the thermocycler. Copy the required definitions from `labware` into your Opentrons App custom labware library before analysing protocols.
 
-All templates declare API 2.21, preserving the established baseline. API upgrades can now be made independently in this app's four templates; keep metadata and filenames consistent. The generator does not depend on the Opentrons Python package. Install a compatible Opentrons simulator separately if needed.
+All templates declare API 2.21, preserving the established baseline. API upgrades can now be made independently in this app's four templates; keep metadata and filenames consistent. `requirements.txt` pins `opentrons==9.0.0` for simulation and validation; keep that pin, because Opentrons 9.1 and newer only support the Flex and reject OT-2 protocols.
 
 Validation:
 
@@ -28,7 +28,7 @@ python validate.py --generate-only
 python validate.py
 ```
 
-All four bundled examples passed simulation with Opentrons Python 8.2.0 / API 2.21. GUI load/save and CLI generation also passed automated checks. This is software validation; deck geometry, liquid handling and agar depth still need verification on your robot.
+All four bundled examples passed simulation with Opentrons Python 8.2.0 / API 2.21, and again with Python 3.12 / Opentrons 9.0.0. GUI load/save and CLI generation also passed automated checks. This is software validation; deck geometry, liquid handling and agar depth still need verification on your robot.
 
 Changes carried through during the split:
 

@@ -2,12 +2,17 @@
 
 Independent Flex app, GUI, settings, deck helpers, custom labware and four protocol templates. No files from the parent DNABOT installation are required. The existing shared app is retained separately for reference.
 
-Use Python 3.10 and install the app dependencies:
+The Flex app has **its own virtual environment** in this folder (`DNABOT-Flex/.venv`), separate from the OT-2 environment at the repo root. Flex uses `opentrons==10.1.0`; the OT-2 app stays on `opentrons==9.0.0`, because 9.1 and newer reject OT-2 protocols. Keeping them apart lets the Flex side update Opentrons (and later Python) without affecting the OT-2.
+
+Set it up once with Python 3.12, from inside `DNABOT-Flex`:
 
 ```powershell
-python -m pip install -r requirements.txt
-python dnabot_app_2_3_FLEX.py
+py -3.12 -m venv .venv
+.venv\Scripts\python.exe -m pip install -r requirements.txt
+.venv\Scripts\python.exe dnabot_app_2_3_FLEX.py
 ```
+
+`.venv` is git-ignored. In VS Code, open the `DNABOT-Flex` folder itself (File → Open Folder) and choose **Python: Select Interpreter** → `.venv`; VS Code remembers this for the folder.
 
 Generate the bundled example without opening the GUI:
 
@@ -19,7 +24,7 @@ The app writes four numbered protocols and a `metainformation` folder containing
 
 Hardware: Flex 1-channel 50 µL, Flex 8-channel 1000 µL, separate mounts, Gen2 thermocycler at B1, trash at A3, and magnetic block at D1 for purification. Clip source plates use D2, C2 and D1, with the tube rack at C1. Assembly takes place on the thermocycler. Copy the required definitions from `labware` into your Opentrons App custom labware library before analysing protocols.
 
-All templates declare API 2.21 and `requirements = {"robotType": "Flex"}`, preserving the established API baseline. API upgrades can now be made independently in this app's four templates; keep metadata and filenames consistent. The generator does not depend on the Opentrons Python package. Install a compatible Opentrons simulator separately if needed.
+All templates declare API 2.21 and `requirements = {"robotType": "Flex"}`, preserving the established API baseline. API upgrades can now be made independently in this app's four templates; keep metadata and filenames consistent. `requirements.txt` pins `opentrons==10.1.0` (Protocol API up to 2.31) for simulation and validation. Update it here when the Flex robots are updated.
 
 Validation:
 
@@ -28,7 +33,7 @@ python validate.py --generate-only
 python validate.py
 ```
 
-GUI load/save, CLI generation, Python syntax and generated variable checks passed. Full Flex simulation could not run in the development Windows environment because its installed Opentrons package requires the unavailable `opentrons_hardware` dependency. Run `validate.py` in a Flex-capable simulator environment and analyse all four generated protocols in the Flex App before laboratory use. Deck geometry, liquid handling and agar depth still need verification on your robot.
+GUI load/save, CLI generation, Python syntax and generated variable checks passed. All four bundled examples passed `validate.py` simulation with Python 3.12 / Opentrons 10.1.0. Analyse all four generated protocols in the Flex App before laboratory use. Deck geometry, liquid handling and agar depth still need verification on your robot.
 
 Changes carried through during the split:
 

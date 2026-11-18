@@ -3,25 +3,25 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - python > 3.6, <=3.10
-  - async-timeout==3.0.1
-  - attrs==19.3.0
-  - chardet==3.0.4
+  - python=3.12
+  - async-timeout
+  - attrs
+  - chardet
   - idna
   - importlib-metadata
   - jsonschema
-  - more-itertools==7.2.0
+  - more-itertools
   - multidict
-  - numpy
-  - pandas
+  - numpy=1.26.4
+  - pandas=2.2.3
   - pyrsistent
-  - pyserial==3.4
-  - python-dateutil==2.8.0
-  - pytz==2019.3
+  - pyserial
+  - python-dateutil
+  - pytz
   - six
   - urwid
   - yarl
-  - zipp==0.6.0
+  - zipp
   - pyyaml
   - tabulate
   - pytest
